@@ -14445,7 +14445,6 @@
             "display_name": "Friendly Fire",
             "desc": "Hitting your Puppets with Main Attack will cause them to lose 2s of their duration per beam and give them a damage boost. </br> </br>Effect: +10% Damage Bonus to Puppets </br>Duration: 2s",
             "archetype": "Summoner",
-            "base_abil": 999,
             "parents": [
                 "Cheaper Aura II",
                 "Imbued Totem"
@@ -14460,7 +14459,24 @@
                 "col": 2,
                 "icon": "node_1"
             },
-            "effects": []
+            "effects": [
+                {
+                    "type": "raw_stat",
+                    "toggle": "Friendly Fire",
+                    "bonuses": [
+                        {
+                            "type": "stat",
+                            "name": "damMult.FriendlyFire:6.Puppet Hit",
+                            "value": 10
+                        },
+                        {
+                            "type": "stat",
+                            "name": "damMult.FriendlyFire:6.Puppet Explosion",
+                            "value": 10
+                        }
+                    ]
+                }
+            ]
         },
         {
             "display_name": "Chant of the Fanatic",
