@@ -4859,7 +4859,7 @@
         },
         {
             "display_name": "Mantle of the Bovemists",
-            "desc": "When casting War Scream, create a holy shield around you that reduces all incoming damage by -70% for 3 hits. </br> </br>Cooldown: 20s",
+            "desc": "When casting War Scream, create a holy shield around you that reduces all incoming damage by -50% for 3 hits. </br> </br>Cooldown: 20s",
             "archetype": "Paladin",
             "archetype_req": 3,
             "parents": [
