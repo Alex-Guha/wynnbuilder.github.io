@@ -14101,7 +14101,7 @@
             "effects": [
                 {
                     "type": "replace_spell",
-                    "name": "Shadow Projection",
+                    "name": "Disappearing Act",
                     "base_spell": 15,
                     "display": "Total Damage",
                     "parts": [
