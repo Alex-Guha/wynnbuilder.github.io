@@ -1,0 +1,420 @@
+/*
+ * WynnSolver — desktop/wide stylesheet.
+ * Loaded on solver/index.html alongside the shared wynnstyles / sq2bs sheets.
+ */
+
+/* ── Combo row inputs ────────────────────────────────────────────────────── */
+
+/*
+ * sq2bs.css sets .form-control { width: 95% !important } which breaks the
+ * flex-row layout of combo rows.  Use this class instead — same visuals,
+ * no fixed width so the flex container controls sizing.
+ */
+.combo-row-input {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #fff;
+    background-color: #212529;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0.25rem;
+    box-shadow: none;
+    outline: none;
+    /* width intentionally omitted — set by flex or inline style per element */
+}
+
+.combo-row-input:focus {
+    border-color: rgba(255, 255, 255, 0.4);
+    outline: 0;
+    box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.1);
+}
+
+/* ── Combo button tweaks ─────────────────────────────────────────────────── */
+
+/* Remove Bootstrap's focus ring (box-shadow halo) from all buttons on the solver page. */
+.btn:focus,
+.btn:focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/*
+ * Text / Selection mode buttons — dark when inactive, light-grey when active.
+ * Mirrors the dark→light-grey pattern of the stat tabs.
+ * .combo-row-boost-toggle (individual boosts inside the popup) intentionally
+ * excluded — those keep the default green toggleOn from sq2bs.css.
+ */
+#combo-mode-text,
+#combo-mode-selection {
+    background-color: hsl(0, 0%, 15%) !important;
+    border-color: hsl(0, 0%, 28%) !important;
+    color: hsl(0, 0%, 65%) !important;
+}
+
+.combo-boost-menu-btn.toggleOn,
+#combo-downtime-btn.toggleOn,
+#combo-mode-text.toggleOn,
+#combo-mode-selection.toggleOn {
+    background-color: hsl(0, 0%, 50%) !important;
+    border-color: hsl(0, 0%, 62%) !important;
+    color: #fff !important;
+}
+
+/* ── Combo row layout ────────────────────────────────────────────────────── */
+
+/*
+ * Spell select grows to fill available space; inline width in JS is omitted.
+ * min-width keeps it readable when the panel is narrow.
+ */
+.combo-row-spell {
+    flex: 1 1 0;
+    min-width: 8em;
+}
+
+/* Boosts wrapper and button stay at natural (content) width. */
+.combo-boost-btn-wrap {
+    flex-shrink: 0;
+}
+
+/*
+ * Damage spans form a right-aligned column so numbers line up vertically
+ * across all rows.  5.5em comfortably fits 8-digit comma-formatted values.
+ */
+.combo-row-damage {
+    display: inline-block;
+    width: 5.5em;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* ── Mana hover tooltip ──────────────────────────────────────────────────── */
+
+.combo-mana-tooltip {
+    display: none;
+    bottom: calc(100% + 6px);
+    left: 0;
+    min-width: 14em;
+    z-index: 1050;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.combo-mana-wrapper:hover .combo-mana-tooltip {
+    display: block;
+}
+
+/* ── Roll-mode select ────────────────────────────────────────────────────── */
+
+select.solver-select {
+    background-color: hsl(0, 0%, 21%) !important;
+    color: #fff !important;
+    border-color: rgba(33, 37, 41, 1) !important;
+    font-weight: bold;
+    /* remove the default browser arrow tint that can clash with dark bg */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23aaaaaa' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+select.solver-select option {
+    background-color: hsl(0, 0%, 21%);
+    color: #fff;
+}
+
+select.solver-select:focus {
+    border-color: hsl(0, 0%, 30%) !important;
+    box-shadow: none !important;
+}
+
+/* ── Ability tree sizing ─────────────────────────────────────────────────── */
+
+/*
+ * Give the tree canvas a capped height and allow scrolling in both axes.
+ * This contains any absolutely-positioned tooltips within the tree panel,
+ * preventing scroll stutter from atree hover-tooltips extending below viewport.
+ * overflow-x: auto lets the tree scroll horizontally when the panel is narrower
+ * than the rendered tree width (avoids left/right clipping).
+ */
+#atree-ui {
+    max-height: 75vh;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+/* ── Fixed footer ────────────────────────────────────────────────────────── */
+
+.solver-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 500;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+/* Push page content up so fixed footer doesn't overlap */
+body {
+    padding-bottom: 40px;
+}
+
+/* ── Item slot lock indicator ────────────────────────────────────────────── */
+
+/*
+ * .slot-locked  — the slot has an item; solver will NOT search this slot.
+ * .slot-unlocked — the slot is empty; solver WILL search this slot.
+ *
+ * Applied to the `{eq}-dropdown` wrapper row by SolverItemDisplayNode.
+ */
+
+.slot-locked {
+    border-left: 3px solid hsl(145, 60%, 40%) !important;
+    cursor: pointer;
+}
+
+.slot-unlocked {
+    border-left: 3px solid hsl(0, 0%, 30%) !important;
+}
+
+/* Visual feedback: brighten the slot row when hovering a locked slot
+   to emphasize it is clickable. */
+.slot-locked:hover {
+    background-color: hsla(145, 60%, 40%, 0.18) !important;
+}
+
+/* Persist highlight when the item tooltip is currently visible. */
+.slot-selected {
+    background-color: hsla(145, 60%, 40%, 0.18) !important;
+}
+
+/* ── Item tooltips ───────────────────────────────────────────────────────── */
+
+/*
+ * The tooltip divs live in #masonry-container. They are hidden by default
+ * (display: none in HTML) and toggled by toggleItemTooltip().
+ *
+ * Flexbox wrapping replicates the builder's Macy masonry without the library:
+ * each tooltip is capped at 340 px wide; when multiple are visible they sit
+ * side-by-side and wrap onto additional rows.
+ */
+
+#masonry-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+/*
+ * sq2bs.css sets .float-tooltip { position: absolute } which causes all
+ * tooltips to stack on top of each other (they're taken out of flow).
+ * Override here so they participate in the masonry-container flex layout.
+ */
+.float-tooltip {
+    position: static;
+    /* override position: absolute from sq2bs.css */
+    flex: 0 1 340px;
+    max-width: 340px;
+    /* prevent flavor text from expanding the box */
+    min-width: 240px;
+    /* gap handles spacing — no individual margin needed */
+}
+
+/* ── Per-spell mana inclusion toggle ────────────────────────────────────────── */
+
+/*
+ * Thin bar to the right of the Boosts button in each selection-mode combo row.
+ * Blue (filled) when the spell is included in the mana calculation (default).
+ * Transparent (border only) when excluded.
+ */
+.combo-mana-toggle {
+    width: 8px;
+    min-width: 8px;
+    height: 1.75em;
+    padding: 0;
+    border: 2px solid hsl(213, 90%, 62%);
+    background-color: hsl(213, 90%, 62%);
+    border-radius: 3px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.combo-mana-toggle.mana-excluded {
+    background-color: transparent;
+}
+
+.combo-mana-toggle:hover {
+    opacity: 0.75;
+}
+
+/* ── Per-spell damage inclusion toggle ──────────────────────────────────────── */
+
+/*
+ * Thin bar next to the mana toggle.
+ * Red (filled) when the spell is included in the damage total (default).
+ * Transparent (border only) when excluded.
+ */
+.combo-dmg-toggle {
+    width: 8px;
+    min-width: 8px;
+    height: 1.75em;
+    padding: 0;
+    border: 2px solid hsl(0, 80%, 58%);
+    background-color: hsl(0, 80%, 58%);
+    border-radius: 3px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.combo-dmg-toggle.dmg-excluded {
+    background-color: transparent;
+}
+
+.combo-dmg-toggle:hover {
+    opacity: 0.75;
+}
+
+/* Smooth fade-in when tooltip becomes visible */
+.float-tooltip[style*="display: flex"] {
+    animation: tooltip-fade-in 0.12s ease-in;
+}
+
+@keyframes tooltip-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Roll-mode select sizing ─────────────────────────────────────────────────── */
+
+/*
+ * Bootstrap form-select-sm and form-control-sm should be the same height by
+ * default, but some browser UA styles make the select a pixel or two taller.
+ * Force the computed inner height to match the text input so the two fields
+ * sit flush next to each other.
+ */
+#roll-mode-select.form-select-sm {
+    line-height: 1.5;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    /* Force same computed height as form-control-sm (1.5em + 0.5rem + 2px border) */
+    height: calc(1.5em + 0.5rem + 2px);
+}
+
+/* ── Ability-tree active list scroll ─────────────────────────────────────────── */
+
+/*
+ * Without a height cap the spell-description panel can push the atree section
+ * to an extreme length.  Mirror WynnBuilder's overflow-y scroll behaviour.
+ */
+#atree-active {
+    overflow-y: auto;
+}
+
+/* ── Fix .row negative-margin bleed into stat/tree boxes ─────────────────────── */
+
+/*
+ * Bootstrap's .row applies negative margin-left/right to cancel out its col
+ * children's gutter padding.  Inside the narrow stat card and atree active-list
+ * this removes the perceived left/right padding.  Zeroing the margin only inside
+ * those specific containers preserves the correct behaviour everywhere else.
+ */
+#summary-stats .row,
+#detailed-stats .row,
+#atree-active .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* ── Attack selection button border ──────────────────────────────────────────── */
+
+/*
+ * Bootstrap's form-select adds a bright white focus ring that stands out too
+ * strongly in the dark combo rows.  Tone it down to match other inputs.
+ */
+.combo-row-spell {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.combo-row-spell:focus {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: none !important;
+}
+
+/* ── Combo boost popup ───────────────────────────────────────────────────────── */
+
+/*
+ * Default absolute positioning for the boost popup.
+ * JS (combo_toggle_boost_popup) may override to position:fixed + explicit width
+ * to span the full combo column; clearing those inline styles reverts to this.
+ */
+.boost-popup {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 280px;
+    max-height: 70vh;
+    overflow-y: auto;
+    z-index: 1050;
+}
+
+/* ── Per-spell damage breakdown popup ────────────────────────────────────────── */
+
+/*
+ * The dmg-wrap is a thin wrapper around the per-row damage span so we can
+ * position the breakdown popup relative to it.
+ * Hover → popup appears temporarily; click (popup-locked) → stays visible.
+ */
+.combo-row-damage-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.combo-dmg-popup {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 4px);
+    right: 0;
+    background: #1a1d21;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 6px 10px;
+    z-index: 1060;
+    font-size: 0.8em;
+    white-space: normal;
+    /* allow element range lines to wrap */
+    pointer-events: none;
+    min-width: 200px;
+    max-width: 300px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.combo-row-damage-wrap:hover .combo-dmg-popup,
+.combo-row-damage-wrap.popup-locked .combo-dmg-popup {
+    display: block;
+}
+
+.combo-row-damage {
+    cursor: default;
+}
+
+/* ── Combo row drag-and-drop ─────────────────────────────────────────────────── */
+
+.combo-row[draggable="true"] {
+    cursor: grab;
+}
+
+.combo-row.dragging {
+    opacity: 0.35;
+}
+
+.combo-row.drag-over-top {
+    box-shadow: 0 -2px 0 rgba(255, 255, 255, 0.45);
+}

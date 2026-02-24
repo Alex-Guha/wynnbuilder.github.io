@@ -1310,6 +1310,15 @@ function render_AT(UI_elem, list_elem, tree) {
                 });
                 generateTooltip(node_wrap.tooltip_elem, node_elem, ability, atree_map);
                 UI_elem.appendChild(node_wrap.tooltip_elem);
+
+                // If the tooltip overflows the bottom of the viewport, show it above the node instead.
+                const tooltipRect = node_wrap.tooltip_elem.getBoundingClientRect();
+                if (tooltipRect.bottom > window.innerHeight) {
+                    const nodePageY = node_elem.getBoundingClientRect().top + window.pageYOffset;
+                    node_wrap.tooltip_elem.style.top = (nodePageY - node_wrap.tooltip_elem.offsetHeight - 10) + "px";
+                    node_wrap.tooltip_elem.classList.remove("rounded-bottom");
+                    node_wrap.tooltip_elem.classList.add("rounded-top");
+                }
             });
 
             hitbox.addEventListener('mouseout', function(e) {
