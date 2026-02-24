@@ -4859,7 +4859,7 @@
         },
         {
             "display_name": "Mantle of the Bovemists",
-            "desc": "When casting War Scream, create a holy shield around you that reduces all incoming damage by -70% for 3 hits. </br> </br>Cooldown: 20s",
+            "desc": "When casting War Scream, create a holy shield around you that reduces all incoming damage by -50% for 3 hits. </br> </br>Cooldown: 20s",
             "archetype": "Paladin",
             "archetype_req": 3,
             "parents": [
@@ -10626,7 +10626,7 @@
         },
         {
             "display_name": "Unravelment",
-            "desc": "",
+            "desc": "Dimensional Tear's damage effect now lingers on enemies and deals damage 33% faster.",
             "archetype": "Riftwalker",
             "parents": [
                 "Stabilized Anomaly",
@@ -10641,7 +10641,16 @@
                 "icon": "node_2"
             },
             "properties": {},
-            "effects": []
+            "effects": [
+                {
+                    "type": "add_spell_prop",
+                    "target_part": "Rift DPS",
+                    "base_spell": 8,
+                    "hits": {
+                        "Damage per Tick": 0.833333333333
+                    }
+                }
+            ]
         },
         {
             "display_name": "Rewind",
@@ -17587,7 +17596,7 @@
             ]
         },
         {
-            "display_name": "Get Down My Liege",
+            "display_name": "Fortified Formation",
             "desc": "If your health drops to 30% or less, your Effigies protect you until you are above 50% health again.</br></br>While protected, you take reduced damage and your Effigies strike back at attackers every 2s.</br></br>Damage: [180%n/80%f/40%t]</br>Effects: 50% Resistance Bonus to Self</br>Duration: 10s</br>Cooldown: 15s",
             "archetype": "Summoner",
             "base_abil": "Crimson Effigy",
