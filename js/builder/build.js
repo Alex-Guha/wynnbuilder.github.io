@@ -25,9 +25,9 @@ class Build {
 
         if (level < 1) { //Should these be constants?
             this.level = 1;
-        } else if (level > 106) {
-            this.level = 106;
-        } else if (level <= 106 && level >= 1) {
+        } else if (level > 121) {
+            this.level = 121;
+        } else if (level <= 121 && level >= 1) {
             this.level = level;
         } else if (typeof level === "string") {
             this.level = level;

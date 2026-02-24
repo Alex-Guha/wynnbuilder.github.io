@@ -41,6 +41,11 @@ let boosts_node = new (class extends ComputeNode {
         res.set('damMult.Strength', 100*str_boost);
         res.set('damMult.Vulnerability', 100*vuln_boost);
         res.set('defMult.Potion', 100*def_boost);
+
+        if (document.getElementById('judgement-boost').classList.contains("toggleOn")) {
+            res.set('damMult.Judgement', 20);
+            res.set('defMult.Judgement', 20);
+        }
         return res;
     }
 })().update();
@@ -471,7 +476,7 @@ class BuildAssembleNode extends ComputeNode {
 
         let level = parseInt(input_map.get('level-input'));
         if (isNaN(level)) {
-            level = 106;
+            level = 121;
         }
 
         const all_none = equipments.concat([...tomes, weapon]).every(x => x.statMap.has('NONE'));
@@ -625,8 +630,8 @@ class SpellDamageCalcNode extends ComputeNode {
         ];
         let display_spell_results = []
         let spell_result_map = new Map();
-        const use_speed = (('use_atkspd' in spell) ? spell.use_atkspd : true);
-        const use_spell = (('scaling' in spell) ? spell.scaling === 'spell' : true);
+        let use_speed = (('use_atkspd' in spell) ? spell.use_atkspd : true);
+        let use_spell = (('scaling' in spell) ? spell.scaling === 'spell' : true);
 
         for (const part of spell_parts) {
             const {name, display=true} = part;
@@ -648,6 +653,8 @@ class SpellDamageCalcNode extends ComputeNode {
             if ('multipliers' in part) { // damage type spell
                 const use_str = (('use_str' in part) ? part.use_str : true);
                 const ignored_mults = (('ignored_mults' in part) ? part.ignored_mults : []);
+                if('scaling' in part) {use_spell = spell.scaling;}
+                if('use_atkspd' in part) {use_speed = spell.scaling;}
 
                 let results = calculateSpellDamage(stats, weapon, part.multipliers, use_spell, !use_speed, part_id, !use_str, ignored_mults);
                 spell_result = {
@@ -937,6 +944,12 @@ const radiance_node = new (class extends ComputeNode {
         }
         if (document.getElementById('divinehonor-boost').classList.contains("toggleOn")) {
             boost += 0.1;
+        }
+        if (document.getElementById('shine-boost').classList.contains("toggleOn")) {
+            boost += 0.1;
+        }
+        if (document.getElementById('judgement-boost').classList.contains("toggleOn")) {
+            boost = 1.4;
         }
 
         if (boost != 1.0) {

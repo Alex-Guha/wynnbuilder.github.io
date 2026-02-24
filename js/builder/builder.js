@@ -103,7 +103,7 @@ function resetFields(){
         node.update();
     }
 
-    setValue("level-choice", "106");
+    setValue("level-choice", "121");
     location.hash = "";
 }
 

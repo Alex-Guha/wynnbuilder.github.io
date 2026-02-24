@@ -105,6 +105,7 @@ stat_scaling: {
                                             // 1. Single output scaling target
                                             // 2. List of scaling targets (all scaled the same)
                                             // 3. Omitted. no output (useful for modifying slider only without input or output)
+  requirement:  Optional[float]             // The minimum requirement for a slider to start scaling.
   scaling: Optional[list[float]]            // One float for each input. Sums into output.
   max: float                                // Hardcap on this effect (slider value * slider_step). Can be negative if scaling is negative
 }
@@ -400,10 +401,10 @@ const atree_validate = new (class extends ComputeNode {
             }
             atree_to_add = _add;
         }
-        const atree_level_table = ['lvl0wtf',1,2,2,3,3,4,4,5,5,6,6,7,8,8,9,9,10,11,11,12,12,13,14,14,15,16,16,17,17,18,18,19,19,20,20,20,21,21,22,22,23,23,23,24,24,25,25,26,26,27,27,28,28,29,29,30,30,31,31,32,32,33,33,34,34,34,35,35,35,36,36,36,37,37,37,38,38,38,38,39,39,39,39,40,40,40,40,41,41,41,41,42,42,42,42,43,43,43,43,44,44,44,44,45,45,45];
+        const atree_level_table = ['lvl0wtf',1,2,2,3,3,4,4,5,5,6,6,7,8,8,9,9,10,11,11,12,12,13,14,14,15,16,16,17,17,18,18,19,19,20,20,20,21,21,22,22,23,23,23,24,24,25,25,26,26,27,27,28,28,29,29,30,30,31,31,32,32,33,33,34,34,34,35,35,35,36,36,36,37,37,37,38,38,38,38,39,39,39,39,40,40,40,40,41,41,41,41,42,42,42,42,43,43,43,43,44,44,44,44,45,45,45,46,46,46,47,47,47,48,48,48,49,49,49,49,50,50];
         let AP_cap;
         if (isNaN(level)) {
-            AP_cap = 45;   
+            AP_cap = 50;   
         }
         else {
             AP_cap = atree_level_table[level];
@@ -752,22 +753,26 @@ const atree_scaling = new (class extends ComputeNode {
                     continue;
                 case 'stat_scaling':
                     let total = 0;
-                    const {slider = false, scaling = [0], behavior="merge", multiplicative = false} = effect;
+                    const {slider = false, scaling = [0], behavior="merge", multiplicative = false, requirement = 0} = effect;
                     let { positive = true, round = true } = effect;
                     if (slider) {
                         if (behavior == "modify" && !slider_map.has(effect.slider_name)) {
                             // Dangerous control flow.. early continue
                             continue;
                         }
-                        const slider_val = slider_map.get(effect.slider_name).slider.value;
 
-                        if (effect.multiplicative) {
-                            total = (((100+atree_translate(atree_merged, scaling[0]))/100) ** parseInt(slider_val)-1) * 100;
+                        const slider_val = slider_map.get(effect.slider_name).slider.value;
+                        if(requirement > slider_val){
+                            continue;
+                        }
+                        const input_value = slider_val - requirement;
+
+                        if (multiplicative) {
+                            total = (((100+atree_translate(atree_merged, scaling[0]))/100) ** parseInt(input_value)-1) * 100;
                         }
                         else {
-                            total = parseInt(slider_val) * atree_translate(atree_merged, scaling[0]);
+                            total = parseInt(input_value) * atree_translate(atree_merged, scaling[0]);
                         }
-                        round = false;
                         positive = false;
                     }
                     else {
