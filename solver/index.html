@@ -1,0 +1,1171 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="HandheldFriendly" content="true">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, width=device-width, user-scalable=no">
+    <title>WynnSolver</title>
+    <link rel="icon" href="../media/icons/new/builder.png" type="image/icon type">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet">
+
+    <!-- Shared stylesheets (same as builder) -->
+    <link href="/thirdparty/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="/thirdparty/autoComplete.min.css">
+    <link rel="stylesheet" href="../css/sq2bs.css">
+    <link rel="stylesheet" href="../css/sidebar.css">
+    <link rel="stylesheet" href="../css/wynnstyles.css">
+    <link rel="stylesheet" href="../css/solver-wide.css">
+</head>
+
+<body class="text-light" id="body">
+
+    <!-- ═══════════════════════ SIDEBAR (desktop) ═══════════════════════════════ -->
+    <div id="main-sidebar" class="sidebar dark-7 dark-shadow">
+        <a href="../builder/"><img src="../media/icons/new/builder.png" alt="WynnBuilder"
+                title="WynnBuilder"><b>WynnBuilder</b></a>
+        <a href=""><img src="../media/icons/new/builder.png" alt="WynnSolver" title="WynnSolver"><b>WynnSolver</b></a>
+        <a href="../crafter/"><img src="../media/icons/new/crafter.png" alt="WynnCrafter"
+                title="WynnCrafter"><b>WynnCrafter</b></a>
+        <a href="../items/"><img src="../media/icons/new/searcher.png" alt="WynnAtlas"
+                title="WynnAtlas"><b>WynnAtlas</b></a>
+        <a href="../custom/"><img src="../media/icons/new/custom.png" alt="WynnCustom"
+                title="WynnCustom"><b>WynnCustom</b></a>
+        <a href="../map/"><img src="../media/icons/new/compass.png" alt="WynnGPS" title="WynnGPS"><b>WynnGPS</b></a>
+        <a href="../wynnfo/"><img src="../media/icons/new/book.png" alt="Wynnfo" title="Wynnfo"><b>Wynnfo</b></a>
+        <a onclick="toggleIcons()"><img src="../media/icons/new/reload.png" alt="" title="Swap items on page"><b>Swap
+                Icon Style</b></a>
+        <hr>
+        <a href="https://nori.fish/wynn/build/" target="_blank"><img src="../media/icons/new/nori_build.png"
+                alt="Build Search" title="Build Search by Nori-Wynn"><b>Build Search</b></a>
+        <a href="https://nori.fish/wynn/recipe/" target="_blank"><img src="../media/icons/new/nori_recipe.png"
+                alt="Recipe Search" title="Recipe Search by Nori-Wynn"><b>Recipe Search</b></a>
+        <a href="https://discord.gg/CGavnAnerv" target="_blank"><img src="../media/icons/discord.png" alt="WB Discord"
+                title="WB Discord"><b>WB Discord</b></a>
+    </div>
+
+    <!-- ═══════════════════════ MOBILE NAVBAR ═══════════════════════════════════ -->
+    <div id="mobile-navbar" class="navbar dark-5 dark-shadow fixed-top d-lg-none pb-0">
+        <div class="container-fluid scaled-font justify-content-center" style="height: 5vh;">
+            <div class="navbar-brand mx-auto scaled-font" style="height: 100%;">
+                <img src="../media/icons/new/builder.png" alt="" style="height: 100%;"> <span>WynnSolver</span>
+            </div>
+            <button class="btn dropdown-toggle dark-2 px-4 text-white scaled-font border-dark border-3"
+                onclick='toggle_tab("mobile-navbar-dropdown")'></button>
+        </div>
+        <div class="container-fluid scaled-font dark-3 px-3 py-3" id="mobile-navbar-dropdown" style="display: none;">
+            <a href="../builder/" class="w-100 mb-3 text-white" style="height: 5vh; text-decoration: none;"><img
+                    src="../media/icons/new/builder.png" alt="" style="height: 100%;"> <span>WynnBuilder</span></a>
+            <a href="" class="w-100 mb-3 text-white" style="height: 5vh; text-decoration: none;"><img
+                    src="../media/icons/new/builder.png" alt="" style="height: 100%;"> <span>WynnSolver</span></a>
+            <a href="../crafter/" class="w-100 mb-3 text-white" style="height: 5vh; text-decoration: none;"><img
+                    src="../media/icons/new/crafter.png" alt="" style="height: 100%;"> <span>WynnCrafter</span></a>
+            <a href="../items/" class="w-100 mb-3 text-white" style="height: 5vh; text-decoration: none;"><img
+                    src="../media/icons/new/searcher.png" alt="" style="height: 100%;"> <span>WynnAtlas</span></a>
+            <a href="../custom/" class="w-100 mb-3 text-white" style="height: 5vh; text-decoration: none;"><img
+                    src="../media/icons/new/custom.png" alt="" style="height: 100%;"> <span>WynnCustom</span></a>
+            <a href="../map/" class="w-100 mb-3 text-white" style="height: 5vh; text-decoration: none;"><img
+                    src="../media/icons/new/compass.png" alt="" style="height: 100%;"> <span>WynnGPS</span></a>
+            <a href="../wynnfo/" class="w-100 mb-3 text-white" style="height: 5vh; text-decoration: none;"><img
+                    src="../media/icons/new/book.png" alt="" style="height: 100%;"> <span>WynnFo</span></a>
+            <a onclick="toggleIcons()" class="w-100 mb-3 text-white" style="height: 5vh; text-decoration: none;"><img
+                    src="../media/icons/new/reload.png" alt="" style="height: 100%;"> <span>Swap Icon Style</span></a>
+            <a href="https://nori.fish/wynn/build/" class="w-100 mb-3 text-white"
+                style="height: 5vh; text-decoration: none;"><img src="../media/icons/new/nori_build.png" alt=""
+                    style="height: 100%;"> <span>Build Search</span></a>
+            <a href="https://nori.fish/wynn/recipe/" class="w-100 mb-3 text-white"
+                style="height: 5vh; text-decoration: none;"><img src="../media/icons/new/nori_recipe.png" alt=""
+                    style="height: 100%;"> <span>Recipe Search</span></a>
+            <a href="https://discord.gg/CGavnAnerv" class="w-100 mb-3 text-white"
+                style="height: 5vh; text-decoration: none;"><img src="../media/icons/discord.png" alt=""
+                    style="height: 100%;"> <span>Discord</span></a>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════ MAIN CONTENT ════════════════════════════════════ -->
+    <div class="container-fluid overall-box mt-lg-2" style="margin-top: 6vh;">
+
+        <div class="row h-100 gx-lg-5 gy-3 mx-2 mx-lg-3 py-3 gx-0">
+
+            <!-- ═══════ LEFT COLUMN: Items + Skill Points + Tomes/Tree/Aspects ═════ -->
+            <div class="col-xl-5">
+
+                <!-- Mobile tab selector (hidden on lg+) -->
+                <div class="row my-2 dark-6 rounded text-center g-0 px-3 d-flex d-lg-none">
+                    <div class="col">
+                        <p class="fake-button scaled-font mb-0 selected-btn" id="equipment-inputs-btn"
+                            onclick='show_tab("equipment-inputs", ["equipment-inputs", "adjust-id"])'>Items</p>
+                    </div>
+                    <div class="col">
+                        <p class="fake-button scaled-font mb-0" id="adjust-id-btn"
+                            onclick='show_tab("adjust-id", ["equipment-inputs", "adjust-id"])'>Ability Tree</p>
+                    </div>
+                </div>
+
+                <!-- ─── Items section ─── -->
+                <div id="equipment-inputs" class="mb-3">
+
+                    <!-- 9-slot equipment grid: armor+weapon (left) + accessories+controls (right) -->
+                    <div class="row row-cols-1 row-cols-xl-2 dark-shadow dark-6 justify-content-center
+                        equipment-input rounded gy-3 gy-lg-0 mx-0 mt-0" style="padding: 5px;">
+
+                        <!-- HELMET (left col) -->
+                        <div class="col rounded order-xl-0 order-0 my-0">
+                            <div class="row h-100 px-1" id="helmet-dropdown">
+                                <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
+                                    id="helmet-img-loc">
+                                    <div id="helmet-img" class="img-fluid rounded item-display-new-toggleable"
+                                        style="background-image: url('../media/items/new.png'); background-position: 45.45454545454546% 0;">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col text-nowrap scaled-font Health fw-bold gx-3" id="helmet-health">
+                                            0</div>
+                                        <div class="col text-nowrap scaled-font lvl fw-bold gx-3" id="helmet-lv">0</div>
+                                    </div>
+                                </div>
+                                <div class="col g-0 rounded">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="helmet-choice"
+                                                name="helmet-choice" placeholder="No Helmet" tabindex="1">
+                                        </div>
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="helmet-powder"
+                                                name="helmet-powder" placeholder="powders" tabindex="1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RING 1 (right col) -->
+                        <div class="col order-xl-0 order-1 my-0">
+                            <div class="row h-100 px-1" id="ring1-dropdown">
+                                <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
+                                    id="ring1-img-loc">
+                                    <div id="ring1-img" class="img-fluid rounded item-display-new-toggleable"
+                                        style="background-image: url('../media/items/new.png'); background-position: 81.81818181818181% 0;">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col text-nowrap scaled-font Health fw-bold gx-3" id="ring1-health">0
+                                        </div>
+                                        <div class="col text-nowrap scaled-font lvl fw-bold gx-3" id="ring1-lv">0</div>
+                                    </div>
+                                </div>
+                                <div class="col g-0 rounded">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="ring1-choice"
+                                                name="ring1-choice" placeholder="No ring" tabindex="2">
+                                        </div>
+                                        <div class="col d-flex justify-content-end" style="height: 100%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CHESTPLATE (left col) -->
+                        <div class="col order-xl-0 order-0">
+                            <div class="row h-100 px-1" id="chestplate-dropdown">
+                                <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
+                                    id="chestplate-img-loc">
+                                    <div id="chestplate-img" class="img-fluid rounded item-display-new-toggleable"
+                                        style="background-image: url('../media/items/new.png'); background-position: 54.54545454545454% 0;">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col text-nowrap scaled-font Health fw-bold gx-3"
+                                            id="chestplate-health">0</div>
+                                        <div class="col text-nowrap scaled-font lvl fw-bold gx-3" id="chestplate-lv">0
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col g-0 rounded">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control"
+                                                id="chestplate-choice" name="chestplate-choice"
+                                                placeholder="No chestplate" tabindex="1">
+                                        </div>
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control"
+                                                id="chestplate-powder" name="chestplate-powder" placeholder="powders"
+                                                tabindex="1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RING 2 (right col) -->
+                        <div class="col order-xl-0 order-1">
+                            <div class="row h-100 px-1" id="ring2-dropdown">
+                                <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
+                                    id="ring2-img-loc">
+                                    <div id="ring2-img" class="img-fluid rounded item-display-new-toggleable"
+                                        style="background-image: url('../media/items/new.png'); background-position: 81.81818181818181% 0;">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col text-nowrap scaled-font Health fw-bold gx-3" id="ring2-health">0
+                                        </div>
+                                        <div class="col text-nowrap scaled-font lvl fw-bold gx-3" id="ring2-lv">0</div>
+                                    </div>
+                                </div>
+                                <div class="col g-0 rounded">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="ring2-choice"
+                                                name="ring2-choice" placeholder="No ring" tabindex="2">
+                                        </div>
+                                        <div class="col d-flex justify-content-end" style="height: 100%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LEGGINGS (left col) -->
+                        <div class="col order-xl-0 order-0">
+                            <div class="row h-100 px-1" id="leggings-dropdown">
+                                <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
+                                    id="leggings-img-loc">
+                                    <div id="leggings-img" class="img-fluid rounded item-display-new-toggleable"
+                                        style="background-image: url('../media/items/new.png'); background-position: 63.63636363636363% 0;">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col text-nowrap scaled-font Health fw-bold gx-3"
+                                            id="leggings-health">0</div>
+                                        <div class="col text-nowrap scaled-font lvl fw-bold gx-3" id="leggings-lv">0
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col g-0 rounded">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="leggings-choice"
+                                                name="leggings-choice" placeholder="No leggings" tabindex="1">
+                                        </div>
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="leggings-powder"
+                                                name="leggings-powder" placeholder="powders" tabindex="1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BRACELET (right col) -->
+                        <div class="col order-xl-0 order-1">
+                            <div class="row h-100 px-1" id="bracelet-dropdown">
+                                <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
+                                    id="bracelet-img-loc">
+                                    <div id="bracelet-img" class="img-fluid rounded item-display-new-toggleable"
+                                        style="background-image: url('../media/items/new.png'); background-position: 90.90909090909092% 0;">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col text-nowrap scaled-font Health fw-bold gx-3"
+                                            id="bracelet-health">0</div>
+                                        <div class="col text-nowrap scaled-font lvl fw-bold gx-3" id="bracelet-lv">0
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col g-0 rounded">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="bracelet-choice"
+                                                name="bracelet-choice" placeholder="No bracelet" tabindex="2">
+                                        </div>
+                                        <div class="col d-flex justify-content-end" style="height: 100%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BOOTS (left col) -->
+                        <div class="col order-xl-0 order-0">
+                            <div class="row h-100 px-1" id="boots-dropdown">
+                                <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
+                                    id="boots-img-loc">
+                                    <div id="boots-img" class="img-fluid rounded item-display-new-toggleable"
+                                        style="background-image: url('../media/items/new.png'); background-position: 72.72727272727272% 0;">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col text-nowrap scaled-font Health fw-bold gx-3" id="boots-health">0
+                                        </div>
+                                        <div class="col text-nowrap scaled-font lvl fw-bold gx-3" id="boots-lv">0</div>
+                                    </div>
+                                </div>
+                                <div class="col g-0 rounded">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="boots-choice"
+                                                name="boots-choice" placeholder="No boots" tabindex="1">
+                                        </div>
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="boots-powder"
+                                                name="boots-powder" placeholder="powders" tabindex="1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NECKLACE (right col) -->
+                        <div class="col order-xl-0 order-1">
+                            <div class="row h-100 px-1" id="necklace-dropdown">
+                                <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
+                                    id="necklace-img-loc">
+                                    <div id="necklace-img" class="img-fluid rounded item-display-new-toggleable"
+                                        style="background-image: url('../media/items/new.png'); background-position: 100% 0;">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col text-nowrap scaled-font Health fw-bold gx-3"
+                                            id="necklace-health">0</div>
+                                        <div class="col text-nowrap scaled-font lvl fw-bold gx-3" id="necklace-lv">0
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col g-0 rounded">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="necklace-choice"
+                                                name="necklace-choice" placeholder="No necklace" tabindex="2">
+                                        </div>
+                                        <div class="col d-flex justify-content-end" style="height: 100%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WEAPON (left col — moved here so level/roll/reset aligns right) -->
+                        <div class="col order-xl-0 order-0">
+                            <div class="row h-100 px-1" id="weapon-dropdown">
+                                <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
+                                    id="weapon-img-loc">
+                                    <div id="weapon-img" class="img-fluid rounded item-display-new-toggleable"
+                                        style="background-image: url('../media/items/new.png');"></div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col text-nowrap scaled-font fw-bold gx-3 Damage base_dps"
+                                            id="weapon-dps">0</div>
+                                        <div class="col text-nowrap scaled-font lvl fw-bold gx-3" id="weapon-lv">0</div>
+                                    </div>
+                                </div>
+                                <div class="col g-0 rounded">
+                                    <div class="row row-cols-1 h-100 align-items-center">
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="weapon-choice"
+                                                name="weapon-choice" placeholder="No Weapon" tabindex="2">
+                                        </div>
+                                        <div class="col d-flex justify-content-end">
+                                            <input class="equipment-input text-light form-control" id="weapon-powder"
+                                                name="weapon-powder" placeholder="powders" tabindex="2">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LEVEL / ROLL / RESET (right col, bottom — three columns) -->
+                        <div class="col order-xl-0 order-1">
+                            <div class="row h-100 px-2 align-items-center">
+                                <div class="col">
+                                    <div class="row align-items-end g-1">
+                                        <div class="col">
+                                            <div class="fw-bold scaled-font" style="font-size: 0.8em;">Level</div>
+                                            <input class="equipment-input text-light form-control form-control-sm"
+                                                id="level-choice" name="level-choice" value="106" placeholder="Level">
+                                        </div>
+                                        <div class="col">
+                                            <div class="fw-bold scaled-font" style="font-size: 0.8em;">Roll</div>
+                                            <select class="solver-select form-select form-select-sm scaled-font"
+                                                id="roll-mode-select" onchange="setRollMode(this.value)">
+                                                <option value="max" selected>Maximum</option>
+                                                <option value="75pct">75%</option>
+                                                <option value="avg">Average</option>
+                                                <option value="min">Minimum</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-auto d-flex align-items-end">
+                                            <button class="button py-0 fw-bold text-light dark-5 scaled-font rounded"
+                                                onclick="resetSolverFields()">Reset</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div><!-- /.row (item grid) -->
+                </div><!-- /#equipment-inputs -->
+
+                <!-- ─── Skill points (read-only, solver-computed) ─── -->
+                <div class="rounded dark-5 dark-shadow mb-2 scaled-font">
+                    <div class="row row-cols-2 row-cols-xl-5 gy-2 gx-2 justify-content-center mx-0 py-2">
+                        <div class="col text-center">
+                            <div class="rounded dark-6 dark-shadow-sm px-2">
+                                <label class="eDam skp-tooltip">Strength</label>
+                                <div class="fw-bold skp-tooltip" id="str-skp-total">—</div>
+                                <div class="skp-tooltip text-secondary" id="str-skp-assign">Assign: 0</div>
+                            </div>
+                        </div>
+                        <div class="col text-center">
+                            <div class="rounded dark-6 dark-shadow-sm px-2">
+                                <label class="tDam skp-tooltip">Dexterity</label>
+                                <div class="fw-bold skp-tooltip" id="dex-skp-total">—</div>
+                                <div class="skp-tooltip text-secondary" id="dex-skp-assign">Assign: 0</div>
+                            </div>
+                        </div>
+                        <div class="col text-center">
+                            <div class="rounded dark-6 dark-shadow-sm px-2">
+                                <label class="wDam skp-tooltip">Intelligence</label>
+                                <div class="fw-bold skp-tooltip" id="int-skp-total">—</div>
+                                <div class="skp-tooltip text-secondary" id="int-skp-assign">Assign: 0</div>
+                            </div>
+                        </div>
+                        <div class="col text-center">
+                            <div class="rounded dark-6 dark-shadow-sm px-2">
+                                <label class="fDam skp-tooltip">Defense</label>
+                                <div class="fw-bold skp-tooltip" id="def-skp-total">—</div>
+                                <div class="skp-tooltip text-secondary" id="def-skp-assign">Assign: 0</div>
+                            </div>
+                        </div>
+                        <div class="col text-center">
+                            <div class="rounded dark-6 dark-shadow-sm px-2">
+                                <label class="aDam skp-tooltip">Agility</label>
+                                <div class="fw-bold skp-tooltip" id="agi-skp-total">—</div>
+                                <div class="skp-tooltip text-secondary" id="agi-skp-assign">Assign: 0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center py-1">
+                        <div id="summary-box"></div>
+                        <div id="err-box" class="text-danger"></div>
+                        <div id="stack-box" class="text-secondary small"></div>
+                    </div>
+                </div>
+
+                <!-- ─── Tomes + Ability Tree + Aspects ─── -->
+                <div class="mb-3" id="adjust-id">
+                    <div class="text-center scaled-font dark-5 rounded dark-shadow">
+
+                        <!-- Toggle buttons row (title bar) -->
+                        <div class="fw-bold dark-4 rounded-top p-2">
+                            <div class="row g-2 justify-content-center">
+                                <div class="col-auto">
+                                    <button class="button rounded scaled-font fw-bold text-light dark-5"
+                                        id="toggle-tomes" onclick='showExclusivePanel("tomes-dropdown")'>Tomes</button>
+                                </div>
+                                <div class="col-auto">
+                                    <button class="button rounded scaled-font fw-bold text-light dark-5"
+                                        id="toggle-atree" onclick='showExclusivePanel("atree-dropdown")'>Ability
+                                        Tree</button>
+                                </div>
+                                <div class="col-auto">
+                                    <button class="button rounded scaled-font fw-bold text-light dark-5"
+                                        id="toggle-aspects"
+                                        onclick='showExclusivePanel("aspects-dropdown")'>Aspects</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ─── Tomes ─── -->
+                        <div class="dark-6" id="tomes-dropdown" style="display: none;">
+                            <div class="row h-100 row-cols-1 row-cols-xl-2 gy-2 rounded" style="margin:0">
+
+                                <!-- Weapon Tome 1 -->
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="weaponTome1-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="weaponTome1-img-loc">
+                                            <div id="weaponTome1-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Weapon</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end">
+                                                    <input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="weaponTome1-choice" name="weaponTome1-choice"
+                                                        placeholder="No Tome">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Weapon Tome 2 -->
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="weaponTome2-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="weaponTome2-img-loc">
+                                            <div id="weaponTome2-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Weapon</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end">
+                                                    <input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="weaponTome2-choice" name="weaponTome2-choice"
+                                                        placeholder="No Tome">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Armor Tomes 1–4 -->
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="armorTome1-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="armorTome1-img-loc">
+                                            <div id="armorTome1-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Armor</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="armorTome1-choice" name="armorTome1-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="armorTome2-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="armorTome2-img-loc">
+                                            <div id="armorTome2-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Armor</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="armorTome2-choice" name="armorTome2-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="armorTome3-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="armorTome3-img-loc">
+                                            <div id="armorTome3-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Armor</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="armorTome3-choice" name="armorTome3-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="armorTome4-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="armorTome4-img-loc">
+                                            <div id="armorTome4-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Armor</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="armorTome4-choice" name="armorTome4-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Marathon / Mysticism / Expertise / Guild / Lootrun Tomes -->
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="gatherXpTome1-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="gatherXpTome1-img-loc">
+                                            <div id="gatherXpTome1-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Marathon</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="gatherXpTome1-choice" name="gatherXpTome1-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="gatherXpTome2-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="gatherXpTome2-img-loc">
+                                            <div id="gatherXpTome2-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Marathon</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="gatherXpTome2-choice" name="gatherXpTome2-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="dungeonXpTome1-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="dungeonXpTome1-img-loc">
+                                            <div id="dungeonXpTome1-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Mysticism</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="dungeonXpTome1-choice" name="dungeonXpTome1-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="dungeonXpTome2-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="dungeonXpTome2-img-loc">
+                                            <div id="dungeonXpTome2-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Mysticism</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="dungeonXpTome2-choice" name="dungeonXpTome2-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="mobXpTome1-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="mobXpTome1-img-loc">
+                                            <div id="mobXpTome1-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Expertise</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="mobXpTome1-choice" name="mobXpTome1-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="mobXpTome2-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="mobXpTome2-img-loc">
+                                            <div id="mobXpTome2-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Expertise</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="mobXpTome2-choice" name="mobXpTome2-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="guildTome1-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="guildTome1-img-loc">
+                                            <div id="guildTome1-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Guild</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="guildTome1-choice" name="guildTome1-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 dark-shadow rounded" id="lootrunTome1-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="lootrunTome1-img-loc">
+                                            <div id="lootrunTome1-img" class="img-fluid rounded tome-image"></div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col scaled-font fw-bold gx-3">Lootrun</div>
+                                                <div class="col scaled-font fw-bold gx-3">Tome</div>
+                                            </div>
+                                        </div>
+                                        <div class="col g-0 rounded">
+                                            <div class="row row-cols-1 h-100 align-items-center">
+                                                <div class="col d-flex justify-content-end"><input
+                                                        class="equipment-input border-dark text-light dark-10 rounded scaled-font form-control form-control-sm"
+                                                        id="lootrunTome1-choice" name="lootrunTome1-choice"
+                                                        placeholder="No Tome"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div><!-- /.row (tomes grid) -->
+                        </div><!-- /#tomes-dropdown -->
+
+                        <!-- ─── Ability Tree ─── -->
+                        <div class="dark-6" id="atree-dropdown" style="display: none;">
+                            <div class="row row-cols-1 row-cols-xl-2" style="margin:0">
+                                <div class="col border border-semi-light rounded dark-9 hide-scroll" id="atree-ui">
+                                </div>
+                                <div class="col mx-auto" id="atree-rhs"
+                                    style="padding:0; height:75vh; overflow-y: auto;">
+                                    <div class="col mx-auto" id="atree-header"></div>
+                                    <div class="col mx-auto" id="atree-warning"></div>
+                                    <div class="col mx-auto" id="atree-active" style="overflow-y: auto;"></div>
+                                </div>
+                            </div>
+                        </div><!-- /#atree-dropdown -->
+
+                        <!-- ─── Aspects ─── -->
+                        <div class="dark-6" id="aspects-dropdown" style="display: none;">
+                            <div class="row h-100 row-cols-2 gy-2 rounded" style="margin:0">
+                                <!-- Aspect 1 -->
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 rounded align-items-center" id="aspect1-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="aspect1-img-loc">
+                                            <div id="aspect1-img" class="img-fluid rounded aspect-image"></div>
+                                        </div>
+                                        <div class="col-3 scaled-font fw-bold gx-3">Aspect 1</div>
+                                        <div class="col-5 rounded gx-0"><input
+                                                class="aspect-input text-light rounded scaled-font form-control form-control-sm"
+                                                id="aspect1-choice" name="aspect1-choice" placeholder="No Aspect"></div>
+                                        <div class="col-2 rounded gx-0"><input
+                                                class="aspect-input text-light rounded scaled-font form-control form-control-sm"
+                                                type="number" id="aspect1-tier-choice" name="aspect1-tier-choice"
+                                                placeholder="Tier"></div>
+                                    </div>
+                                </div>
+                                <!-- Aspect 2 -->
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 rounded align-items-center" id="aspect2-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="aspect2-img-loc">
+                                            <div id="aspect2-img" class="img-fluid rounded aspect-image"></div>
+                                        </div>
+                                        <div class="col-3 scaled-font fw-bold gx-3">Aspect 2</div>
+                                        <div class="col-5 rounded gx-0"><input
+                                                class="aspect-input text-light rounded scaled-font form-control form-control-sm"
+                                                id="aspect2-choice" name="aspect2-choice" placeholder="No Aspect"></div>
+                                        <div class="col-2 rounded gx-0"><input
+                                                class="aspect-input text-light rounded scaled-font form-control form-control-sm"
+                                                type="number" id="aspect2-tier-choice" name="aspect2-tier-choice"
+                                                placeholder="Tier"></div>
+                                    </div>
+                                </div>
+                                <!-- Aspect 3 -->
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 rounded align-items-center" id="aspect3-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="aspect3-img-loc">
+                                            <div id="aspect3-img" class="img-fluid rounded aspect-image"></div>
+                                        </div>
+                                        <div class="col-3 scaled-font fw-bold gx-3">Aspect 3</div>
+                                        <div class="col-5 rounded gx-0"><input
+                                                class="aspect-input text-light rounded scaled-font form-control form-control-sm"
+                                                id="aspect3-choice" name="aspect3-choice" placeholder="No Aspect"></div>
+                                        <div class="col-2 rounded gx-0"><input
+                                                class="aspect-input text-light rounded scaled-font form-control form-control-sm"
+                                                type="number" id="aspect3-tier-choice" name="aspect3-tier-choice"
+                                                placeholder="Tier"></div>
+                                    </div>
+                                </div>
+                                <!-- Aspect 4 -->
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 rounded align-items-center" id="aspect4-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="aspect4-img-loc">
+                                            <div id="aspect4-img" class="img-fluid rounded aspect-image"></div>
+                                        </div>
+                                        <div class="col-3 scaled-font fw-bold gx-3">Aspect 4</div>
+                                        <div class="col-5 rounded gx-0"><input
+                                                class="aspect-input text-light rounded scaled-font form-control form-control-sm"
+                                                id="aspect4-choice" name="aspect4-choice" placeholder="No Aspect"></div>
+                                        <div class="col-2 rounded gx-0"><input
+                                                class="aspect-input text-light rounded scaled-font form-control form-control-sm"
+                                                type="number" id="aspect4-tier-choice" name="aspect4-tier-choice"
+                                                placeholder="Tier"></div>
+                                    </div>
+                                </div>
+                                <!-- Aspect 5 -->
+                                <div class="col-auto rounded">
+                                    <div class="row h-100 rounded align-items-center" id="aspect5-dropdown">
+                                        <div class="col-auto g-0 rounded-end my-auto text-center scaled-item-icon"
+                                            id="aspect5-img-loc">
+                                            <div id="aspect5-img" class="img-fluid rounded aspect-image"></div>
+                                        </div>
+                                        <div class="col-3 scaled-font fw-bold gx-3">Aspect 5</div>
+                                        <div class="col-5 rounded gx-0"><input
+                                                class="aspect-input text-light rounded scaled-font form-control form-control-sm"
+                                                id="aspect5-choice" name="aspect5-choice" placeholder="No Aspect"></div>
+                                        <div class="col-2 rounded gx-0"><input
+                                                class="aspect-input text-light rounded scaled-font form-control form-control-sm"
+                                                type="number" id="aspect5-tier-choice" name="aspect5-tier-choice"
+                                                placeholder="Tier"></div>
+                                    </div>
+                                </div>
+                            </div><!-- /.row (aspects grid) -->
+                        </div><!-- /#aspects-dropdown -->
+
+                    </div><!-- /.card (toggle card) -->
+                </div><!-- /#adjust-id -->
+
+            </div><!-- /.col-xl-5 (left) -->
+
+            <!-- ═══════ MIDDLE COLUMN: Build Stats + Restrictions ══════════════════ -->
+            <div class="col-xl-3 mb-3">
+
+                <!-- ─── Build stats ─── -->
+                <div class="rounded dark-shadow dark-6 scaled-font mb-2">
+                    <div class="rounded-top">
+                        <div class="row g-0">
+                            <div id="detailed-stats-btn"
+                                class="col text-center fake-button rounded-top dark-4u border border-2 border-dark-7"
+                                onclick='show_tab("detailed-stats", ["detailed-stats", "summary-stats"])'>Detailed</div>
+                            <div id="summary-stats-btn"
+                                class="col text-center fake-button rounded-top dark-4u border border-2 border-dark-7 selected-btn"
+                                onclick='show_tab("summary-stats", ["detailed-stats", "summary-stats"])'>Summary</div>
+                        </div>
+                    </div>
+                    <div id="detailed-stats" class="text-nowrap" style="display: none;"></div>
+                    <div id="summary-stats" class="text-nowrap"></div>
+                </div>
+
+                <!-- ─── Restrictions ─── -->
+                <div class="mb-1 scaled-font dark-5 rounded dark-shadow">
+                    <div class="fw-bold dark-4 rounded-top p-1 text-center">Restrictions</div>
+
+                    <!-- Build Direction -->
+                    <div class="px-2 pt-2 pb-1 d-flex align-items-center gap-2 flex-wrap">
+                        <span class="text-light small fw-bold"
+                              title="Disable to exclude items requiring that SP type from the solver's item pool">Build Direction</span>
+                        <div class="d-flex gap-1">
+                            <button class="button-boost border-0 text-white dark-8u dark-shadow-sm toggleOn"
+                                id="dir-str" onclick="toggle_build_dir('str')"
+                                title="Disable to exclude items requiring Strength">Str</button>
+                            <button class="button-boost border-0 text-white dark-8u dark-shadow-sm toggleOn"
+                                id="dir-dex" onclick="toggle_build_dir('dex')"
+                                title="Disable to exclude items requiring Dexterity">Dex</button>
+                            <button class="button-boost border-0 text-white dark-8u dark-shadow-sm toggleOn"
+                                id="dir-int" onclick="toggle_build_dir('int')"
+                                title="Disable to exclude items requiring Intelligence">Int</button>
+                            <button class="button-boost border-0 text-white dark-8u dark-shadow-sm toggleOn"
+                                id="dir-def" onclick="toggle_build_dir('def')"
+                                title="Disable to exclude items requiring Defense">Def</button>
+                            <button class="button-boost border-0 text-white dark-8u dark-shadow-sm toggleOn"
+                                id="dir-agi" onclick="toggle_build_dir('agi')"
+                                title="Disable to exclude items requiring Agility">Agi</button>
+                        </div>
+                    </div>
+
+                    <!-- Level Range + No Major ID -->
+                    <div class="px-2 pb-1 d-flex align-items-center gap-2 flex-wrap">
+                        <span class="text-light small fw-bold">Item Level</span>
+                        <input id="restr-lvl-min" type="number" min="1" max="106" placeholder="Min"
+                            class="combo-row-input" style="width:3.5em; text-align:center;"
+                            title="Minimum item level for solver search">
+                        <span class="text-secondary small">–</span>
+                        <input id="restr-lvl-max" type="number" min="1" max="106" value="106" placeholder="Max"
+                            class="combo-row-input" style="width:3.5em; text-align:center;"
+                            title="Maximum item level for solver search">
+                        <button class="button-boost border-0 text-white dark-8u dark-shadow-sm"
+                            id="restr-no-major-id" onclick="toggle_no_major_id()"
+                            title="Exclude items that have a Major ID">No Major ID</button>
+                    </div>
+
+                    <!-- Guild Tomes -->
+                    <div class="px-2 pb-1 d-flex align-items-center gap-2 flex-wrap">
+                        <span class="text-light small fw-bold">Guild Tomes</span>
+                        <select class="solver-select form-select form-select-sm scaled-font"
+                                id="restr-guild-tome" style="width:auto;"
+                                title="Guild tome grants extra assignable SP. Off = 200 SP budget (100 per type); Standard = +4 SP total; Rainbow = +5 SP total">
+                            <option value="0" selected>Off (200 SP)</option>
+                            <option value="1">Standard (+4 SP)</option>
+                            <option value="2">Rainbow (+5 SP)</option>
+                        </select>
+                    </div>
+
+                    <hr class="mx-2 my-1 border-secondary">
+
+                    <!-- Stat threshold rows -->
+                    <div class="px-2 pb-2">
+                        <div id="restriction-rows" class="d-flex flex-column gap-1 mb-2"></div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="restriction_add_row()">+ Add Restriction</button>
+                    </div>
+                </div>
+
+            </div><!-- /.col-xl-3 (middle) -->
+
+            <!-- ═══════ RIGHT COLUMN: Active Boosts + Combo + Restrictions ══════════ -->
+            <div class="col-xl-4 mb-3 order-2 order-lg-0">
+
+                <!-- ─── Active boosts ─── -->
+                <div class="mb-2 text-center scaled-font dark-5 rounded dark-shadow">
+                    <div class="fw-bold dark-4 rounded-top p-1">Active boosts</div>
+                    <div class="py-1">
+                        <button class="button-boost m-1 border-0 text-white dark-8u dark-shadow-sm" id="radiance-boost"
+                            onclick='update_radiance("radiance")'>Radiance (+20%)</button>
+                        <button class="button-boost m-1 border-0 text-white dark-8u dark-shadow-sm"
+                            id="divinehonor-boost" onclick='update_radiance("divinehonor")'>Divine Honor (+10%)</button>
+                        <button class="button-boost m-1 border-0 text-white dark-8u dark-shadow-sm" id="warscream-boost"
+                            onclick='update_boosts("warscream-boost")'>War Scream</button>
+                        <button class="button-boost m-1 border-0 text-white dark-8u dark-shadow-sm"
+                            id="emboldeningcry-boost" onclick='update_boosts("emboldeningcry-boost")'>Emboldening Cry
+                            (+8%)</button>
+                        <button class="button-boost m-1 border-0 text-white dark-8u dark-shadow-sm" id="totem-boost"
+                            onclick='update_boosts("totem-boost")'>Vengeful Spirit (+20%)</button>
+                        <button class="button-boost m-1 border-0 text-white dark-8u dark-shadow-sm" id="fortitude-boost"
+                            onclick='update_boosts("fortitude-boost")'>Fortitude (+40%)</button>
+                        <button class="button-boost m-1 border-0 text-white dark-8u dark-shadow-sm"
+                            id="eldritchcall-boost" onclick='update_boosts("eldritchcall-boost")'>Eldritch Call
+                            (+15%)</button>
+                    </div>
+                </div>
+
+                <!-- ─── Combo ─── -->
+                <div class="rounded dark-shadow dark-6 scaled-font mb-2">
+                    <!-- Header row: title -->
+                    <div class="fw-bold dark-4 rounded-top p-2">
+                        <span>Combo</span>
+                    </div>
+
+                    <!-- ── Selection mode ── -->
+                    <div id="combo-selection-mode" class="px-2 py-2">
+                        <div id="combo-selection-rows" class="d-flex flex-column gap-1 mb-2"></div>
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="combo_add_row()">+ Add
+                                Row</button>
+                            <div class="ms-auto d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="combo_export()"
+                                    title="Copy combo to clipboard">Copy</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="combo_import()"
+                                    title="Paste combo from clipboard">Paste</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Combo total + time/mana ── -->
+                    <div class="px-2 pb-2 border-top border-dark-7">
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            <span class="fw-bold">Combo Total:</span>
+                            <span class="Damage fw-bold" id="combo-total-avg">—</span>
+                            <span class="text-secondary small">(avg)</span>
+                            <div class="ms-auto d-flex align-items-center gap-2">
+                                <span class="text-secondary small">Time:</span>
+                                <input id="combo-time" type="number" min="0" step="0.1" placeholder="sec"
+                                    class="combo-row-input" style="width:5em; text-align:center;"
+                                    title="Optional - Combo time for mana calculations"
+                                    oninput="if(solver_combo_total_node) solver_combo_total_node.mark_dirty().update()">
+                                <button id="combo-downtime-btn" class="btn btn-sm btn-outline-secondary"
+                                    title="Allow for time in between combo loops to regen mana"
+                                    onclick="combo_toggle_downtime()">Allow Downtime</button>
+                            </div>
+                        </div>
+                        <!-- Mana row — hidden until Time is filled in -->
+                        <div id="combo-mana-row" style="display:none;" class="mt-1">
+                            <div class="combo-mana-wrapper position-relative d-inline-block">
+                                <span id="combo-mana-display" class="small"></span>
+                                <div id="combo-mana-tooltip"
+                                    class="combo-mana-tooltip position-absolute bg-dark border border-secondary rounded p-2 small text-secondary">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.col-xl-4 (right) -->
+
+        </div><!-- /.row (main 3-col grid) -->
+
+        <!-- ═══════════════════════ TOOLTIPS ════════════════════════════════════ -->
+        <div class="row mx-2 mx-lg-3">
+            <div class="col" id="masonry-container">
+                <div id="helmet-tooltip"
+                    class="rounded row row-cols-1 g-0 scaled-font float-tooltip border border-3 border-dark dark-shadow p-3"
+                    style="display:none;"></div>
+                <div id="chestplate-tooltip"
+                    class="rounded row row-cols-1 g-0 scaled-font float-tooltip border border-3 border-dark dark-shadow p-3"
+                    style="display:none;"></div>
+                <div id="leggings-tooltip"
+                    class="rounded row row-cols-1 g-0 scaled-font float-tooltip border border-3 border-dark dark-shadow p-3"
+                    style="display:none;"></div>
+                <div id="boots-tooltip"
+                    class="rounded row row-cols-1 g-0 scaled-font float-tooltip border border-3 border-dark dark-shadow p-3"
+                    style="display:none;"></div>
+                <div id="ring1-tooltip"
+                    class="rounded row row-cols-1 g-0 scaled-font float-tooltip border border-3 border-dark dark-shadow p-3"
+                    style="display:none;"></div>
+                <div id="ring2-tooltip"
+                    class="rounded row row-cols-1 g-0 scaled-font float-tooltip border border-3 border-dark dark-shadow p-3"
+                    style="display:none;"></div>
+                <div id="bracelet-tooltip"
+                    class="rounded row row-cols-1 g-0 scaled-font float-tooltip border border-3 border-dark dark-shadow p-3"
+                    style="display:none;"></div>
+                <div id="necklace-tooltip"
+                    class="rounded row row-cols-1 g-0 scaled-font float-tooltip border border-3 border-dark dark-shadow p-3"
+                    style="display:none;"></div>
+                <div id="weapon-tooltip"
+                    class="rounded row row-cols-1 g-0 scaled-font float-tooltip border border-3 border-dark dark-shadow p-3"
+                    style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════ FOOTER ══════════════════════════════════════ -->
+        <div class="solver-footer dark-5 scaled-font px-3">
+            <footer class="text-center">
+                <p class="mb-0">WynnSolver — built on top of <b class="hppeng">WynnBuilder</b> by hppeng, ferricles,
+                    reschan, and blankman.
+                    &nbsp;<a href="../credits.txt" class="link">Additional credits</a></p>
+            </footer>
+        </div>
+
+    </div><!-- /.container-fluid -->
+
+    <!-- Hidden: atree.js requires these IDs to exist (it clears and populates them).
+     Kept out of the layout so they don't contribute spacing; Phase 4 will surface them. -->
+    <div style="display:none">
+        <div id="boost-toggles"></div>
+        <div id="boost-sliders"></div>
+    </div>
+
+    <!-- ═══════════════════════ SCRIPTS ═════════════════════════════════════════ -->
+    <script src="../js/redirect_fork.js"></script>
+    <script src="/thirdparty/autoComplete.min.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/build_utils.js"></script>
+    <script src="../js/computation_graph.js"></script>
+    <script src="../js/icons.js"></script>
+    <script src="../js/powders.js"></script>
+    <script src="../js/skillpoints.js"></script>
+    <script src="../js/damage_calc.js"></script>
+    <script src="../js/display_constants.js"></script>
+    <script src="../js/display.js"></script>
+    <script src="../js/loader.js"></script>
+    <script src="../js/load_item.js"></script>
+    <script src="../js/load_ing.js"></script>
+    <script src="../js/load_tome.js"></script>
+    <script src="../js/load_aspect.js"></script>
+    <script src="../js/custom.js"></script>
+    <script src="../js/craft.js"></script>
+    <script src="../js/builder/build.js"></script>
+    <script src="../js/builder/atree.js"></script>
+    <script src="../js/builder/aspects.js"></script>
+    <script src="../js/builder/build_encode_decode.js"></script>
+    <script src="../js/solver/solver_constants.js"></script>
+    <script src="../js/solver/solver_graph.js"></script>
+    <script src="../js/solver/solver.js"></script>
+
+</body>
+
+</html>
