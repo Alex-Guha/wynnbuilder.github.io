@@ -248,7 +248,7 @@ function displayExpandedItem(item, parent_id){
                     let p_elem = make_elem("div", ["col"]);
 
                     // PROPER POWDER DISPLAYING
-                    let numerals = new Map([[1, "I"], [2, "II"], [3, "III"], [4, "IV"], [5, "V"], [6, "VI"]]);
+                    let numerals = new Map([[1, "I"], [2, "II"], [3, "III"], [4, "IV"], [5, "V"], [6, "VI"], [7, "VII"]]);
 
                     p_elem.appendChild(make_elem("b", [], {
                         textContent: "Powder Slots: " + item.get(id) + " ["

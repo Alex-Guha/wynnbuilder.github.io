@@ -44,8 +44,8 @@ function levelToSkillPoints(level){
 function levelToHPBase(level){
     if(level < 1){ //bad level
         return this.levelToHPBase(1);
-    }else if (level > 106){ //also bad level
-        return this.levelToHPBase(106);
+    }else if (level > 121){ //also bad level
+        return this.levelToHPBase(121);
     }else{ //good level
         return 5*level + 5;
     }

@@ -268,7 +268,7 @@
                                 "name": "Total Damage",
                                 "type": "total",
                                 "hits": {
-                                    "Single Bomb": 1
+                                    "Single Bomb": "Smoke Bomb.bombCount"
                                 }
                             }
                         ]
@@ -452,7 +452,7 @@
     },
     "STRINGS_OF_FATE": {
         "displayName": "Strings of Fate",
-        "description": "Your puppets have a lifetime of 3 seconds and deal double damage with attacks and explosions.",
+        "description": "Your puppets have a lifetime of 3 seconds and deal 50% more damage with attacks and explosions.",
         "abilities": [
             {
                 "class": "Shaman",
@@ -464,12 +464,12 @@
                             {
                                 "type": "stat",
                                 "name": "damMult.FateString:6.Puppet Hit",
-                                "value": 100
+                                "value": 50
                             },
                             {
                                 "type": "stat",
                                 "name": "damMult.FateString:6.Puppet Explosion",
-                                "value": 100
+                                "value": 50
                             }
                         ]
                     },
@@ -908,7 +908,7 @@
     },
     "LIFESTREAM": {
         "displayName": "Lifestream",
-        "description": "Blood Sorrow deals [neutral]450% and grants 4 times the overhealth, but shortens its duration by 75%.",
+        "description": "Blood Sorrow deals 3.5 times damage and grants 4 times the overhealth, but shortens its duration by 75%.",
         "abilities": [
             {
                 "class": "Shaman",
@@ -919,17 +919,13 @@
                 "properties": {},
                 "effects": [
                     {
-                        "type": "add_spell_prop",
-                        "base_spell": 10,
-                        "target_part": "Beam Tick Damage",
-                        "behavior": "overwrite",
-                        "multipliers": [
-                            450,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0
+                        "type": "raw_stat",
+                        "bonuses": [
+                            {
+                                "type": "stat",
+                                "name": "damMult.Lifestream:10.Beam Tick Damage",
+                                "value": 250
+                            }
                         ]
                     },
                     {
@@ -951,129 +947,7 @@
     "FIXATE": {
         "displayName": "Fixate",
         "description": "Devitalize doubles your Winded cap, but lowers Winded damage effects by 30%. Timelock absorbs up to 120 Winded.",
-        "abilities": [
-            {
-                "class": "Mage",
-                "base_abil": "Windsweeper",
-                "dependencies": [
-                    "Devitalize"
-                ],
-                "properties": {},
-                "effects": [
-                    {
-                        "type": "raw_stat",
-                        "bonuses": [
-                            {
-                                "type": "stat",
-                                "name": "damMult.Fixate:2.Winded Damage",
-                                "value": -30
-                            },
-                            {
-                                "type": "stat",
-                                "name": "damMult.Fixate:3.Winded Damage",
-                                "value": -30
-                            },
-                            {
-                                "type": "stat",
-                                "name": "damMult.Fixate:4.Winded Damage",
-                                "value": -30
-                            }
-                        ]
-                    },
-                    {
-                        "type": "raw_stat",
-                        "bonuses": [
-                            {
-                                "type": "prop",
-                                "abil": "Windsweeper",
-                                "name": "max",
-                                "value": 10
-                            }
-                        ]
-                    },
-                    {
-                        "type": "stat_scaling",
-                        "slider": true,
-                        "slider_name": "Winded",
-                        "slider_max": 10
-                    }
-                ]
-            },
-            {
-                "class": "Mage",
-                "base_abil": "Windsweeper",
-                "dependencies": [
-                    "Devitalize",
-                    "More Winded"
-                ],
-                "properties": {},
-                "effects": [
-                    {
-                        "type": "raw_stat",
-                        "bonuses": [
-                            {
-                                "type": "prop",
-                                "abil": "Windsweeper",
-                                "name": "max",
-                                "value": 10
-                            }
-                        ]
-                    },
-                    {
-                        "type": "stat_scaling",
-                        "slider": true,
-                        "slider_name": "Winded",
-                        "slider_max": 10
-                    }
-                ]
-            },
-            {
-                "class": "Mage",
-                "base_abil": "Windsweeper",
-                "dependencies": [
-                    "Devitalize",
-                    "More Winded II"
-                ],
-                "properties": {},
-                "effects": [
-                    {
-                        "type": "raw_stat",
-                        "bonuses": [
-                            {
-                                "type": "prop",
-                                "abil": "Windsweeper",
-                                "name": "max",
-                                "value": 10
-                            }
-                        ]
-                    },
-                    {
-                        "type": "stat_scaling",
-                        "slider": true,
-                        "slider_name": "Winded",
-                        "slider_max": 10
-                    }
-                ]
-            },
-            {
-                "class": "Mage",
-                "base_abil": "Windsweeper",
-                "dependencies": [
-                    "Devitalize",
-                    "Timelock"
-                ],
-                "properties": {},
-                "effects": [
-                    {
-                        "type": "stat_scaling",
-                        "slider": true,
-                        "slider_name": "Winded",
-                        "behavior": "overwrite",
-                        "slider_max": 120
-                    }
-                ]
-            }
-        ]
+        "abilities": []
     },
     "INSOLUBLE": {
         "displayName": "Insoluble",
@@ -1875,7 +1749,7 @@
                 "class": "Shaman",
                 "base_abil": "Haul",
                 "dependencies": [
-                    "Mask of the Heretic"
+                    "Frog Dance"
                 ],
                 "effects": [
                     {

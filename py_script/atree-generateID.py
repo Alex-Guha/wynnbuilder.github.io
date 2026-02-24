@@ -284,7 +284,7 @@ def main():
             with open("major_ids_min.json", "w", encoding='utf-8') as maj_id_out:
                 json.dump(maj_id_dat, maj_id_out, ensure_ascii=False, separators=(',', ':'))
 
-        with open("aspects.json") as aspects_file:
+        '''with open("aspects.json") as aspects_file:
             aspect_dat = json.load(aspects_file)
             for clazz, aspects in aspect_dat.items():
                 for aspect in aspects:
@@ -292,7 +292,7 @@ def main():
                         for abil in aspect_tier['abilities']:
                             translate_abil(abilDict[clazz], abil, tree=False)
             with open("aspects_min.json", "w", encoding='utf-8') as aspects_out:
-                json.dump(aspect_dat, aspects_out, ensure_ascii=False, separators=(',', ':'))
+                json.dump(aspect_dat, aspects_out, ensure_ascii=False, separators=(',', ':'))'''
         
         with open('atree_constants_min.json', 'w', encoding='utf-8') as json_dest:
             json.dump(data, json_dest, ensure_ascii=False, separators=(',', ':'))
