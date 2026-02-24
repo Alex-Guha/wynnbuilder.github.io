@@ -69,7 +69,7 @@ let powder_special_input = new (class extends ComputeNode {
     compute_func(input_map) {
         let powder_specials = []; // [ [special, power], [special, power]]
         for (const sName of specialNames) {
-            for (let i = 1;i < 6; i++) {
+            for (let i = 1;i < 8; i++) {
                 if (document.getElementById(sName.replace(" ","_") + "-" + i).classList.contains("toggleOn")) {
                     let powder_special = powderSpecialStats[specialNames.indexOf(sName.replace("_"," "))]; 
                     powder_specials.push([powder_special, i]);
@@ -86,7 +86,7 @@ function updatePowderSpecials(buttonId) {
     let elem = document.getElementById(buttonId);
     if (elem.classList.contains("toggleOn")) { elem.classList.remove("toggleOn"); }
     else {
-        for (let i = 1;i < 6; i++) { //toggle all pressed buttons of the same powder special off
+        for (let i = 1;i < 8; i++) { //toggle all pressed buttons of the same powder special off
             //name is same, power is i
             const elem2 = document.getElementById(prefix + i);
             if(elem2.classList.contains("toggleOn")) { elem2.classList.remove("toggleOn"); }
