@@ -1012,17 +1012,36 @@
                     <div class="fw-bold dark-4 rounded-top p-1 text-center">Solver</div>
                     <div class="px-2 py-2">
                         <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                            <button id="solver-run-btn" class="btn btn-sm btn-outline-success w-100"
-                                onclick="toggle_solver()">Solve</button>
+                            <div class="d-flex align-items-center gap-1 w-100">
+                                <button id="solver-run-btn" class="btn btn-sm btn-outline-success flex-grow-1"
+                                    onclick="toggle_solver()">Solve</button>
+                                <select id="solver-thread-count" class="form-select form-select-sm"
+                                    style="width:auto; min-width:55px" title="Number of worker threads">
+                                    <option value="auto">Auto</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="4">4</option>
+                                    <option value="8">8</option>
+                                    <option value="12">12</option>
+                                    <option value="16">16</option>
+                                </select>
+                                <button id="solver-pruning-toggle" class="btn btn-sm btn-outline-info toggleOn"
+                                    onclick="this.classList.toggle('toggleOn')"
+                                    title="Enable search pruning for faster solves">Pruning</button>
+                            </div>
                             <span id="solver-progress-text" style="display:none" class="text-secondary small">
                                 Searching... &nbsp;|&nbsp;
-                                Checked: <span id="solver-checked-count">0</span> / <span id="solver-total-count">?</span> &nbsp;|&nbsp;
+                                Checked: <span id="solver-checked-count">0</span> / <span
+                                    id="solver-total-count">?</span> &nbsp;|&nbsp;
                                 Feasible: <span id="solver-feasible-count">0</span> &nbsp;|&nbsp;
                                 <span id="solver-elapsed-text">0s</span>
                                 <span id="solver-remaining-text" class="ms-1"></span>
+                                <span id="solver-eta-warning" class="text-warning ms-1" style="display:none">&#9888;
+                                    Long solve expected (&gt;20 min)</span>
                             </span>
                             <span id="solver-error-text" class="text-danger small"></span>
                         </div>
+                        <div id="solver-summary-text" class="text-secondary small mb-1"></div>
                         <div id="solver-results-panel"></div>
                     </div>
                 </div>

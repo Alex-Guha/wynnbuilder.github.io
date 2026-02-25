@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// PHASE 6: SOLVER CORE
+// PHASE 6+7: SOLVER CORE (Web Worker orchestration)
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -10,97 +10,21 @@ let _solver_checked = 0;
 let _solver_feasible = 0;
 let _solver_start = 0;
 let _solver_last_ui = 0;
-let _solver_total = 0;    // total candidate count (product of pool sizes)
-let _solver_last_eta = 0;    // timestamp of last ETA DOM update
+let _solver_total = 0;
+let _solver_last_eta = 0;
 
-// Bitmask tracking which equipment slots (0=helmet…7=necklace) were last filled by
-// the solver (vs by the user). Persisted to URL as ?sfree=N so a page reload restores
-// the same lock / free distinction.
+// Web Worker state
+let _solver_workers = [];        // [{worker, done, checked, feasible, top5}]
+let _solver_progress_timer = 0;  // setInterval handle
+
+// Bitmask tracking which equipment slots were last filled by the solver.
 let _solver_free_mask = 0;
 
-// Set to true while _fill_build_into_ui is dispatching change events so that the
-// per-input 'change' listeners below know not to clear the solverFilled flag.
+// Set to true while _fill_build_into_ui is dispatching change events.
 let _solver_filling_ui = false;
 
-// ── Stat-map helpers ──────────────────────────────────────────────────────────
+// ── Roll-mode helper ─────────────────────────────────────────────────────────
 
-/**
- * Deep-clone a StatMap, ensuring nested Maps (damMult, defMult, healMult) are
- * separate objects so mutation in one path doesn't bleed into another.
- */
-function _deep_clone_statmap(sm) {
-    const ret = new Map(sm);
-    for (const k of ['damMult', 'defMult', 'healMult']) {
-        const v = sm.get(k);
-        if (v instanceof Map) ret.set(k, new Map(v));
-    }
-    return ret;
-}
-
-/**
- * Merge all entries from `source` StatMap into `target` using merge_stat().
- * Handles both flat dot-notation keys ('damMult.Potion') and nested Maps.
- */
-function _merge_into(target, source) {
-    if (!source) return;
-    for (const [k, v] of source) {
-        if (v instanceof Map) {
-            for (const [mk, mv] of v) merge_stat(target, k + '.' + mk, mv);
-        } else {
-            merge_stat(target, k, v);
-        }
-    }
-}
-
-/**
- * Apply Radiance / Divine Honor scaling to a StatMap.
- * Mirrors solver_radiance_node.compute_func exactly, but reads boost factor
- * from a pre-snapshotted value rather than the DOM.
- */
-function _apply_radiance_scale(statMap, boost) {
-    if (boost === 1) return statMap;
-    const ret = new Map(statMap);
-    for (const id of radiance_affected) {
-        const val = ret.get(id) || 0;
-        if (reversedIDs.includes(id)) {
-            if (val < 0) ret.set(id, Math.floor(val * boost));
-        } else {
-            if (val > 0) ret.set(id, Math.floor(val * boost));
-        }
-    }
-    return ret;
-}
-
-/**
- * Quick SP feasibility upper-bound check.  O(1) per candidate.
- * Returns false if the total net SP demand clearly exceeds the budget.
- */
-function _sp_prefilter(items_8_sms, wep_sm, sp_budget) {
-    // The player only needs enough SP to satisfy the single highest per-attribute requirement
-    // (once you can equip the most demanding item for an attribute, all others follow).
-    // Using sum_req instead of max_req is wrong and over-rejects valid builds.
-    const all = [...items_8_sms, wep_sm];
-    let total_net = 0;
-    for (let i = 0; i < 5; i++) {
-        let max_req = 0, sum_prov = 0;
-        for (const sm of all) {
-            const req = sm.get('reqs')?.[i] ?? 0;
-            if (req > max_req) max_req = req;
-            sum_prov += sm.get('skillpoints')?.[i] ?? 0;
-        }
-        // Only need assigned SP if there's an actual requirement to meet.
-        // When max_req=0, no SP needed regardless of negative provisions.
-        const net = max_req > 0 ? Math.max(0, max_req - sum_prov) : 0;
-        if (net > 100) return false;
-        total_net += net;
-    }
-    return total_net <= sp_budget;
-}
-
-/**
- * Apply the active roll mode to an Item's maxRolls in-place.
- * Mirrors ItemInputNode.compute_func roll-mode logic.
- */
 function _apply_roll_mode_to_item(item) {
     if (current_roll_mode === ROLL_MODES.MAX) return item;
     const minR = item.statMap.get('minRolls');
@@ -115,59 +39,42 @@ function _apply_roll_mode_to_item(item) {
 
 // ── Item pool building ────────────────────────────────────────────────────────
 
-/**
- * Returns locked items (non-NONE) for each of the 8 equipment slots.
- * Result keys: 'helmet', 'chestplate', 'leggings', 'boots',
- *              'ring1', 'ring2', 'bracelet', 'necklace'
- */
-function _collect_locked_items() {
+function _collect_locked_items(illegal_at_2) {
     const locked = {};
     for (let i = 0; i < 8; i++) {
-        const slot = equipment_fields[i];   // helmet…necklace (no weapon)
+        const slot = equipment_fields[i];
         const node = solver_item_final_nodes[i];
         const item = node?.value;
         if (!item || item.statMap.has('NONE')) continue;
-        // Slots filled by the solver (not by the user) remain free targets.
         const input = document.getElementById(slot + '-choice');
         if (input?.dataset.solverFilled === 'true') continue;
+        // Attach illegal set info so the worker can track it
+        const sn = item.statMap.get('set') ?? null;
+        item._illegalSet = (sn && illegal_at_2.has(sn)) ? sn : null;
+        item._illegalSetName = item._illegalSet
+            ? (item.statMap.get('displayName') ?? item.statMap.get('name') ?? '') : null;
         locked[slot] = item;
     }
     return locked;
 }
 
-/**
- * Build per-slot candidate item pools filtered by restrictions.
- * Returns { helmet:[Item…], chestplate:[Item…], … ring:[Item…], … }
- * Note: ring1 and ring2 share the same 'ring' pool.
- * Locked slots are not present in the result (caller should skip them).
- */
 function _build_item_pools(restrictions, illegal_at_2 = new Set()) {
     const slot_types = {
-        helmet: 'helmet',
-        chestplate: 'chestplate',
-        leggings: 'leggings',
-        boots: 'boots',
-        ring: 'ring',
-        bracelet: 'bracelet',
-        necklace: 'necklace',
+        helmet: 'helmet', chestplate: 'chestplate', leggings: 'leggings',
+        boots: 'boots', ring: 'ring', bracelet: 'bracelet', necklace: 'necklace',
     };
-    const sp_keys = skp_order;   // ['str','dex','int','def','agi']
+    const sp_keys = skp_order;
     const pools = {};
-
     for (const [slot, type] of Object.entries(slot_types)) {
         const pool = [];
         const names = itemLists.get(type) ?? [];
         for (const name of names) {
             const item_obj = itemMap.get(name);
             if (!item_obj) continue;
-            // Skip the "No Helmet / No Ring 1" none items
             if (item_obj.name?.startsWith('No ')) continue;
-            // Level filter
             const lvl = item_obj.lvl ?? 0;
             if (lvl < restrictions.lvl_min || lvl > restrictions.lvl_max) continue;
-            // Major ID filter
             if (restrictions.no_major_id && item_obj.majorIds?.length > 0) continue;
-            // Build direction filter
             let skip = false;
             for (let i = 0; i < 5; i++) {
                 if (!restrictions.build_dir[sp_keys[i]]) {
@@ -175,16 +82,12 @@ function _build_item_pools(restrictions, illegal_at_2 = new Set()) {
                 }
             }
             if (skip) continue;
-            // Create Item and apply roll mode
             const item = _apply_roll_mode_to_item(new Item(item_obj));
-            // Tag with illegal set name + item name for duplicate-equip detection
             const sn = item_obj.set ?? null;
             item._illegalSet = (sn && illegal_at_2.has(sn)) ? sn : null;
             item._illegalSetName = item._illegalSet ? (item_obj.displayName ?? item_obj.name ?? '') : null;
             pool.push(item);
         }
-        // Add the NONE item first (allows leaving slot empty when beneficial).
-        // Must wrap in Item so .statMap is available in the search hot path.
         const none_idx = _NONE_ITEM_IDX[slot === 'ring' ? 'ring1' : slot];
         pool.unshift(new Item(none_items[none_idx]));
         pools[slot] = pool;
@@ -194,12 +97,7 @@ function _build_item_pools(restrictions, illegal_at_2 = new Set()) {
 
 // ── Solver snapshot ───────────────────────────────────────────────────────────
 
-/**
- * Parse current combo rows into reusable objects for the search hot path.
- * Returns [{qty, spell, boost_tokens, dmg_excl}] — filtered to spells with damage.
- */
 function _parse_combo_for_search(spell_map, weapon) {
-    // Augment spell_map with powder specials (mirrors SolverComboTotalNode logic)
     const weapon_powders = weapon?.statMap?.get('powders') ?? [];
     const aug = new Map(spell_map);
     for (const ps_idx of [0, 1, 3]) {
@@ -219,150 +117,56 @@ function _parse_combo_for_search(spell_map, weapon) {
 }
 
 /**
- * Snapshot all fixed-during-search state from the live computation graph.
- * Must be called after the graph has settled (all nodes up to date).
+ * Serialize atree interactive state (button/slider DOM elements) into plain Maps.
  */
+function _serialize_atree_interactive(atree_interactive_val) {
+    const button_states = new Map();
+    const slider_states = new Map();
+    if (!atree_interactive_val) return { button_states, slider_states };
+    const [slider_map, button_map] = atree_interactive_val;
+    for (const [name, entry] of button_map) {
+        button_states.set(name, entry.button?.classList.contains("toggleOn") ?? false);
+    }
+    for (const [name, entry] of slider_map) {
+        slider_states.set(name, parseInt(entry.slider?.value ?? '0'));
+    }
+    return { button_states, slider_states };
+}
+
 function _build_solver_snapshot(restrictions) {
     const weapon = solver_item_final_nodes[8]?.value;
     const level = parseInt(document.getElementById('level-choice').value) || 106;
-
-    // Tome items: solver_item_final_nodes[9..22]
     const tomes = solver_item_final_nodes.slice(9).map(n => n?.value).filter(Boolean);
-
-    // Fixed atree stats (non-toggled raw_stat effects — independent of items)
     const atree_raw = atree_raw_stats.value ?? new Map();
-
-    // atree_make_interactives output: [slider_map, button_map] — needed to call
-    // atree_scaling.compute_func() per candidate
     const atree_interactive_val = atree_make_interactives.value;
-
-    // Merged abilities (for boost registry + prop overrides)
     const atree_mgd = atree_merge.value;
-
-    // Static boosts from Active Boosts panel (War Scream, Fortitude, etc.)
-    // These are used for stat threshold checks but NOT for combo base (matches live graph).
     const static_boosts = solver_boosts_node.value ?? new Map();
 
-    // Radiance boost factor (read from DOM once, fixed for entire search)
     let radiance_boost = 1;
     if (document.getElementById('radiance-boost')?.classList.contains('toggleOn')) radiance_boost += 0.2;
     if (document.getElementById('divinehonor-boost')?.classList.contains('toggleOn')) radiance_boost += 0.1;
 
-    // SP budget based on guild tome setting
     const sp_budget = restrictions.guild_tome === 2 ? 205 :
         restrictions.guild_tome === 1 ? 204 : 200;
 
-    // Guild tome Item for wynn_order passed to calculate_skillpoints.
-    // Must always be an Item instance (with .statMap), not a raw none_tomes object.
-    // restrictions.guild_tome only affects sp_budget; the actual item in the field is
-    // always used regardless of the toggle so SP calculation receives valid statMaps.
     const guild_tome_idx = tome_fields.indexOf('guildTome1');
     const guild_tome_item = (guild_tome_idx >= 0 && solver_item_final_nodes[9 + guild_tome_idx]?.value)
         ? solver_item_final_nodes[9 + guild_tome_idx].value
         : new Item(none_tomes[2]);
 
-    // Snapshotted spell map (approximation: stat-scaling prop effects use current build)
     const spell_map = atree_collect_spells.value ?? new Map();
-
-    // Pre-build boost registry (fixed for entire search — uses current Build for powder entries)
     const boost_registry = build_combo_boost_registry(atree_mgd, solver_build_node.value);
-
-    // Pre-parse combo rows
     const parsed_combo = _parse_combo_for_search(spell_map, weapon);
 
+    // Serialize atree interactive state for workers
+    const { button_states, slider_states } = _serialize_atree_interactive(atree_interactive_val);
+
     return {
-        weapon, level, tomes, atree_raw, atree_interactive_val,
-        atree_mgd, static_boosts, radiance_boost, sp_budget,
+        weapon, level, tomes, atree_raw, atree_mgd,
+        static_boosts, radiance_boost, sp_budget,
         guild_tome_item, spell_map, boost_registry, parsed_combo,
-        restrictions,
+        restrictions, button_states, slider_states,
     };
-}
-
-// ── Per-candidate stat assembly ───────────────────────────────────────────────
-
-/**
- * Assemble the combo_base StatMap for a single candidate Build.
- * Mirrors the live graph pipeline:
- *   build.statMap + atree_raw  →  pre_scale_agg
- *   → radiance scaling
- *   → atree_scaling.compute_func(radiance_scaled)
- *   → combo_base = radiance_scaled + atree_scaled_stats
- *
- * Returns { combo_base }.
- */
-function _assemble_combo_stats(build, snap) {
-    // 1. Start from build.statMap and deep-clone nested Maps to prevent mutation
-    const pre_scale = _deep_clone_statmap(build.statMap);
-    // Mirror SolverBuildStatExtractNode: overwrite per-item SP with final totals
-    // and inject classDef — neither is stored in build.statMap itself.
-    // Without this, crit%, spell scaling, and EHP are all wrong.
-    for (let i = 0; i < skp_order.length; i++) {
-        pre_scale.set(skp_order[i], build.total_skillpoints[i]);
-    }
-    const weaponType = build.weapon.statMap.get('type');
-    if (weaponType) pre_scale.set('classDef', classDefenseMultipliers.get(weaponType) || 1.0);
-    // 2. Merge fixed atree raw stats
-    _merge_into(pre_scale, snap.atree_raw);
-    // 3. Apply radiance / divine honor scaling
-    const radiance_scaled = _apply_radiance_scale(pre_scale, snap.radiance_boost);
-    // 4. Compute per-candidate atree scaling (depends on radiance_scaled stats)
-    const fake_input = new Map([
-        ['atree-merged', snap.atree_mgd],
-        ['scale-stats', radiance_scaled],
-        ['atree-interactive', snap.atree_interactive_val],
-    ]);
-    const [, atree_scaled_stats] = atree_scaling.compute_func(fake_input);
-    // 5. combo_base = radiance_scaled + atree_scaled_stats
-    const combo_base = _deep_clone_statmap(radiance_scaled);
-    _merge_into(combo_base, atree_scaled_stats);
-    return combo_base;
-}
-
-/**
- * Add static boosts on top of combo_base for stat threshold evaluation.
- * (Mirrors stat_agg in the live graph.)
- */
-function _assemble_threshold_stats(combo_base, snap) {
-    const s = _deep_clone_statmap(combo_base);
-    _merge_into(s, snap.static_boosts);
-    return s;
-}
-
-// ── Stat threshold check ──────────────────────────────────────────────────────
-
-function _check_thresholds(stats, thresholds) {
-    for (const { stat, op, value } of thresholds) {
-        let v;
-        if (stat === 'ehp') {
-            // getDefenseStats() returns [defenses_list, [ehp_agi, ehp_none]]
-            const def = getDefenseStats(stats);
-            v = def?.[1]?.[0] ?? 0;
-        } else {
-            v = stats.get(stat) ?? 0;
-        }
-        if (op === 'ge' && v < value) return false;
-        if (op === 'le' && v > value) return false;
-    }
-    return true;
-}
-
-// ── Combo damage evaluation ───────────────────────────────────────────────────
-
-/**
- * Compute total combo damage for a candidate build given its combo_base stats.
- * Mirrors SolverComboTotalNode._compute() but without DOM writes.
- */
-function _eval_combo_damage(combo_base, snap) {
-    const wep_sm = snap.weapon.statMap;
-    const crit = skillPointsToPercentage(combo_base.get('dex') || 0);
-    let total = 0;
-    for (const { qty, spell, boost_tokens } of snap.parsed_combo) {
-        const { stats, prop_overrides } =
-            apply_combo_row_boosts(combo_base, boost_tokens, snap.boost_registry);
-        const mod_spell = apply_spell_prop_overrides(spell, prop_overrides, snap.atree_mgd);
-        total += computeSpellDisplayAvg(stats, wep_sm, mod_spell, crit) * qty;
-    }
-    return total;
 }
 
 // ── Top-5 heap ────────────────────────────────────────────────────────────────
@@ -375,6 +179,18 @@ function _insert_top5(candidate) {
 
 // ── UI helpers ────────────────────────────────────────────────────────────────
 
+function _format_duration(total_s) {
+    total_s = Math.max(0, Math.floor(total_s));
+    const d = Math.floor(total_s / 86400);
+    const h = Math.floor((total_s % 86400) / 3600);
+    const m = Math.floor((total_s % 3600) / 60);
+    const s = total_s % 60;
+    if (d > 0) return `${d}d ${h}h ${m}m ${s}s`;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+}
+
 function _update_solver_progress_ui() {
     const el_checked = document.getElementById('solver-checked-count');
     const el_feasible = document.getElementById('solver-feasible-count');
@@ -386,35 +202,56 @@ function _update_solver_progress_ui() {
     if (el_total) el_total.textContent = _solver_total.toLocaleString();
     const now = Date.now();
     const elapsed_ms = now - _solver_start;
-    if (el_elapsed) {
-        const s = Math.floor(elapsed_ms / 1000);
-        el_elapsed.textContent = s + 's';
-    }
-    // Update ETA at most once per second
-    if (el_remaining && now - _solver_last_eta >= 1000) {
+    if (el_elapsed) el_elapsed.textContent = _format_duration(elapsed_ms / 1000);
+    if (now - _solver_last_eta >= 1000) {
         _solver_last_eta = now;
+        const el_warn = document.getElementById('solver-eta-warning');
         if (_solver_checked > 0 && _solver_total > _solver_checked) {
-            const rate = elapsed_ms / _solver_checked;  // ms per candidate
+            const rate = elapsed_ms / _solver_checked;
             const remaining_s = Math.ceil(rate * (_solver_total - _solver_checked) / 1000);
-            el_remaining.textContent = remaining_s >= 60
-                ? Math.floor(remaining_s / 60) + 'm ' + (remaining_s % 60) + 's left'
-                : remaining_s + 's left';
+            if (el_remaining) el_remaining.textContent = _format_duration(remaining_s) + ' left';
+            if (el_warn) el_warn.style.display = remaining_s > 1200 ? '' : 'none';
         } else {
-            el_remaining.textContent = '';
+            if (el_remaining) el_remaining.textContent = '';
+            if (el_warn) el_warn.style.display = 'none';
         }
     }
-    // Every 5 s: refresh result panel and fill best build
-    if (now - _solver_last_ui >= 5000 && _solver_top5.length > 0) {
+    // Every 5 s: merge interim top-5 from workers, refresh result panel and fill best build
+    if (now - _solver_last_ui >= 5000) {
         _solver_last_ui = now;
-        _fill_build_into_ui(_solver_top5[0]);
-        _display_solver_results(_solver_top5);
+        // Rebuild _solver_top5 from worker cumulative + current-partition data
+        _solver_top5 = [];
+        for (const w of _solver_workers) {
+            // Cumulative top5 from completed partitions
+            for (const r of (w.top5 ?? [])) {
+                if (!r.item_names) continue;
+                const items = _reconstruct_result_items(r.item_names);
+                _insert_top5({
+                    score: r.score, items,
+                    base_sp: r.base_sp ?? [0,0,0,0,0],
+                    total_sp: r.total_sp ?? [0,0,0,0,0],
+                    assigned_sp: r.assigned_sp ?? 0,
+                });
+            }
+            // Interim top5 from current in-flight partition
+            for (const r of (w._cur_top5 ?? [])) {
+                if (!r.item_names) continue;
+                const items = _reconstruct_result_items(r.item_names);
+                _insert_top5({
+                    score: r.score, items,
+                    base_sp: r.base_sp ?? [0,0,0,0,0],
+                    total_sp: r.total_sp ?? [0,0,0,0,0],
+                    assigned_sp: r.assigned_sp ?? 0,
+                });
+            }
+        }
+        if (_solver_top5.length > 0) {
+            _fill_build_into_ui(_solver_top5[0]);
+            _display_solver_results(_solver_top5);
+        }
     }
 }
 
-/**
- * Write the current _solver_free_mask to the URL as ?sfree=N.
- * A value of 0 removes the param entirely to keep URLs clean.
- */
 function _write_sfree_url() {
     const url = new URL(window.location.href);
     if (_solver_free_mask !== 0) {
@@ -425,43 +262,30 @@ function _write_sfree_url() {
     window.history.replaceState(null, '', url.toString());
 }
 
-/**
- * Fill the 8 equipment slots with the items from a solver result.
- * Dispatches 'change' events so the computation graph updates normally.
- */
 function _fill_build_into_ui(result) {
     _solver_filling_ui = true;
     _solver_free_mask = 0;
     for (let i = 0; i < 8; i++) {
-        const slot = equipment_fields[i];   // helmet…necklace
+        const slot = equipment_fields[i];
         const item = result.items[i];
         const name = item.statMap.has('NONE') ? '' :
             (item.statMap.get('displayName') ?? item.statMap.get('name') ?? '');
         const input = document.getElementById(slot + '-choice');
         if (input) {
             if (input.value !== name) {
-                // Value is changing — this slot was solver-chosen.
                 input.dataset.solverFilled = 'true';
                 _solver_free_mask |= (1 << i);
                 input.value = name;
                 input.dispatchEvent(new Event('change'));
             } else if (input.dataset.solverFilled === 'true') {
-                // Value unchanged and was already solver-filled — keep it in the free mask.
                 _solver_free_mask |= (1 << i);
             }
-            // If value unchanged and solverFilled !== 'true', the slot is user-locked —
-            // leave it alone so it keeps its slot-locked (green) styling.
         }
     }
     _solver_filling_ui = false;
     _write_sfree_url();
 }
 
-/**
- * Render the top-5 result cards into #solver-results-panel.
- * Each card loads the build into the current page on click, and has a ↗ link
- * that opens a new solver tab pre-filled with that build.
- */
 function _display_solver_results(top5) {
     const panel = document.getElementById('solver-results-panel');
     if (!panel) return;
@@ -469,21 +293,19 @@ function _display_solver_results(top5) {
     const rows = top5.map((r, i) => {
         const score_str = Math.round(r.score).toLocaleString();
         const item_names = r.items.map(item => {
-            if (item.statMap.has('NONE')) return '—';
+            if (item.statMap.has('NONE')) return '\u2014';
             return item.statMap.get('displayName') ?? item.statMap.get('name') ?? '?';
         });
-        const non_none = item_names.filter(n => n !== '—');
+        const non_none = item_names.filter(n => n !== '\u2014');
         const names_str = non_none.length ? non_none.join(', ') : '(all empty)';
-        // Compute URL for opening this build in a new tab.
-        // Reuses all current query params (roll, combo, restrictions) but swaps the hash.
         const result_hash = solver_compute_result_hash(r);
         let new_tab_link = '';
         if (result_hash) {
             const url = new URL(window.location.href);
             url.hash = result_hash;
-            url.searchParams.delete('sfree');  // new tab = all slots user-chosen
+            url.searchParams.delete('sfree');
             new_tab_link = `<a class="solver-result-newtab" href="${url.toString()}" ` +
-                `target="_blank" title="Open in new tab" onclick="event.stopPropagation()">↗</a>`;
+                `target="_blank" title="Open in new tab" onclick="event.stopPropagation()">\u2197</a>`;
         }
         return `<div class="solver-result-row" title="${item_names.join(' | ')}" onclick="_fill_build_into_ui(_solver_top5[${i}])">` +
             `<span class="solver-result-rank">#${i + 1}</span>` +
@@ -493,281 +315,480 @@ function _display_solver_results(top5) {
             `</div>`;
     }).join('');
     panel.innerHTML =
-        `<div class="text-secondary small mb-1">Top builds — click to load:</div>` + rows;
+        `<div class="text-secondary small mb-1">Top builds \u2014 click to load:</div>` + rows;
 }
 
-// ── The search ────────────────────────────────────────────────────────────────
+// ── Worker partitioning ───────────────────────────────────────────────────────
 
 /**
- * Async DFS over free equipment slots.
- * Yields to the event loop every YIELD_INTERVAL candidates to keep UI responsive.
+ * Partition the search space across N workers.
+ * Returns an array of partition descriptors.
  */
-async function _run_solver_search(pools, locked, snap, illegal_at_2 = new Set()) {
-    const YIELD_INTERVAL = 200;
-    let yield_counter = 0;
+function _partition_work(pools, locked, num_workers) {
+    const ring1_locked = !!locked.ring1;
+    const ring2_locked = !!locked.ring2;
+    const both_rings_free = !ring1_locked && !ring2_locked;
 
-    const { level, tomes, weapon, guild_tome_item, sp_budget } = snap;
-    const wep_sm = weapon.statMap;
+    // Both rings free: partition the outer ring index with triangular load balancing.
+    // Outer index i iterates inner j from i to N-1, so work(i) = N - i.
+    // Total work = N*(N+1)/2. We split into equal-work chunks.
+    if (both_rings_free && pools.ring) {
+        const n = pools.ring.length;
+        if (n <= 1) return [{ type: 'ring', start: 0, end: n }];
+        const total_work = n * (n + 1) / 2;
+        const work_per_worker = total_work / num_workers;
+        const partitions = [];
+        let start = 0;
+        let accum = 0;
+        for (let w = 0; w < num_workers; w++) {
+            const target = (w + 1) * work_per_worker;
+            let end = start;
+            while (end < n && accum + (n - end) <= target) {
+                accum += (n - end);
+                end++;
+            }
+            // Last worker gets the rest
+            if (w === num_workers - 1) end = n;
+            if (start < end) partitions.push({ type: 'ring', start, end });
+            start = end;
+            if (start >= n) break;
+        }
+        return partitions;
+    }
 
-    // Determine which slots are free vs locked.
-    // For ring: split based on which ring slots are locked.
-    const ring1_locked = locked.ring1 ?? null;
-    const ring2_locked = locked.ring2 ?? null;
-    const ring_pool = pools.ring ?? [];
+    // One ring free: partition the ring pool
+    if (pools.ring && (ring1_locked || ring2_locked)) {
+        const n = pools.ring.length;
+        const chunk = Math.ceil(n / num_workers);
+        const partitions = [];
+        for (let w = 0; w < num_workers; w++) {
+            const start = w * chunk;
+            const end = Math.min(start + chunk, n);
+            if (start < end) partitions.push({ type: 'ring_single', start, end });
+        }
+        return partitions;
+    }
 
-    // Free slot iteration order (excluding weapon which is always locked).
-    // Rings are handled specially inside the DFS.
-    const free_armor_slots = [];
+    // Find largest free armor/accessory pool to partition
+    let biggest_slot = null, biggest_size = 0;
     for (const slot of ['helmet', 'chestplate', 'leggings', 'boots', 'bracelet', 'necklace']) {
-        if (!locked[slot]) free_armor_slots.push(slot);
-    }
-    const rings_free = !ring1_locked || !ring2_locked;  // at least one ring is free
-
-    console.log('[solver] _run_solver_search — free_armor_slots:', free_armor_slots,
-        '| rings_free:', rings_free, '| ring_pool.length:', ring_pool.length);
-
-    // Pre-build Item instances for NONE slots (none_items are raw objects, not Item instances).
-    const none_item_insts = none_items.slice(0, 8).map(ni => new Item(ni));
-
-    // partial: holds Item for each of the 8 equipment positions
-    const partial = {
-        helmet: locked.helmet ?? none_item_insts[0],
-        chestplate: locked.chestplate ?? none_item_insts[1],
-        leggings: locked.leggings ?? none_item_insts[2],
-        boots: locked.boots ?? none_item_insts[3],
-        ring1: locked.ring1 ?? none_item_insts[4],
-        ring2: locked.ring2 ?? none_item_insts[5],
-        bracelet: locked.bracelet ?? none_item_insts[6],
-        necklace: locked.necklace ?? none_item_insts[7],
-    };
-
-    // Tracks which distinct item names from each illegal-at-2 set are in the partial.
-    // setName → Map<itemName, refCount>. A candidate is blocked only when a DIFFERENT item
-    // from the same illegal set is already present. Equipping the same item in both ring
-    // slots is valid (the game counts it as 1 unique set member, not 2).
-    const illegal_set_occupants = new Map();
-    const _occ_add = (setName, itemName) => {
-        if (!illegal_set_occupants.has(setName)) illegal_set_occupants.set(setName, new Map());
-        const m = illegal_set_occupants.get(setName);
-        m.set(itemName, (m.get(itemName) ?? 0) + 1);
-    };
-    const _occ_remove = (setName, itemName) => {
-        const m = illegal_set_occupants.get(setName);
-        if (!m) return;
-        const c = m.get(itemName) ?? 1;
-        if (c <= 1) m.delete(itemName); else m.set(itemName, c - 1);
-    };
-    // Returns true if adding this item would create an illegal combo (a different item
-    // from the same set is already present).
-    const _occ_blocks = (is, iname) => {
-        if (!is) return false;
-        const m = illegal_set_occupants.get(is);
-        return !!(m && m.size > 0 && !m.has(iname));
-    };
-    for (const item of Object.values(partial)) {
-        if (!item || item.statMap.has('NONE')) continue;
-        const name = item.statMap.get('displayName') ?? item.statMap.get('name') ?? '';
-        const iobj = name ? itemMap.get(name) : null;
-        const sname = iobj?.set ?? null;
-        if (sname && illegal_at_2.has(sname) && name) _occ_add(sname, name);
+        if (pools[slot] && pools[slot].length > biggest_size) {
+            biggest_slot = slot;
+            biggest_size = pools[slot].length;
+        }
     }
 
-    // Inner synchronous DFS over free armor/accessory slots (excluding rings).
-    // Ring iteration is handled by an outer ring loop below.
-    async function dfs(slot_idx) {
-        if (!_solver_running) return;
+    if (!biggest_slot || biggest_size <= 1) return [{ type: 'full' }];
 
-        if (slot_idx === free_armor_slots.length) {
-            // Leaf: evaluate this candidate
-            _solver_checked++;
-            yield_counter++;
-            if (_solver_checked === 1) console.log('[solver] first leaf reached — partial:', Object.fromEntries(
-                Object.entries(partial).map(([k, v]) => [k, v.statMap?.get('displayName') ?? '?'])
-            ));
+    const chunk = Math.ceil(biggest_size / num_workers);
+    const partitions = [];
+    for (let w = 0; w < num_workers; w++) {
+        const start = w * chunk;
+        const end = Math.min(start + chunk, biggest_size);
+        if (start < end) partitions.push({ type: 'slot', slot: biggest_slot, start, end });
+    }
+    return partitions;
+}
 
-            const equip_8_sms = [
-                partial.helmet.statMap, partial.chestplate.statMap,
-                partial.leggings.statMap, partial.boots.statMap,
-                partial.ring1.statMap, partial.ring2.statMap,
-                partial.bracelet.statMap, partial.necklace.statMap,
-            ];
-            // Tier 1: SP pre-filter (O(1))
-            const _pre_ok = _sp_prefilter(equip_8_sms, wep_sm, sp_budget);
-            if (_solver_checked <= 3) console.log('[solver] prefilter', _solver_checked,
-                _pre_ok ? 'PASS' : 'FAIL',
-                '| chest:', partial.chestplate.statMap?.get('displayName'));
-            if (!_pre_ok) {
-                if (yield_counter % YIELD_INTERVAL === 0) {
-                    _update_solver_progress_ui();
-                    await new Promise(r => setTimeout(r, 0));
-                }
-                return;
-            }
-            // Tier 2: Full SP feasibility via calculate_skillpoints
-            const equip_8 = [
-                partial.helmet, partial.chestplate,
-                partial.leggings, partial.boots,
-                partial.ring1, partial.ring2,
-                partial.bracelet, partial.necklace,
-            ];
-            // wynn_order: [boots, legs, chest, helm, ring1, ring2, brace, neck, guildTome]
-            const wynn_order = [
-                partial.boots, partial.leggings, partial.chestplate, partial.helmet,
-                partial.ring1, partial.ring2, partial.bracelet, partial.necklace,
-                guild_tome_item,
-            ];
-            const build = new Build(level, equip_8, tomes, weapon, wynn_order);
-            if (build.assigned_skillpoints > sp_budget) {
-                if (_solver_feasible === 0 && _solver_checked <= 5) console.log(
-                    '[solver] SP fail — assigned:', build.assigned_skillpoints, '> budget:', sp_budget,
-                    '| chest:', partial.chestplate.statMap?.get('displayName'));
-                if (yield_counter % YIELD_INTERVAL === 0) {
-                    _update_solver_progress_ui();
-                    await new Promise(r => setTimeout(r, 0));
-                }
-                return;
-            }
-            _solver_feasible++;
+// ── Prepare serialized item data for worker ─────────────────────────────────
 
-            // Tier 3: Stat assembly + threshold check
-            const combo_base = _assemble_combo_stats(build, snap);
-            if (snap.restrictions.stat_thresholds.length > 0) {
-                const thresh_stats = _assemble_threshold_stats(combo_base, snap);
-                if (!_check_thresholds(thresh_stats, snap.restrictions.stat_thresholds)) {
-                    if (yield_counter % YIELD_INTERVAL === 0) {
-                        _update_solver_progress_ui();
-                        await new Promise(r => setTimeout(r, 0));
-                    }
-                    return;
-                }
-            }
+/**
+ * Prepare item pool data for structured clone to worker.
+ * Returns a plain object with statMap (Map, survives structured clone)
+ * plus _illegalSet / _illegalSetName as top-level properties.
+ * Note: arbitrary properties on Map instances are NOT preserved by structured clone,
+ * so we wrap the statMap in a plain object.
+ */
+function _serialize_pool_item(item) {
+    return {
+        statMap: item.statMap,
+        _illegalSet: item._illegalSet ?? null,
+        _illegalSetName: item._illegalSetName ?? null,
+    };
+}
 
-            // Tier 4: Combo damage
-            const score = _eval_combo_damage(combo_base, snap);
+function _serialize_pools(pools) {
+    const out = {};
+    for (const [slot, pool] of Object.entries(pools)) {
+        out[slot] = pool.map(item => _serialize_pool_item(item));
+    }
+    return out;
+}
+
+function _serialize_locked(locked) {
+    const out = {};
+    for (const [slot, item] of Object.entries(locked)) {
+        out[slot] = _serialize_pool_item(item);
+    }
+    return out;
+}
+
+// ── Build worker init message ────────────────────────────────────────────────
+
+// Pre-compute once (lazily, after items are loaded)
+let _cached_none_sms = null;
+let _cached_none_idx_map = null;
+
+function _get_none_sms() {
+    if (!_cached_none_sms) {
+        _cached_none_sms = none_items.slice(0, 8).map(ni => new Item(ni).statMap);
+        _cached_none_idx_map = {};
+        for (const slot of ['helmet', 'chestplate', 'leggings', 'boots', 'ring1', 'ring2', 'bracelet', 'necklace']) {
+            _cached_none_idx_map[slot] = _NONE_ITEM_IDX[slot];
+        }
+    }
+    return { none_item_sms: _cached_none_sms, none_idx_map: _cached_none_idx_map };
+}
+
+function _build_worker_init_msg(snap, pools_ser, locked_ser, ring_pool_ser, partition, worker_id) {
+    const { none_item_sms, none_idx_map } = _get_none_sms();
+
+    // Read pruning toggle
+    const pruning_el = document.getElementById('solver-pruning-toggle');
+    const pruning = pruning_el ? pruning_el.classList.contains('toggleOn') : true;
+
+    return {
+        type: 'init',
+        worker_id,
+        pruning,
+        // Search data
+        pools: pools_ser,
+        locked: locked_ser,
+        weapon_sm: snap.weapon.statMap,
+        level: snap.level,
+        tome_sms: snap.tomes.map(t => t.statMap),
+        guild_tome_sm: snap.guild_tome_item.statMap,
+        sp_budget: snap.sp_budget,
+        // Atree state
+        atree_merged: snap.atree_mgd,
+        atree_raw: snap.atree_raw,
+        button_states: snap.button_states,
+        slider_states: snap.slider_states,
+        radiance_boost: snap.radiance_boost,
+        static_boosts: snap.static_boosts,
+        // Combo
+        parsed_combo: snap.parsed_combo,
+        boost_registry: snap.boost_registry,
+        restrictions: snap.restrictions,
+        // Global data
+        sets_data: [...sets],
+        // Ring
+        ring_pool: ring_pool_ser,
+        ring1_locked: locked_ser.ring1 ?? null,
+        ring2_locked: locked_ser.ring2 ?? null,
+        // Partition
+        partition,
+        // None items
+        none_item_sms,
+        none_idx_map,
+    };
+}
+
+// ── Reconstruct Item instances from worker results ──────────────────────────
+
+function _reconstruct_result_items(item_names) {
+    return item_names.map((name, i) => {
+        if (!name || name === '') {
+            const it = new Item(none_items[i]);
+            it.statMap.set('NONE', true);
+            return it;
+        }
+        const item_obj = itemMap.get(name);
+        if (!item_obj) {
+            const it = new Item(none_items[i]);
+            it.statMap.set('NONE', true);
+            return it;
+        }
+        return _apply_roll_mode_to_item(new Item(item_obj));
+    });
+}
+
+// ── Worker orchestration ────────────────────────────────────────────────────
+
+function _stop_solver() {
+    _solver_running = false;
+    // Snapshot final counts (cumulative + in-flight) before terminating
+    _solver_checked = 0;
+    _solver_feasible = 0;
+    for (const w of _solver_workers) {
+        _solver_checked += w.checked + (w._cur_checked ?? 0);
+        _solver_feasible += w.feasible + (w._cur_feasible ?? 0);
+    }
+    // Terminate all workers
+    for (const w of _solver_workers) {
+        try { w.worker.terminate(); } catch(e) {}
+    }
+    _solver_workers = [];
+    // Clear progress timer
+    if (_solver_progress_timer) {
+        clearInterval(_solver_progress_timer);
+        _solver_progress_timer = 0;
+    }
+}
+
+function _on_all_workers_done(workers_snapshot) {
+    const search_completed = _solver_running;  // true only if finished naturally
+    const elapsed_s = Math.floor((Date.now() - _solver_start) / 1000);
+
+    // Aggregate final stats before stopping (which clears _solver_workers)
+    _solver_checked = 0;
+    _solver_feasible = 0;
+    for (const w of workers_snapshot) {
+        _solver_checked += w.checked;
+        _solver_feasible += w.feasible;
+    }
+
+    // Merge top-5 from all workers
+    _solver_top5 = [];
+    for (const w of workers_snapshot) {
+        for (const r of w.top5) {
+            const items = _reconstruct_result_items(r.item_names);
             _insert_top5({
-                score,
-                items: [...equip_8],
-                base_sp: build.base_skillpoints,
-                total_sp: build.total_skillpoints,
-                assigned_sp: build.assigned_skillpoints,
+                score: r.score,
+                items,
+                base_sp: r.base_sp,
+                total_sp: r.total_sp,
+                assigned_sp: r.assigned_sp,
             });
-
-            if (yield_counter % YIELD_INTERVAL === 0) {
-                _update_solver_progress_ui();
-                await new Promise(r => setTimeout(r, 0));
-            }
-            return;
-        }
-
-        const slot = free_armor_slots[slot_idx];
-        const pool = pools[slot];
-        if (!pool) { await dfs(slot_idx + 1); return; }
-        for (const item of pool) {
-            if (!_solver_running) return;
-            const is = item._illegalSet;
-            if (_occ_blocks(is, item._illegalSetName)) continue;
-            if (is) _occ_add(is, item._illegalSetName);
-            partial[slot] = item;
-            await dfs(slot_idx + 1);
-            if (is) _occ_remove(is, item._illegalSetName);
-        }
-        // Restore to NONE / locked value after exhausting this slot's pool
-        partial[slot] = locked[slot] ?? none_item_insts[_NONE_ITEM_IDX[slot]];
-    }
-
-    if (!rings_free) {
-        // Both rings locked — just run the armor DFS directly
-        await dfs(0);
-    } else if (ring1_locked) {
-        // ring1 fixed, ring2 free
-        for (const r2 of ring_pool) {
-            if (!_solver_running) break;
-            const is = r2._illegalSet;
-            if (_occ_blocks(is, r2._illegalSetName)) continue;
-            if (is) _occ_add(is, r2._illegalSetName);
-            partial.ring2 = r2;
-            await dfs(0);
-            if (is) _occ_remove(is, r2._illegalSetName);
-        }
-    } else if (ring2_locked) {
-        // ring2 fixed, ring1 free
-        for (const r1 of ring_pool) {
-            if (!_solver_running) break;
-            const is = r1._illegalSet;
-            if (_occ_blocks(is, r1._illegalSetName)) continue;
-            if (is) _occ_add(is, r1._illegalSetName);
-            partial.ring1 = r1;
-            await dfs(0);
-            if (is) _occ_remove(is, r1._illegalSetName);
-        }
-    } else {
-        // Both rings free — enumerate (ring_pool[i], ring_pool[j]) with i <= j
-        // (avoids checking both (A,B) and (B,A) as separate combinations)
-        for (let i = 0; i < ring_pool.length; i++) {
-            if (!_solver_running) break;
-            const r1 = ring_pool[i];
-            const is1 = r1._illegalSet;
-            if (_occ_blocks(is1, r1._illegalSetName)) continue;
-            if (is1) _occ_add(is1, r1._illegalSetName);
-            partial.ring1 = r1;
-            for (let j = i; j < ring_pool.length; j++) {
-                if (!_solver_running) break;
-                const r2 = ring_pool[j];
-                const is2 = r2._illegalSet;
-                if (_occ_blocks(is2, r2._illegalSetName)) continue;
-                if (is2) _occ_add(is2, r2._illegalSetName);
-                partial.ring2 = r2;
-                await dfs(0);
-                if (is2) _occ_remove(is2, r2._illegalSetName);
-            }
-            if (is1) _occ_remove(is1, r1._illegalSetName);
         }
     }
-    console.log('[solver] _run_solver_search done — checked:', _solver_checked, '| feasible:', _solver_feasible, '| top5:', _solver_top5.length);
+
+    _stop_solver();
+
+    // UI updates
+    const _run_btn = document.getElementById('solver-run-btn');
+    _run_btn.textContent = 'Solve';
+    _run_btn.className = 'btn btn-sm btn-outline-success flex-grow-1';
+    document.getElementById('solver-progress-text').style.display = 'none';
+    const _warn_el = document.getElementById('solver-eta-warning');
+    if (_warn_el) _warn_el.style.display = 'none';
+
+    const _sum_el = document.getElementById('solver-summary-text');
+    if (_sum_el) {
+        if (search_completed) {
+            _sum_el.textContent = `Solved \u2014 Checked: ${_solver_checked.toLocaleString()}, Feasible: ${_solver_feasible.toLocaleString()}, Time: ${_format_duration(elapsed_s)}`;
+        } else {
+            const _rate_ms = _solver_checked > 0 ? (elapsed_s * 1000 / _solver_checked) : 0;
+            const _rem_s = _rate_ms > 0 ? Math.ceil(_rate_ms * (_solver_total - _solver_checked) / 1000) : null;
+            const _rem_str = _rem_s !== null ? `, Est. Remaining: ${_format_duration(_rem_s)}` : '';
+            _sum_el.textContent = `Stopped \u2014 Checked: ${_solver_checked.toLocaleString()} / ${_solver_total.toLocaleString()}, Feasible: ${_solver_feasible.toLocaleString()}, Time: ${_format_duration(elapsed_s)}${_rem_str}`;
+        }
+    }
+
+    _update_solver_progress_ui();
+    _display_solver_results(_solver_top5);
+    if (_solver_top5.length > 0) {
+        _fill_build_into_ui(_solver_top5[0]);
+    } else if (search_completed) {
+        const panel = document.getElementById('solver-results-panel');
+        if (panel) {
+            const reason = _solver_feasible === 0
+                ? 'No builds satisfied the skill point requirements. Try relaxing restrictions or enabling guild tomes.'
+                : 'No builds met the stat thresholds. Try lowering the restriction values.';
+            panel.innerHTML = `<div class="text-warning small">${reason}</div>`;
+        }
+    }
+}
+
+function _run_solver_search_workers(pools, locked, snap) {
+    // Determine thread count
+    const thread_sel = document.getElementById('solver-thread-count');
+    const thread_val = thread_sel?.value ?? 'auto';
+    const num_workers = thread_val === 'auto'
+        ? Math.min(navigator.hardwareConcurrency || 4, 16)
+        : parseInt(thread_val);
+
+    // Serialize pools and locked items
+    const pools_ser = _serialize_pools(pools);
+    const locked_ser = _serialize_locked(locked);
+    const ring_pool_ser = pools_ser.ring ?? [];
+
+    // Create fine-grained partitions for work-stealing (4× worker count)
+    const num_partitions = Math.max(num_workers * 4, num_workers);
+    const partitions = _partition_work(pools, locked, num_partitions);
+    console.log('[solver]', partitions.length, 'partitions for', num_workers, 'workers');
+
+    // Work-stealing queue (first partition per worker is sent with init)
+    const partition_queue = [...partitions];
+    let next_partition_id = 0;
+    let active_count = 0;
+
+    _solver_workers = [];
+
+    function _insert_wstate_top5(wstate, entry) {
+        wstate.top5.push(entry);
+        wstate.top5.sort((a, b) => b.score - a.score);
+        if (wstate.top5.length > 5) wstate.top5.length = 5;
+    }
+
+    // Send a lightweight 'run' message for subsequent partitions (no heavy data)
+    function _dispatch_next(wstate) {
+        if (partition_queue.length === 0 || !_solver_running) return false;
+        const partition = partition_queue.shift();
+        wstate.done = false;
+        wstate._cur_checked = 0;
+        wstate._cur_feasible = 0;
+        wstate._cur_top5 = [];
+        wstate.worker.postMessage({
+            type: 'run',
+            partition,
+            worker_id: next_partition_id++,
+        });
+        active_count++;
+        return true;
+    }
+
+    function _on_partition_done(wstate, msg) {
+        wstate.done = true;
+        // Accumulate into cumulative totals
+        wstate.checked += msg.checked;
+        wstate.feasible += msg.feasible;
+        wstate._cur_checked = 0;
+        wstate._cur_feasible = 0;
+        wstate._cur_top5 = [];
+        // Merge this partition's top5 into worker's cumulative top5
+        for (const r of msg.top5) {
+            _insert_wstate_top5(wstate, r);
+        }
+        active_count--;
+
+        // Try to give this worker more work
+        if (!_dispatch_next(wstate)) {
+            // No more work — check if all workers are idle
+            if (active_count === 0) {
+                _on_all_workers_done(_solver_workers);
+            }
+        }
+    }
+
+    // Build the heavy init message once (without partition — added per-worker below)
+    const init_base = _build_worker_init_msg(snap, pools_ser, locked_ser, ring_pool_ser, null, 0);
+
+    // Spawn workers: send heavy 'init' with first partition, then 'run' for subsequent
+    const actual_workers = Math.min(num_workers, partitions.length);
+    for (let i = 0; i < actual_workers; i++) {
+        const w = new Worker('../js/solver/solver_worker.js');
+        const wstate = {
+            worker: w, done: true, checked: 0, feasible: 0, top5: [],
+            _cur_checked: 0, _cur_feasible: 0, _cur_top5: [],
+        };
+        _solver_workers.push(wstate);
+
+        w.onmessage = (e) => {
+            const msg = e.data;
+            if (msg.type === 'progress') {
+                wstate._cur_checked = msg.checked;
+                wstate._cur_feasible = msg.feasible;
+                wstate._cur_top5 = msg.top5_names ?? [];
+            } else if (msg.type === 'done') {
+                _on_partition_done(wstate, msg);
+            }
+        };
+
+        w.onerror = (err) => {
+            console.error('[solver] worker error:', err);
+            wstate.done = true;
+            active_count--;
+            if (active_count === 0 && partition_queue.length === 0) {
+                _on_all_workers_done(_solver_workers);
+            }
+        };
+
+        // Send heavy init with first partition included
+        const first_partition = partition_queue.shift();
+        const init_msg = Object.assign({}, init_base, {
+            partition: first_partition,
+            worker_id: next_partition_id++,
+        });
+        wstate.done = false;
+        wstate._cur_checked = 0;
+        wstate._cur_feasible = 0;
+        wstate._cur_top5 = [];
+        w.postMessage(init_msg);
+        active_count++;
+    }
+
+    // Start progress timer
+    _solver_progress_timer = setInterval(() => {
+        if (!_solver_running) return;
+        // Aggregate stats: cumulative completed + current in-flight partition
+        _solver_checked = 0;
+        _solver_feasible = 0;
+        for (const w of _solver_workers) {
+            _solver_checked += w.checked + (w._cur_checked ?? 0);
+            _solver_feasible += w.feasible + (w._cur_feasible ?? 0);
+        }
+        _update_solver_progress_ui();
+    }, 500);
 }
 
 // ── Top-level orchestrator ────────────────────────────────────────────────────
 
-/** Called by the Solve/Stop button. */
 function toggle_solver() {
     if (_solver_running) {
-        _solver_running = false;
+        // Save worker references before _stop_solver clears them
+        const saved_workers = [..._solver_workers];
+        _stop_solver();
         const btn = document.getElementById('solver-run-btn');
         btn.textContent = 'Solve';
-        btn.className = 'btn btn-sm btn-outline-success w-100';
+        btn.className = 'btn btn-sm btn-outline-success flex-grow-1';
         document.getElementById('solver-progress-text').style.display = 'none';
+        const _warn_el = document.getElementById('solver-eta-warning');
+        if (_warn_el) _warn_el.style.display = 'none';
+        // Show stopped summary
+        const elapsed_s = Math.floor((Date.now() - _solver_start) / 1000);
+        const _sum_el = document.getElementById('solver-summary-text');
+        if (_sum_el) {
+            const _rate_ms = _solver_checked > 0 ? (elapsed_s * 1000 / _solver_checked) : 0;
+            const _rem_s = _rate_ms > 0 ? Math.ceil(_rate_ms * (_solver_total - _solver_checked) / 1000) : null;
+            const _rem_str = _rem_s !== null ? `, Est. Remaining: ${_format_duration(_rem_s)}` : '';
+            _sum_el.textContent = `Stopped \u2014 Checked: ${_solver_checked.toLocaleString()} / ${_solver_total.toLocaleString()}, Feasible: ${_solver_feasible.toLocaleString()}, Time: ${_format_duration(elapsed_s)}${_rem_str}`;
+        }
+        // Reconstruct and display any top-5 results we have
+        // Include both cumulative (completed partitions) and interim (in-flight partition)
+        _solver_top5 = [];
+        for (const w of saved_workers) {
+            for (const src of [w.top5 ?? [], w._cur_top5 ?? []]) {
+                for (const r of src) {
+                    const item_names = r.item_names;
+                    if (!item_names) continue;
+                    const items = _reconstruct_result_items(item_names);
+                    _insert_top5({
+                        score: r.score,
+                        items,
+                        base_sp: r.base_sp ?? [0,0,0,0,0],
+                        total_sp: r.total_sp ?? [0,0,0,0,0],
+                        assigned_sp: r.assigned_sp ?? 0,
+                    });
+                }
+            }
+        }
+        _display_solver_results(_solver_top5);
+        if (_solver_top5.length > 0) _fill_build_into_ui(_solver_top5[0]);
         return;
     }
     start_solver_search();
 }
 
-async function start_solver_search() {
+function start_solver_search() {
     console.log('[solver] start_solver_search called');
     const restrictions = get_restrictions();
-    console.log('[solver] restrictions:', restrictions);
     const snap = _build_solver_snapshot(restrictions);
-    console.log('[solver] snapshot — weapon:', snap.weapon?.statMap?.get('displayName'),
-        '| combo rows:', snap.parsed_combo.length,
-        '| sp_budget:', snap.sp_budget,
-        '| radiance_boost:', snap.radiance_boost);
 
     // Validate pre-conditions
     const err_el = document.getElementById('solver-error-text');
     if (err_el) err_el.textContent = '';
 
     if (!snap.weapon || snap.weapon.statMap.has('NONE')) {
-        console.warn('[solver] no weapon set');
         if (err_el) err_el.textContent = 'Set a weapon before solving.';
         return;
     }
     if (snap.parsed_combo.length === 0) {
-        console.warn('[solver] no combo rows with damage spells');
         if (err_el) err_el.textContent = 'Add combo rows with spells before solving.';
         return;
     }
 
-    // Sets that are illegal when 2 or more of their items are equipped simultaneously.
-    // bonuses[1] (count=2 bonus) having illegal:true is the marker used by the builder.
+    // Illegal sets
     const illegal_at_2 = new Set();
     for (const [setName, setData] of sets) {
         if (setData.bonuses?.length >= 2 && setData.bonuses[1]?.illegal) {
@@ -775,31 +796,20 @@ async function start_solver_search() {
         }
     }
 
-    const locked = _collect_locked_items();
-    console.log('[solver] locked slots:', Object.keys(locked));
+    const locked = _collect_locked_items(illegal_at_2);
     const pools = _build_item_pools(restrictions, illegal_at_2);
-    console.log('[solver] pool sizes (before locking):', Object.fromEntries(
-        Object.entries(pools).map(([k, v]) => [k, v.length])
-    ));
 
-    // Remove ring pool entries for locked ring slots
-    if (locked.ring1 && locked.ring2) {
-        delete pools.ring;
-    } else if (locked.ring1) {
-        // ring1 locked; pool used for ring2 only — keep pools.ring
-    } else if (locked.ring2) {
-        // ring2 locked; pool used for ring1 only — keep pools.ring
-    }
-    // Remove armor/accessory pools for locked slots
+    // Remove pools for locked slots
+    if (locked.ring1 && locked.ring2) delete pools.ring;
     for (const slot of ['helmet', 'chestplate', 'leggings', 'boots', 'bracelet', 'necklace']) {
         if (locked[slot]) delete pools[slot];
     }
-    console.log('[solver] free pool sizes (after locking):', Object.fromEntries(
+
+    console.log('[solver] free pool sizes:', Object.fromEntries(
         Object.entries(pools).map(([k, v]) => [k, v.length])
     ));
 
-    // Compute total candidate count (multiplicative product of free pool sizes).
-    // Rings use n*(n+1)/2 when both are free (we enumerate i≤j pairs), or n when one is free.
+    // Compute total candidate count
     {
         let total = 1;
         for (const slot of ['helmet', 'chestplate', 'leggings', 'boots', 'bracelet', 'necklace']) {
@@ -824,32 +834,15 @@ async function start_solver_search() {
     _solver_last_ui = Date.now();
     _solver_last_eta = Date.now();
 
+    const _sum_el = document.getElementById('solver-summary-text');
+    if (_sum_el) _sum_el.textContent = '';
+    const _warn_el = document.getElementById('solver-eta-warning');
+    if (_warn_el) _warn_el.style.display = 'none';
+
     const _run_btn = document.getElementById('solver-run-btn');
     _run_btn.textContent = 'Stop';
-    _run_btn.className = 'btn btn-sm btn-outline-danger';
-    document.getElementById('solver-progress-text').style.display = '';  // progress appears inline alongside button
+    _run_btn.className = 'btn btn-sm btn-outline-danger flex-grow-1';
+    document.getElementById('solver-progress-text').style.display = '';
 
-    await _run_solver_search(pools, locked, snap, illegal_at_2);
-    const _search_completed = _solver_running;  // still true only if search finished naturally
-
-    _solver_running = false;
-    _run_btn.textContent = 'Solve';
-    _run_btn.className = 'btn btn-sm btn-outline-success w-100';
-    document.getElementById('solver-progress-text').style.display = 'none';
-
-    // Final UI update
-    _update_solver_progress_ui();
-    _display_solver_results(_solver_top5);
-    if (_solver_top5.length > 0) {
-        _fill_build_into_ui(_solver_top5[0]);
-    } else if (_search_completed) {
-        // Search finished naturally with no valid builds — tell the user why
-        const panel = document.getElementById('solver-results-panel');
-        if (panel) {
-            const reason = _solver_feasible === 0
-                ? 'No builds satisfied the skill point requirements. Try relaxing restrictions or enabling guild tomes.'
-                : 'No builds met the stat thresholds. Try lowering the restriction values.';
-            panel.innerHTML = `<div class="text-warning small">${reason}</div>`;
-        }
-    }
+    _run_solver_search_workers(pools, locked, snap);
 }
