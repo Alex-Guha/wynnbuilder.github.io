@@ -3649,7 +3649,7 @@
             "display_name": "Angelic Ascension",
             "desc": "Call upon the power of the Light to empower your attacks for 15s.</br></br>Main Attack will instead shoot Light Arrows that deal 400% more damage over 2s.</br></br>Arrow Storm will home onto enemies.</br></br>Arrow Bomb will smite enemies it hits directly with a bolt from the heavens.</br></br>Guardian Angels will have unlimited ammunition.</br></br>Damage: [300%n/150%t/100%a] for Smite",
             "archetype": "Boltslinger",
-            "archetype_req": 19,
+            "archetype_req": 16,
             "parents": [
                 "Pyrotechnics"
             ],
