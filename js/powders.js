@@ -11,7 +11,7 @@ for (const x of skp_elements) {
     }
 }
 
-// Ordering: [dmgMin, dmgMax, convert, defPlus, defMinus (+6 mod 5)]
+// Ordering: [dmgMin, dmgMax, convert, defPlus, defMinus (+POWDER_TIERS mod 5)]
 class Powder {
     constructor(min, max, convert, defPlus, defMinus) {
         this.min = min;
@@ -158,7 +158,7 @@ function calc_weapon_powder(weapon, damageBases) {
     for (const powderID of powders) {
         const powder = powderStats[powderID];
         // Bitwise to force conversion to integer (integer division).
-        const element = (powderID/7) | 0;
+        const element = (powderID/POWDER_TIERS) | 0;
         const conversion_ratio = powder.convert/100;
 
         if (powder_apply_map.has(element)) {
@@ -185,7 +185,7 @@ function calc_weapon_powder(weapon, damageBases) {
         for (const p of weapon.get("ingredPowders")) {
             const powder = powderStats[p];  //use min, max, and convert
             // Bitwise to force conversion to integer (integer division).
-            const element = (p/7) | 0;
+            const element = (p/POWDER_TIERS) | 0;
             
             //Half the normal bonuses for powders
             let powder_max_bonus = Math.floor(powder.max / 2);
