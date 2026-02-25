@@ -7281,7 +7281,7 @@
             ],
             "dependencies": [],
             "blockers": [],
-            "cost": 1,
+            "cost": 2,
             "display": {
                 "row": 39,
                 "col": 7,
@@ -7353,7 +7353,7 @@
             ],
             "dependencies": [],
             "blockers": [],
-            "cost": 1,
+            "cost": 2,
             "display": {
                 "row": 40,
                 "col": 8,
@@ -9108,7 +9108,8 @@
                     ],
                     "scaling": [
                         0.04
-                    ]
+                    ],
+                    "max": 7
                 }
             ]
         },
@@ -9382,7 +9383,7 @@
         },
         {
             "display_name": "Arcane Speed",
-            "desc": "You gain a walk speed buff after casting Heal or Arcane Transfer. </br> </br>Effects: +80% Walk Speed </br>Duration: 4s </br>Cooldown: 8s",
+            "desc": "You gain a walk speed buff after casting Heal or Arcane Transfer. </br> </br>Effects: +40% Walk Speed </br>Duration: 8s </br>Cooldown: 8s",
             "base_abil": "Heal",
             "archetype": "Arcanist",
             "parents": [
@@ -10675,7 +10676,7 @@
             "display_name": "Gravitational Collapse",
             "desc": "Overload your Dimensional Rift.</br></br>It grows, pulls all nearby enemies towards it, and deals +200% damage.</br></br>While the Rift is overloaded and for 6s after, Teleport turns into a deadly piercing ray, provides flight, prevents mana drain, and grants the benefits of your Rift.</br></br>The overloaded Rift implodes when its duration expires, dealing massive damage and stunning enemies inside of it for 3s.</br></br>Damage: [3000%n/500%e/500%a]</br>Area of Effect: +100% Blocks</br>Duration 4s",
             "archetype": "Riftwalker",
-            "archetype_req": 18,
+            "archetype_req": 17,
             "parents": [
                 "Rewind",
                 "Unravelment"
