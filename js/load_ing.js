@@ -1,6 +1,11 @@
 const ING_DB_VERSION = 43;
 
-// NOTE: this file depends on constants in js/powders.js
+/*
+ * Non exhaustive list of dependencies (add them here if you see them!)
+ *
+ * js/powders.js:POWDER_TIER
+ * js/utils.js:ROMAN_NUMERAL_MAP
+ */
 
 let ings;
 let recipes;
@@ -94,7 +99,6 @@ class IngredientLoader extends Loader {
         ingMap.set(ing.displayName, ing);
         ingList.push(ing.displayName);
         ingIDMap.set(ing.id, ing.displayName);
-        let numerals = new Map([[1, "I"], [2, "II"], [3, "III"], [4, "IV"], [5, "V"], [6, "VI"]]);
 
         // pairs of (dura, req)
         let powder_ing_info = [
@@ -104,7 +108,7 @@ class IngredientLoader extends Loader {
             for (let powder_tier = 0; powder_tier < POWDER_TIERS; ++powder_tier) {
                 let powder_info = powder_ing_info[powder_tier];
                 let ing = {
-                    name: "" + damageClasses[i+1] + " Powder " + numerals.get(powder_tier + 1),
+                    name: "" + damageClasses[i+1] + " Powder " + ROMAN_NUMERAL_MAP.get(powder_tier + 1),
                     tier: 0,
                     lvl: 0,
                     skills: ["ARMOURING", "TAILORING", "WEAPONSMITHING", "WOODWORKING", "JEWELING"],
