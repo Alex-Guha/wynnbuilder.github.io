@@ -96,10 +96,10 @@ class IngredientLoader extends Loader {
 
         // pairs of (dura, req)
         let powder_ing_info = [
-            [-35,0],[-52.5,0],[-70,10],[-91,20],[-112,28],[-133,36]
+            [-35,0],[-52.5,0],[-70,10],[-91,20],[-112,28],[-133,36], [-154,44]
         ];
         for (let i = 0; i < 5; i ++) {
-            for (let powder_tier = 0; powder_tier < 6; ++powder_tier) {
+            for (let powder_tier = 0; powder_tier < 7; ++powder_tier) {
                 let powder_info = powder_ing_info[powder_tier];
                 let ing = {
                     name: "" + damageClasses[i+1] + " Powder " + numerals.get(powder_tier + 1),
