@@ -177,8 +177,6 @@ function calculate_skillpoints(equipment, weapon) {
                 // Reject solution if the current best solution satisfies hard constraints.
                 return;
             }
-            console.log("Candidate:", equipped_items.concat([remains_in_order[0]]));
-            console.log("Assigned:", applied, total_applied);
             if (total_applied < best_total || (soln_under_100 && !best_under_100)) {
                 for (const crafted of crafted_items) {
                     apply_skillpoints(skillpoints, crafted, sets);
@@ -245,8 +243,6 @@ function calculate_skillpoints(equipment, weapon) {
                   new Map(),
                   0, [], [], [], [0, 1, 2, 3, 4, 5, 6, 7, 8]);
     const end = performance.now();
-    console.log(end - start, "ms elapsed");
-    console.log(items_tried, "item equips,", full_tried, "full builds evaluated", checks, "items checked for satisfaction");
     return [best_order, best_skillpoints, final_skillpoints, best_total, best_activeSetCounts];
 }
 

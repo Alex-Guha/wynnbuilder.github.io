@@ -943,13 +943,14 @@
                 </div>
 
                 <!-- ─── Restrictions ─── -->
-                <div class="mb-1 scaled-font dark-5 rounded dark-shadow">
+                <div class="mb-2 scaled-font dark-5 rounded dark-shadow">
                     <div class="fw-bold dark-4 rounded-top p-1 text-center">Restrictions</div>
 
                     <!-- Build Direction -->
                     <div class="px-2 pt-2 pb-1 d-flex align-items-center gap-2 flex-wrap">
                         <span class="text-light small fw-bold"
-                              title="Disable to exclude items requiring that SP type from the solver's item pool">Build Direction</span>
+                            title="Disable to exclude items requiring that SP type from the solver's item pool">Build
+                            Direction</span>
                         <div class="d-flex gap-1">
                             <button class="button-boost border-0 text-white dark-8u dark-shadow-sm toggleOn"
                                 id="dir-str" onclick="toggle_build_dir('str')"
@@ -979,17 +980,17 @@
                         <input id="restr-lvl-max" type="number" min="1" max="106" value="106" placeholder="Max"
                             class="combo-row-input" style="width:3.5em; text-align:center;"
                             title="Maximum item level for solver search">
-                        <button class="button-boost border-0 text-white dark-8u dark-shadow-sm"
-                            id="restr-no-major-id" onclick="toggle_no_major_id()"
-                            title="Exclude items that have a Major ID">No Major ID</button>
+                        <button class="button-boost border-0 text-white dark-8u dark-shadow-sm" id="restr-no-major-id"
+                            onclick="toggle_no_major_id()" title="Exclude items that have a Major ID">No Major
+                            ID</button>
                     </div>
 
                     <!-- Guild Tomes -->
                     <div class="px-2 pb-1 d-flex align-items-center gap-2 flex-wrap">
                         <span class="text-light small fw-bold">Guild Tomes</span>
-                        <select class="solver-select form-select form-select-sm scaled-font"
-                                id="restr-guild-tome" style="width:auto;"
-                                title="Guild tome grants extra assignable SP. Off = 200 SP budget (100 per type); Standard = +4 SP total; Rainbow = +5 SP total">
+                        <select class="solver-select form-select form-select-sm scaled-font" id="restr-guild-tome"
+                            style="width:auto;"
+                            title="Guild tome grants extra assignable SP. Off = 200 SP budget (100 per type); Standard = +4 SP total; Rainbow = +5 SP total">
                             <option value="0" selected>Off (200 SP)</option>
                             <option value="1">Standard (+4 SP)</option>
                             <option value="2">Rainbow (+5 SP)</option>
@@ -1001,7 +1002,28 @@
                     <!-- Stat threshold rows -->
                     <div class="px-2 pb-2">
                         <div id="restriction-rows" class="d-flex flex-column gap-1 mb-2"></div>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="restriction_add_row()">+ Add Restriction</button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="restriction_add_row()">+ Add
+                            Restriction</button>
+                    </div>
+                </div>
+
+                <!-- ─── Solver run controls ─── -->
+                <div class="mb-2 scaled-font dark-5 rounded dark-shadow" id="solver-run-section">
+                    <div class="fw-bold dark-4 rounded-top p-1 text-center">Solver</div>
+                    <div class="px-2 py-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                            <button id="solver-run-btn" class="btn btn-sm btn-outline-success w-100"
+                                onclick="toggle_solver()">Solve</button>
+                            <span id="solver-progress-text" style="display:none" class="text-secondary small">
+                                Searching... &nbsp;|&nbsp;
+                                Checked: <span id="solver-checked-count">0</span> / <span id="solver-total-count">?</span> &nbsp;|&nbsp;
+                                Feasible: <span id="solver-feasible-count">0</span> &nbsp;|&nbsp;
+                                <span id="solver-elapsed-text">0s</span>
+                                <span id="solver-remaining-text" class="ms-1"></span>
+                            </span>
+                            <span id="solver-error-text" class="text-danger small"></span>
+                        </div>
+                        <div id="solver-results-panel"></div>
                     </div>
                 </div>
 
@@ -1163,7 +1185,15 @@
     <script src="../js/builder/aspects.js"></script>
     <script src="../js/builder/build_encode_decode.js"></script>
     <script src="../js/solver/solver_constants.js"></script>
+    <script src="../js/solver/solver_graph_stat.js"></script>
+    <script src="../js/solver/solver_graph_items.js"></script>
+    <script src="../js/solver/solver_graph_build.js"></script>
+    <script src="../js/solver/solver_combo_boost.js"></script>
+    <script src="../js/solver/solver_combo_node.js"></script>
     <script src="../js/solver/solver_graph.js"></script>
+    <script src="../js/solver/solver_autocomplete.js"></script>
+    <script src="../js/solver/solver_restrictions.js"></script>
+    <script src="../js/solver/solver_search.js"></script>
     <script src="../js/solver/solver.js"></script>
 
 </body>
