@@ -114,7 +114,7 @@ class IngredientLoader extends Loader {
                     skills: ["ARMOURING", "TAILORING", "WEAPONSMITHING", "WOODWORKING", "JEWELING"],
                     ids: {},
                     isPowder: true,
-                    pid: 6*i + powder_tier,
+                    pid: POWDER_TIERS*i + powder_tier,
                     itemIDs: {"dura": powder_info[0], "strReq": 0, "dexReq": 0,"intReq": 0,"defReq": 0,"agiReq": 0},
                     consumableIDs: {"dura": 0, "charges": 0},
                     posMods: {"left": 0, "right": 0, "above": 0, "under": 0, "touching": 0, "notTouching": 0}
