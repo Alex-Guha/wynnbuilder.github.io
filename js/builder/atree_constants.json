@@ -3649,7 +3649,7 @@
             "display_name": "Angelic Ascension",
             "desc": "Call upon the power of the Light to empower your attacks for 15s.</br></br>Main Attack will instead shoot Light Arrows that deal 400% more damage over 2s.</br></br>Arrow Storm will home onto enemies.</br></br>Arrow Bomb will smite enemies it hits directly with a bolt from the heavens.</br></br>Guardian Angels will have unlimited ammunition.</br></br>Damage: [300%n/150%t/100%a] for Smite",
             "archetype": "Boltslinger",
-            "archetype_req": 19,
+            "archetype_req": 16,
             "parents": [
                 "Pyrotechnics"
             ],
@@ -3732,7 +3732,7 @@
         },
         {
             "display_name": "The Twilight Zone",
-            "desc": "Enter a focused state for 8s.</br></br>All enemies within your line of sight will be marked by Twlight every 0.05s. (Max 100)</br></br>Upon reusing this ability, or at the end of its duration, shoot Dusk and Dawn arrows at every enemy in sign, dealing Spell and Main Attack Damage based on the number of Twilight stacks on each enemy, as well as base damage equal to 20 Twilight stacks.</br></br>Damage: [75%n/25%w] per 1 Twilight, spell</br>Damage: [15%n] per 1 Twilight, main attack</br>Range: 64 Blocks",
+            "desc": "Enter a focused state for 8s.</br></br>While in this state, you jump higher, fall slower, and all enemies within your line of sight will be marked by Twlight every 0.05s. (Max 100)</br></br>At the end of its duration or by casting offhand, fire arrows at all marked enemies.</br>Arrows will deal bonus damage for each Twilight stacks on a target.</br></br>Damage: [1500%n/500%w] + [75%n/25%w] per 1 Twilight, spell</br>Damage: [400%n] + [15%n] per 1 Twilight, main attack</br>Range: 64 Blocks",
             "archetype": "Sharpshooter",
             "archetype_req": 16,
             "parents": [
