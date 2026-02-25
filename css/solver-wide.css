@@ -159,8 +159,9 @@ body {
 /* ── Item slot lock indicator ────────────────────────────────────────────── */
 
 /*
- * .slot-locked  — the slot has an item; solver will NOT search this slot.
- * .slot-unlocked — the slot is empty; solver WILL search this slot.
+ * .slot-locked  — user-set item; solver will NOT search this slot.
+ * .slot-solver  — solver-filled item; solver WILL re-search this slot.
+ * .slot-unlocked — empty slot; solver WILL search this slot.
  *
  * Applied to the `{eq}-dropdown` wrapper row by SolverItemDisplayNode.
  */
@@ -170,14 +171,22 @@ body {
     cursor: pointer;
 }
 
+.slot-solver {
+    border-left: 3px solid hsl(0, 0%, 30%) !important;
+    cursor: pointer;
+}
+
 .slot-unlocked {
     border-left: 3px solid hsl(0, 0%, 30%) !important;
 }
 
-/* Visual feedback: brighten the slot row when hovering a locked slot
-   to emphasize it is clickable. */
+/* Visual feedback: brighten the slot row when hovering a clickable slot. */
 .slot-locked:hover {
     background-color: hsla(145, 60%, 40%, 0.18) !important;
+}
+
+.slot-solver:hover {
+    background-color: hsla(0, 0%, 60%, 0.14) !important;
 }
 
 /* Persist highlight when the item tooltip is currently visible. */
@@ -401,6 +410,17 @@ body {
     display: block;
 }
 
+/* Show popup below the row instead of above when near the viewport top. */
+.combo-row-damage-wrap.popup-below .combo-dmg-popup {
+    bottom: auto;
+    top: calc(100% + 4px);
+}
+
+/* Allow scrolling/selecting text in the popup when it is click-locked. */
+.combo-row-damage-wrap.popup-locked .combo-dmg-popup {
+    pointer-events: auto;
+}
+
 .combo-row-damage {
     cursor: default;
 }
@@ -417,4 +437,58 @@ body {
 
 .combo-row.drag-over-top {
     box-shadow: 0 -2px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* ── Solver result rows ──────────────────────────────────────────────────────── */
+
+.solver-result-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.8125rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 0.2rem;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.solver-result-row:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.solver-result-rank {
+    font-weight: bold;
+    min-width: 1.8rem;
+    flex-shrink: 0;
+    color: #adb5bd;
+}
+
+.solver-result-score {
+    font-weight: bold;
+    color: #ffd700;
+    flex-shrink: 0;
+    min-width: 5rem;
+}
+
+.solver-result-items {
+    color: #adb5bd;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.solver-result-newtab {
+    flex-shrink: 0;
+    color: #6ea8fe;
+    text-decoration: none;
+    padding: 0 0.25rem;
+    opacity: 0.6;
+    font-size: 0.85em;
+}
+.solver-result-newtab:hover {
+    opacity: 1;
+    color: #9ec5fe;
 }
