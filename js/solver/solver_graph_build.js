@@ -160,8 +160,9 @@ class SolverBuildEncodeNode extends ComputeNode {
             input_map.get('weapon-powder')     || [],
         ];
 
-        // Solver auto-computes SP — pass base_skillpoints so WynnBuilder can restore them.
-        const skillpoints = build.base_skillpoints.slice();
+        // Pass total_skillpoints as the finalSp argument so encodeSp computes spDeltas = [0,0,0,0,0]
+        // → AUTOMATIC flag → WynnBuilder re-derives SP from items instead of using stale base values.
+        const skillpoints = build.total_skillpoints.slice();
 
         // Ensure version is set (may be absent when page loaded without a hash).
         if (typeof wynn_version_id === 'undefined' || wynn_version_id === null) {

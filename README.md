@@ -52,3 +52,15 @@ Custom item creator
 ## Documentation
 
 ahhhhhhhhhhh
+
+### Running Locally
+
+The site is a purely client-side static app with **no build step**. However, it uses
+`fetch()` to load game data JSON files, so it **cannot** be opened directly from the
+filesystem (`file://` URLs will fail with CORS errors). You need a local HTTP server.
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open: http://localhost:8000

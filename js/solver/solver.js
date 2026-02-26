@@ -1,3 +1,57 @@
+// ── Copy build to WynnBuilder ─────────────────────────────────────────────────
+
+/**
+ * Copies a WynnBuilder URL for the current build to the clipboard.
+ * The solver and builder share the same binary hash format, so we just
+ * swap /solver/ for /builder/ in the path.
+ */
+function copy_build_to_wynnbuilder() {
+    const hash = window.location.hash;
+    if (!hash || hash === '#' || hash.length <= 1) {
+        const btn = document.getElementById('copy-to-builder-btn');
+        if (btn) {
+            const orig = btn.textContent;
+            btn.textContent = 'No build!';
+            setTimeout(() => { btn.textContent = orig; }, 1500);
+        }
+        return;
+    }
+    const builder_url = window.location.origin + '/builder/' + hash;
+    navigator.clipboard.writeText(builder_url)
+        .then(() => {
+            const btn = document.getElementById('copy-to-builder-btn');
+            if (btn) {
+                const orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = orig; }, 1500);
+            }
+        })
+        .catch(() => {
+            prompt('Copy this WynnBuilder URL:', builder_url);
+        });
+}
+
+// ── Copy solver URL ───────────────────────────────────────────────────────────
+
+/**
+ * Copies the current WynnSolver URL (with hash) to the clipboard.
+ */
+function copy_solver_url() {
+    const url = window.location.href;
+    const btn = document.getElementById('copy-solver-url-btn');
+    navigator.clipboard.writeText(url)
+        .then(() => {
+            if (btn) {
+                const orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = orig; }, 1500);
+            }
+        })
+        .catch(() => {
+            prompt('Copy this WynnSolver URL:', url);
+        });
+}
+
 // ── Roll mode selection ───────────────────────────────────────────────────────
 
 /**
@@ -38,14 +92,14 @@ function showExclusivePanel(panelId) {
         const el = document.getElementById(p);
         if (el) el.style.display = "none";
         const btn = document.getElementById(SOLVER_PANEL_BTNS[p]);
-        if (btn) btn.classList.remove("toggleOn");
+        if (btn) btn.classList.remove("selected-btn");
     }
 
     // Open requested panel (unless it was already open — toggle off)
     if (!isVisible) {
         if (panel) panel.style.display = "";
         const btn = document.getElementById(SOLVER_PANEL_BTNS[panelId]);
-        if (btn) btn.classList.add("toggleOn");
+        if (btn) btn.classList.add("selected-btn");
     }
 }
 
@@ -133,6 +187,20 @@ function resetSolverFields() {
 
 async function init() {
     console.log("solver.js init");
+
+    // Disable thread count options that exceed the browser-reported logical CPU count.
+    const hw = navigator.hardwareConcurrency;
+    if (hw) {
+        const tsel = document.getElementById('solver-thread-count');
+        if (tsel) {
+            for (const opt of tsel.options) {
+                if (opt.value !== 'auto' && parseInt(opt.value) > hw) {
+                    opt.disabled = true;
+                    opt.title = `Your CPU reports ${hw} logical cores`;
+                }
+            }
+        }
+    }
 
     // decodeHash() loads all game data (items, tomes, aspects, atree, encoding constants)
     // and, when a URL hash is present, populates all input fields from the encoded build.
@@ -250,6 +318,10 @@ async function init() {
             }
         });
     }
+
+    // Wire copy-to-builder button (belt-and-suspenders alongside HTML onclick).
+    const _copy_btn = document.getElementById('copy-to-builder-btn');
+    if (_copy_btn) _copy_btn.addEventListener('click', copy_build_to_wynnbuilder);
 
     // Wire tooltip click listeners on each equipment slot row
     for (const eq of equipment_keys) {
