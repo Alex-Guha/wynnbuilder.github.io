@@ -797,8 +797,10 @@ function solver_compute_result_hash(result) {
         const powderable = ['helmet', 'chestplate', 'leggings', 'boots', 'weapon'];
         const powders = powderable.map(eq => solver_powder_nodes[eq]?.value || []);
         const aspects = _solver_aspect_agg_node?.value || [];
+        // Pass total_sp so encodeSp sees spDeltas=[0,0,0,0,0] → AUTOMATIC flag.
+        // WynnBuilder then re-derives SP from items rather than having stale base values applied.
         const bv = encodeBuild(
-            mock_build, powders, result.base_sp,
+            mock_build, powders, result.total_sp,
             atree_node.value, atree_state_node.value, aspects
         );
         return bv?.toB64() ?? null;

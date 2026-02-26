@@ -387,16 +387,18 @@
                             </div>
                         </div>
 
-                        <!-- LEVEL / ROLL / RESET (right col, bottom — three columns) -->
+                        <!-- LEVEL / ROLL / RESET / COPY (right col, bottom — four columns) -->
                         <div class="col order-xl-0 order-1">
                             <div class="row h-100 px-2 align-items-center">
                                 <div class="col">
-                                    <div class="row align-items-end g-1">
+                                    <div class="row align-items-stretch g-1">
+                                        <!-- Level -->
                                         <div class="col">
                                             <div class="fw-bold scaled-font" style="font-size: 0.8em;">Level</div>
                                             <input class="equipment-input text-light form-control form-control-sm"
                                                 id="level-choice" name="level-choice" value="106" placeholder="Level">
                                         </div>
+                                        <!-- Roll -->
                                         <div class="col">
                                             <div class="fw-bold scaled-font" style="font-size: 0.8em;">Roll</div>
                                             <select class="solver-select form-select form-select-sm scaled-font"
@@ -407,9 +409,19 @@
                                                 <option value="min">Minimum</option>
                                             </select>
                                         </div>
-                                        <div class="col-auto d-flex align-items-end">
+                                        <!-- Reset -->
+                                        <div class="col-auto d-flex flex-column justify-content-end">
                                             <button class="button py-0 fw-bold text-light dark-5 scaled-font rounded"
                                                 onclick="resetSolverFields()">Reset</button>
+                                        </div>
+                                        <!-- Copy URL + Export to Builder -->
+                                        <div class="col-auto d-flex flex-column gap-1">
+                                            <button class="button py-0 fw-bold text-light dark-5 scaled-font rounded"
+                                                id="copy-solver-url-btn" title="Copy WynnSolver URL to clipboard"
+                                                onclick="copy_solver_url()">Copy URL</button>
+                                            <button class="button py-0 fw-bold text-light dark-5 scaled-font rounded"
+                                                id="copy-to-builder-btn" title="Export build to WynnBuilder">Export to
+                                                Builder</button>
                                         </div>
                                     </div>
                                 </div>
@@ -469,23 +481,15 @@
                 <div class="mb-3" id="adjust-id">
                     <div class="text-center scaled-font dark-5 rounded dark-shadow">
 
-                        <!-- Toggle buttons row (title bar) -->
-                        <div class="fw-bold dark-4 rounded-top p-2">
-                            <div class="row g-2 justify-content-center">
-                                <div class="col-auto">
-                                    <button class="button rounded scaled-font fw-bold text-light dark-5"
-                                        id="toggle-tomes" onclick='showExclusivePanel("tomes-dropdown")'>Tomes</button>
-                                </div>
-                                <div class="col-auto">
-                                    <button class="button rounded scaled-font fw-bold text-light dark-5"
-                                        id="toggle-atree" onclick='showExclusivePanel("atree-dropdown")'>Ability
-                                        Tree</button>
-                                </div>
-                                <div class="col-auto">
-                                    <button class="button rounded scaled-font fw-bold text-light dark-5"
-                                        id="toggle-aspects"
-                                        onclick='showExclusivePanel("aspects-dropdown")'>Aspects</button>
-                                </div>
+                        <!-- Toggle buttons row (title bar) — tab style like Detailed/Summary -->
+                        <div class="rounded-top">
+                            <div class="row g-0">
+                                <div class="col text-center fake-button rounded-top dark-4u border border-2 border-dark-7 scaled-font fw-bold"
+                                    id="toggle-tomes" onclick='showExclusivePanel("tomes-dropdown")'>Tomes</div>
+                                <div class="col text-center fake-button rounded-top dark-4u border border-2 border-dark-7 scaled-font fw-bold"
+                                    id="toggle-atree" onclick='showExclusivePanel("atree-dropdown")'>Ability Tree</div>
+                                <div class="col text-center fake-button rounded-top dark-4u border border-2 border-dark-7 scaled-font fw-bold"
+                                    id="toggle-aspects" onclick='showExclusivePanel("aspects-dropdown")'>Aspects</div>
                             </div>
                         </div>
 
@@ -1024,21 +1028,27 @@
                                     <option value="8">8</option>
                                     <option value="12">12</option>
                                     <option value="16">16</option>
+                                    <option value="20">20</option>
+                                    <option value="24">24</option>
                                 </select>
-                                <button id="solver-pruning-toggle" class="btn btn-sm btn-outline-info toggleOn"
-                                    onclick="this.classList.toggle('toggleOn')"
-                                    title="Enable search pruning for faster solves">Pruning</button>
+                                <button id="solver-pruning-toggle" class="btn btn-sm btn-outline-info"
+                                    onclick="this.classList.toggle('toggleOn'); document.getElementById('pruning-warning').style.display = this.classList.contains('toggleOn') ? '' : 'none';"
+                                    title="Enable search pruning for faster solves (may miss optimal builds)">Pruning</button>
                             </div>
-                            <span id="solver-progress-text" style="display:none" class="text-secondary small">
-                                Searching... &nbsp;|&nbsp;
-                                Checked: <span id="solver-checked-count">0</span> / <span
-                                    id="solver-total-count">?</span> &nbsp;|&nbsp;
-                                Feasible: <span id="solver-feasible-count">0</span> &nbsp;|&nbsp;
-                                <span id="solver-elapsed-text">0s</span>
-                                <span id="solver-remaining-text" class="ms-1"></span>
-                                <span id="solver-eta-warning" class="text-warning ms-1" style="display:none">&#9888;
-                                    Long solve expected (&gt;20 min)</span>
-                            </span>
+                            <div id="pruning-warning" class="text-warning small mt-1" style="display:none;">
+                                &#9888; Pruning is experimental and may miss optimal builds or fail on some
+                                configurations. Use exhaustive search for guaranteed results.
+                            </div>
+                            <div id="solver-progress-text" style="display:none" class="text-secondary small mt-1">
+                                <div>Checked: <span id="solver-checked-count">0</span> / <span
+                                        id="solver-total-count">?</span> &nbsp;|&nbsp; Feasible: <span
+                                        id="solver-feasible-count">0</span></div>
+                                <div><span id="solver-elapsed-text">0s</span>
+                                    <span id="solver-remaining-text" class="ms-1"></span>
+                                    <span id="solver-eta-warning" class="text-warning ms-1" style="display:none">&#9888;
+                                        Long solve expected (&gt;20 min)</span>
+                                </div>
+                            </div>
                             <span id="solver-error-text" class="text-danger small"></span>
                         </div>
                         <div id="solver-summary-text" class="text-secondary small mb-1"></div>
@@ -1213,7 +1223,7 @@
     <script src="../js/solver/solver_autocomplete.js"></script>
     <script src="../js/solver/solver_restrictions.js"></script>
     <script src="../js/solver/solver_search.js"></script>
-    <script src="../js/solver/solver.js"></script>
+    <script src="../js/solver/solver.js?v=2"></script>
 
 </body>
 

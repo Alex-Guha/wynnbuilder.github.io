@@ -31,9 +31,12 @@
 
 /* ── Combo button tweaks ─────────────────────────────────────────────────── */
 
-/* Remove Bootstrap's focus ring (box-shadow halo) from all buttons on the solver page. */
+/* Remove box-shadow from all buttons on the solver page (cards/panels keep theirs). */
 .btn:focus,
-.btn:focus-visible {
+.btn:focus-visible,
+.button-boost,
+.button,
+.btn {
     box-shadow: none !important;
     outline: none !important;
 }
@@ -122,6 +125,23 @@ select.solver-select option {
 select.solver-select:focus {
     border-color: hsl(0, 0%, 30%) !important;
     box-shadow: none !important;
+}
+
+/* ── Tomes / Ability Tree / Aspects tab highlight ────────────────────────── */
+
+/*
+ * The Tomes/AT/Aspects tabs use the same fake-button + selected-btn pattern as
+ * the Detailed/Summary stat tabs.  The base sq2bs rule lifts brightness from 9%
+ * to 14% when selected; that's subtle on a dark card, so we bump it further here
+ * and add a thin bottom accent to make the active tab unambiguous.
+ */
+#adjust-id .fake-button {
+    padding: 0.35rem 0.5rem;
+}
+
+#adjust-id .fake-button.selected-btn {
+    background-color: hsl(0, 0%, 20%) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.25) !important;
 }
 
 /* ── Ability tree sizing ─────────────────────────────────────────────────── */
@@ -488,6 +508,7 @@ body {
     opacity: 0.6;
     font-size: 0.85em;
 }
+
 .solver-result-newtab:hover {
     opacity: 1;
     color: #9ec5fe;
