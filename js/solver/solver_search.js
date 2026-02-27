@@ -1,7 +1,3 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// PHASE 6+7: SOLVER CORE (Web Worker orchestration)
-// ══════════════════════════════════════════════════════════════════════════════
-
 // ── State ─────────────────────────────────────────────────────────────────────
 
 let _solver_running = false;
@@ -95,6 +91,259 @@ function _build_item_pools(restrictions, illegal_at_2 = new Set()) {
     return pools;
 }
 
+// ── Item priority scoring (pre-search pool sort) ──────────────────────────────
+
+const _WEAPON_ELEM = { spear: 'e', wand: 'w', bow: 'a', dagger: 't', relik: 'f' };
+
+/**
+ * Read a stat's contribution from an item statMap.
+ * Checks maxRolls first (rolled stats), then falls back to direct properties (static stats).
+ */
+function _item_stat_val(item_sm, stat) {
+    const v = item_sm.get('maxRolls')?.get(stat);
+    return v !== undefined ? v : (item_sm.get(stat) ?? 0);
+}
+
+/**
+ * Build damage sensitivity weights based on weapon type and combo spell types.
+ * Returns a Map of stat → priority weight.
+ *
+ * Logic:
+ *  - All-damage generics (damPct/damRaw/critDamPct) always receive weight.
+ *  - sdPct/sdRaw receive weight when the combo has any spell-scaling rows.
+ *  - mdPct/mdRaw/atkTier receive weight when the combo has melee-scaling rows.
+ *  - Weapon-element elemental stats receive extra weight because neutral weapon
+ *    base damage converts to the weapon's element.
+ *  - For non-damage scoring targets (ehp, healing, etc.), only generic utility
+ *    stats are weighted; damage stats are skipped.
+ */
+// TODO This requires extensive testing and tuning.
+function _build_dmg_weights(snap) {
+    const weights = new Map();
+    const add = (stat, w) => weights.set(stat, (weights.get(stat) ?? 0) + w);
+
+    const target = snap.scoring_target ?? 'combo_damage';
+
+    if (target === 'total_healing') {
+        // Healing builds: weight heal-relevant stats
+        add('healPct', 1.0);
+        add('hpBonus', 0.01); // raw HP also scales heals via power
+        return weights;
+    }
+
+    if (target === 'ehp') {
+        // EHP builds: weight defensive stats
+        add('hpBonus', 0.01);
+        add('hprRaw', 0.1);
+        return weights;
+    }
+
+    if (target === 'spd' || target === 'poison' ||
+        target === 'lb' || target === 'xpb') {
+        // Simple scalar targets: weight the target stat directly
+        add(target, 1.0);
+        return weights;
+    }
+
+    // combo_damage (default): analyse combo spell types and weapon element
+    add('damPct', 1.0);
+    add('damRaw', 0.5);
+    add('critDamPct', 0.5);
+
+    const combo = snap.parsed_combo ?? [];
+    const has_spell = combo.length === 0 ||
+        combo.some(r => (r.spell?.scaling ?? 'spell') === 'spell');
+    const has_melee = combo.some(r => r.spell?.scaling === 'melee');
+
+    if (has_spell) {
+        add('sdPct', 1.0);
+        add('sdRaw', 0.5);
+    }
+    if (has_melee) {
+        add('mdPct', 1.0);
+        add('mdRaw', 0.5);
+        add('atkTier', 0.3);
+    }
+
+    // All elemental damage stats — include every element for dominance correctness.
+    // An item superior in any element must never be pruned, regardless of weapon type.
+    // Using equal weights; weapon-element boosting is omitted to avoid type-detection bugs.
+    for (const ep of ['e', 't', 'w', 'f', 'a']) {
+        add(ep + 'DamPct', 1.0);
+        add(ep + 'DamRaw', 0.5);
+        if (has_spell) {
+            add(ep + 'SdPct', 0.8);
+            add(ep + 'SdRaw', 0.4);
+        }
+        if (has_melee) {
+            add(ep + 'MdPct', 0.8);
+            add(ep + 'MdRaw', 0.4);
+        }
+    }
+
+    return weights;
+}
+
+/**
+ * Build constraint relevance weights from restriction stat thresholds.
+ * Returns an array of {stat, per_unit} where per_unit is the priority points
+ * awarded per unit of that stat on an item.
+ */
+function _build_constraint_weights(restrictions) {
+    const weights = [];
+    for (const { stat, op, value } of restrictions.stat_thresholds ?? []) {
+        // Only ge constraints on direct stats (not computed ehp — too indirect)
+        if (op !== 'ge' || stat === 'ehp' || value <= 0) continue;
+        // A full threshold's worth of this stat on one item ≈ 25 priority points
+        weights.push({ stat, per_unit: 25 / value });
+    }
+    return weights;
+}
+
+/**
+ * Score an item's priority. Higher score → iterated earlier.
+ */
+function _score_item_priority(item_sm, dmg_weights, constraint_weights) {
+    let score = 0;
+    for (const [stat, w] of dmg_weights) {
+        const v = _item_stat_val(item_sm, stat);
+        if (v > 0) score += v * w;
+    }
+    for (const { stat, per_unit } of constraint_weights) {
+        const v = _item_stat_val(item_sm, stat);
+        if (v > 0) score += Math.min(v * per_unit, 25); // cap at 25 pts per constraint
+    }
+    return score;
+}
+
+/**
+ * Sort each pool so high-priority items come first, NONE items come last.
+ *
+ * Moving NONE to the end means level-0 enumeration visits only real items,
+ * so the first complete builds found are likely to be strong ones. This
+ * makes interim UI updates much more useful without changing search correctness.
+ */
+function _prioritize_pools(pools, snap, restrictions) {
+    const dmg_weights = _build_dmg_weights(snap);
+    const constraint_weights = _build_constraint_weights(restrictions);
+
+    for (const [slot, pool] of Object.entries(pools)) {
+        const none_bucket = [];
+        const real_bucket = [];
+        for (const item of pool) {
+            (item.statMap.has('NONE') ? none_bucket : real_bucket).push(item);
+        }
+
+        real_bucket.sort((a, b) =>
+            _score_item_priority(b.statMap, dmg_weights, constraint_weights) -
+            _score_item_priority(a.statMap, dmg_weights, constraint_weights)
+        );
+
+        pool.length = 0;
+        for (const it of real_bucket) pool.push(it);
+        for (const it of none_bucket) pool.push(it);
+    }
+}
+
+// ── Dominance pruning ─────────────────────────────────────────────────────────
+
+/**
+ * Remove dominated items from each pool before search.
+ *
+ * Item B is dominated by item A when A is a strictly-at-least-as-good
+ * drop-in replacement in any build:
+ *   1. Every scoring-relevant stat: A >= B
+ *   2. Every SP requirement:        A.reqs[i]       <= B.reqs[i]   (cheaper to equip)
+ *   3. Every SP provision:          A.skillpoints[i] >= B.skillpoints[i]
+ *
+ * NONE items are never pruned.
+ * Set-bonus interactions are not modelled — this is an approximation, but
+ * removing obvious dominatees shrinks pool sizes without meaningfully
+ * affecting result quality in practice.
+ *
+ * Complexity: O(n² × |check_stats|) per pool — fine for typical pool sizes.
+ *
+ * @returns {number} Total items pruned across all pools.
+ */
+function _prune_dominated_items(pools, snap, restrictions) {
+    const dmg_weights = _build_dmg_weights(snap);
+
+    // Stats to compare: all scoring-relevant stats + stat-threshold stats
+    // (threshold constraints are ge-only, so higher is always at least as good).
+    const check_stats = [...dmg_weights.keys()];
+    for (const { stat, op } of (restrictions.stat_thresholds ?? [])) {
+        if (op === 'ge' && stat !== 'ehp' && !check_stats.includes(stat)) {
+            check_stats.push(stat);
+        }
+    }
+
+    let total_pruned = 0;
+
+    for (const pool of Object.values(pools)) {
+        // Separate NONE items (never pruned) from real items
+        const real = [];
+        const none_bucket = [];
+        for (const item of pool) {
+            (item.statMap.has('NONE') ? none_bucket : real).push(item);
+        }
+        if (real.length < 2) continue;
+
+        const dominated = new Array(real.length).fill(false);
+
+        for (let i = 0; i < real.length; i++) {
+            if (dominated[i]) continue;
+            const a_sm = real[i].statMap;
+            const a_reqs = a_sm.get('reqs') ?? [0, 0, 0, 0, 0];
+            const a_skp = a_sm.get('skillpoints') ?? [0, 0, 0, 0, 0];
+
+            for (let j = 0; j < real.length; j++) {
+                if (i === j || dominated[j]) continue;
+                const b_sm = real[j].statMap;
+
+                // 1. Scoring stats: A must be >= B on every stat
+                let ok = true;
+                for (const stat of check_stats) {
+                    if (_item_stat_val(a_sm, stat) < _item_stat_val(b_sm, stat)) {
+                        ok = false; break;
+                    }
+                }
+                if (!ok) continue;
+
+                // 2. SP requirements: A.reqs[i] <= B.reqs[i] for all i
+                const b_reqs = b_sm.get('reqs') ?? [0, 0, 0, 0, 0];
+                for (let k = 0; k < 5; k++) {
+                    if ((a_reqs[k] ?? 0) > (b_reqs[k] ?? 0)) { ok = false; break; }
+                }
+                if (!ok) continue;
+
+                // 3. SP provisions: A.skillpoints[i] >= B.skillpoints[i] for all i
+                const b_skp = b_sm.get('skillpoints') ?? [0, 0, 0, 0, 0];
+                for (let k = 0; k < 5; k++) {
+                    if ((a_skp[k] ?? 0) < (b_skp[k] ?? 0)) { ok = false; break; }
+                }
+                if (!ok) continue;
+
+                dominated[j] = true;
+            }
+        }
+
+        const pruned_count = dominated.filter(Boolean).length;
+        total_pruned += pruned_count;
+
+        // Rebuild pool in-place: non-dominated reals first, NONE at end
+        pool.length = 0;
+        for (let i = 0; i < real.length; i++) {
+            if (!dominated[i]) pool.push(real[i]);
+        }
+        for (const ni of none_bucket) pool.push(ni);
+    }
+
+    if (total_pruned > 0) {
+        console.log('[solver] dominance pruning removed', total_pruned, 'items across all pools');
+    }
+    return total_pruned;
+}
+
 // ── Solver snapshot ───────────────────────────────────────────────────────────
 
 function _parse_combo_for_search(spell_map, weapon) {
@@ -112,8 +361,10 @@ function _parse_combo_for_search(spell_map, weapon) {
             boost_tokens: r.boost_tokens,
             dmg_excl: r.dom_row?.querySelector('.combo-dmg-toggle')
                 ?.classList.contains('dmg-excluded') ?? false,
+            mana_excl: r.dom_row?.querySelector('.combo-mana-toggle')
+                ?.classList.contains('mana-excluded') ?? false,
         }))
-        .filter(r => r.qty > 0 && r.spell && spell_has_damage(r.spell) && !r.dmg_excl);
+        .filter(r => r.qty > 0 && r.spell && (spell_has_damage(r.spell) || spell_has_heal(r.spell)));
 }
 
 /**
@@ -158,6 +409,12 @@ function _build_solver_snapshot(restrictions) {
     const boost_registry = build_combo_boost_registry(atree_mgd, solver_build_node.value);
     const parsed_combo = _parse_combo_for_search(spell_map, weapon);
 
+    const scoring_target = document.getElementById('solver-target')?.value ?? 'combo_damage';
+
+    const combo_time_str = document.getElementById('combo-time')?.value?.trim() ?? '';
+    const combo_time = parseFloat(combo_time_str) || 0;
+    const allow_downtime = document.getElementById('combo-downtime-btn')?.classList.contains('toggleOn') ?? false;
+
     // Serialize atree interactive state for workers
     const { button_states, slider_states } = _serialize_atree_interactive(atree_interactive_val);
 
@@ -165,7 +422,8 @@ function _build_solver_snapshot(restrictions) {
         weapon, level, tomes, atree_raw, atree_mgd,
         static_boosts, radiance_boost, sp_budget,
         guild_tome_item, spell_map, boost_registry, parsed_combo,
-        restrictions, button_states, slider_states,
+        restrictions, button_states, slider_states, scoring_target,
+        combo_time, allow_downtime,
     };
 }
 
@@ -175,6 +433,23 @@ function _insert_top5(candidate) {
     _solver_top5.push(candidate);
     _solver_top5.sort((a, b) => b.score - a.score);
     if (_solver_top5.length > 5) _solver_top5.length = 5;
+}
+
+// ── Solver target metadata ─────────────────────────────────────────────────
+
+const SOLVER_TARGET_LABELS = {
+    combo_damage: '',
+    ehp: 'EHP: ',
+    total_healing: 'Healing: ',
+    spd: 'Walk Speed: ',
+    poison: 'Poison: ',
+    lb: 'Loot Bonus: ',
+    xpb: 'XP Bonus: ',
+};
+
+function _format_solver_score(score, target) {
+    const prefix = SOLVER_TARGET_LABELS[target] ?? (target + ': ');
+    return prefix + Math.round(score).toLocaleString();
 }
 
 // ── UI helpers ────────────────────────────────────────────────────────────────
@@ -203,6 +478,7 @@ function _update_solver_progress_ui() {
     const now = Date.now();
     const elapsed_ms = now - _solver_start;
     if (el_elapsed) el_elapsed.textContent = _format_duration(elapsed_ms / 1000);
+
     if (now - _solver_last_eta >= 1000) {
         _solver_last_eta = now;
         const el_warn = document.getElementById('solver-eta-warning');
@@ -228,8 +504,8 @@ function _update_solver_progress_ui() {
                 const items = _reconstruct_result_items(r.item_names);
                 _insert_top5({
                     score: r.score, items,
-                    base_sp: r.base_sp ?? [0,0,0,0,0],
-                    total_sp: r.total_sp ?? [0,0,0,0,0],
+                    base_sp: r.base_sp ?? [0, 0, 0, 0, 0],
+                    total_sp: r.total_sp ?? [0, 0, 0, 0, 0],
                     assigned_sp: r.assigned_sp ?? 0,
                 });
             }
@@ -239,8 +515,8 @@ function _update_solver_progress_ui() {
                 const items = _reconstruct_result_items(r.item_names);
                 _insert_top5({
                     score: r.score, items,
-                    base_sp: r.base_sp ?? [0,0,0,0,0],
-                    total_sp: r.total_sp ?? [0,0,0,0,0],
+                    base_sp: r.base_sp ?? [0, 0, 0, 0, 0],
+                    total_sp: r.total_sp ?? [0, 0, 0, 0, 0],
                     assigned_sp: r.assigned_sp ?? 0,
                 });
             }
@@ -290,8 +566,9 @@ function _display_solver_results(top5) {
     const panel = document.getElementById('solver-results-panel');
     if (!panel) return;
     if (!top5.length) { panel.innerHTML = ''; return; }
+    const target = document.getElementById('solver-target')?.value ?? 'combo_damage';
     const rows = top5.map((r, i) => {
-        const score_str = Math.round(r.score).toLocaleString();
+        const score_str = _format_solver_score(r.score, target);
         const item_names = r.items.map(item => {
             if (item.statMap.has('NONE')) return '\u2014';
             return item.statMap.get('displayName') ?? item.statMap.get('name') ?? '?';
@@ -443,14 +720,9 @@ function _get_none_sms() {
 function _build_worker_init_msg(snap, pools_ser, locked_ser, ring_pool_ser, partition, worker_id) {
     const { none_item_sms, none_idx_map } = _get_none_sms();
 
-    // Read pruning toggle
-    const pruning_el = document.getElementById('solver-pruning-toggle');
-    const pruning = pruning_el ? pruning_el.classList.contains('toggleOn') : true;
-
     return {
         type: 'init',
         worker_id,
-        pruning,
         // Search data
         pools: pools_ser,
         locked: locked_ser,
@@ -469,6 +741,9 @@ function _build_worker_init_msg(snap, pools_ser, locked_ser, ring_pool_ser, part
         // Combo
         parsed_combo: snap.parsed_combo,
         boost_registry: snap.boost_registry,
+        scoring_target: snap.scoring_target,
+        combo_time: snap.combo_time,
+        allow_downtime: snap.allow_downtime,
         restrictions: snap.restrictions,
         // Global data
         sets_data: [...sets],
@@ -516,7 +791,7 @@ function _stop_solver() {
     }
     // Terminate all workers
     for (const w of _solver_workers) {
-        try { w.worker.terminate(); } catch(e) {}
+        try { w.worker.terminate(); } catch (e) { }
     }
     _solver_workers = [];
     // Clear progress timer
@@ -606,9 +881,9 @@ function _run_solver_search_workers(pools, locked, snap) {
     // Create fine-grained partitions for work-stealing (4× worker count)
     const num_partitions = Math.max(num_workers * 4, num_workers);
     const partitions = _partition_work(pools, locked, num_partitions);
-    console.log('[solver]', partitions.length, 'partitions for', num_workers, 'workers');
+    console.log('[solver]', partitions.length, 'partitions for', num_workers, 'workers (level-enum)');
 
-    // Work-stealing queue (first partition per worker is sent with init)
+    // Work-stealing queue (plain partitions)
     const partition_queue = [...partitions];
     let next_partition_id = 0;
     let active_count = 0;
@@ -756,8 +1031,8 @@ function toggle_solver() {
                     _insert_top5({
                         score: r.score,
                         items,
-                        base_sp: r.base_sp ?? [0,0,0,0,0],
-                        total_sp: r.total_sp ?? [0,0,0,0,0],
+                        base_sp: r.base_sp ?? [0, 0, 0, 0, 0],
+                        total_sp: r.total_sp ?? [0, 0, 0, 0, 0],
                         assigned_sp: r.assigned_sp ?? 0,
                     });
                 }
@@ -771,7 +1046,6 @@ function toggle_solver() {
 }
 
 function start_solver_search() {
-    console.log('[solver] start_solver_search called');
     const restrictions = get_restrictions();
     const snap = _build_solver_snapshot(restrictions);
 
@@ -783,7 +1057,8 @@ function start_solver_search() {
         if (err_el) err_el.textContent = 'Set a weapon before solving.';
         return;
     }
-    if (snap.parsed_combo.length === 0) {
+    const _combo_required = snap.scoring_target === 'combo_damage' || snap.scoring_target === 'total_healing';
+    if (_combo_required && snap.parsed_combo.length === 0) {
         if (err_el) err_el.textContent = 'Add combo rows with spells before solving.';
         return;
     }
@@ -808,6 +1083,13 @@ function start_solver_search() {
     console.log('[solver] free pool sizes:', Object.fromEntries(
         Object.entries(pools).map(([k, v]) => [k, v.length])
     ));
+
+    // Remove dominated items before sorting; smaller pools benefit search and sort.
+    _prune_dominated_items(pools, snap, restrictions);
+
+    // Sort each pool by damage/constraint relevance so level-0 visits the
+    // best build first. NONE items are moved to the end of each pool.
+    _prioritize_pools(pools, snap, restrictions);
 
     // Compute total candidate count
     {

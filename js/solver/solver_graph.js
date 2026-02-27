@@ -1,6 +1,5 @@
 
 function solver_graph_init() {
-    console.log("solver_graph_init: Phase 4");
 
     // ── Level ────────────────────────────────────────────────────────────────
     const level_input = new InputNode('level-input', document.getElementById('level-choice'));
@@ -11,8 +10,8 @@ function solver_graph_init() {
 
     // ── Equipment slots ──────────────────────────────────────────────────────
     for (const eq of equipment_fields) {
-        const none_item     = none_items[_NONE_ITEM_IDX[eq]];
-        const input_field   = document.getElementById(eq + '-choice');
+        const none_item = none_items[_NONE_ITEM_IDX[eq]];
+        const input_field = document.getElementById(eq + '-choice');
         const raw_item_node = new ItemInputNode('solver-' + eq + '-input', input_field, none_item);
         solver_equip_input_nodes.push(raw_item_node);
 
@@ -20,12 +19,12 @@ function solver_graph_init() {
 
         if (powderable_keys.includes(eq)) {
             const powder_field = document.getElementById(eq + '-powder');
-            const powder_node  = new PowderInputNode('solver-' + eq + '-powder', powder_field)
-                                     .link_to(raw_item_node, 'item');
+            const powder_node = new PowderInputNode('solver-' + eq + '-powder', powder_field)
+                .link_to(raw_item_node, 'item');
             solver_powder_nodes[eq] = powder_node;
             const powder_apply = new ItemPowderingNode('solver-' + eq + '-powder-apply')
-                                     .link_to(powder_node,   'powdering')
-                                     .link_to(raw_item_node, 'item');
+                .link_to(powder_node, 'powdering')
+                .link_to(raw_item_node, 'item');
             item_node = powder_apply;
         }
 
@@ -41,9 +40,9 @@ function solver_graph_init() {
 
     // ── Tome slots ───────────────────────────────────────────────────────────
     for (const eq of tome_fields) {
-        const none_tome   = none_tomes[_NONE_TOME_KEY[eq]];
+        const none_tome = none_tomes[_NONE_TOME_KEY[eq]];
         const input_field = document.getElementById(eq + '-choice');
-        const item_node   = new ItemInputNode('solver-' + eq + '-input', input_field, none_tome);
+        const item_node = new ItemInputNode('solver-' + eq + '-input', input_field, none_tome);
 
         solver_equip_input_nodes.push(item_node);
         solver_item_final_nodes.push(item_node);
@@ -63,9 +62,9 @@ function solver_graph_init() {
     _solver_aspect_agg_node = aspect_agg_node;
     const aspects_dropdown = document.getElementById('aspects-dropdown');
     for (const field of aspect_fields) {
-        const aspect_input_field   = document.getElementById(field + '-choice');
-        const aspect_tier_field    = document.getElementById(field + '-tier-choice');
-        const aspect_image_div     = document.getElementById(field + '-img');
+        const aspect_input_field = document.getElementById(field + '-choice');
+        const aspect_tier_field = document.getElementById(field + '-tier-choice');
+        const aspect_image_div = document.getElementById(field + '-img');
         const aspect_image_loc_div = document.getElementById(field + '-img-loc');
 
         new AspectAutocompleteInitNode(field + '-autocomplete', field)
@@ -114,8 +113,8 @@ function solver_graph_init() {
     // Final stat aggregation: radiance-scaled stats + atree scaling deltas + boosts
     const stat_agg = new AggregateStatsNode('solver-final-stats');
     stat_agg.link_to(solver_radiance_node, 'pre-scaling');
-    stat_agg.link_to(atree_scaling_stats,  'atree-scaling');
-    stat_agg.link_to(solver_boosts_node,   'potion-boost');
+    stat_agg.link_to(atree_scaling_stats, 'atree-scaling');
+    stat_agg.link_to(solver_boosts_node, 'potion-boost');
 
     // Build stats display (populates Summary and Detailed tabs in the middle column)
     new SolverBuildDisplayNode()
@@ -127,13 +126,13 @@ function solver_graph_init() {
     // boosts specified in the combo text/selection override them individually.
     const combo_base_stats = new AggregateStatsNode('solver-combo-base-stats');
     combo_base_stats.link_to(solver_radiance_node, 'pre-scaling');
-    combo_base_stats.link_to(atree_scaling_stats,  'atree-scaling');
+    combo_base_stats.link_to(atree_scaling_stats, 'atree-scaling');
 
     solver_combo_total_node = new SolverComboTotalNode()
-        .link_to(solver_build_node,    'build')
-        .link_to(combo_base_stats,     'base-stats')
+        .link_to(solver_build_node, 'build')
+        .link_to(combo_base_stats, 'base-stats')
         .link_to(atree_collect_spells, 'spells')
-        .link_to(atree_merge,          'atree-merged');
+        .link_to(atree_merge, 'atree-merged');
 
     // Close boost popups and locked damage popups when clicking outside them.
     document.addEventListener('click', (e) => {
@@ -157,9 +156,9 @@ function solver_graph_init() {
     // ── URL encoding ─────────────────────────────────────────────────────────
     const encode_node = new SolverBuildEncodeNode()
         .link_to(solver_build_node, 'build')
-        .link_to(atree_node,        'atree')
-        .link_to(atree_state_node,  'atree-state')
-        .link_to(aspect_agg_node,   'aspects');
+        .link_to(atree_node, 'atree')
+        .link_to(atree_state_node, 'atree-state')
+        .link_to(aspect_agg_node, 'aspects');
     for (const eq of powderable_keys) {
         encode_node.link_to(solver_powder_nodes[eq], eq + '-powder');
     }
@@ -177,5 +176,4 @@ function solver_graph_init() {
     }
 
     graph_live_update = true;
-    console.log("solver_graph_init: Phase 4 complete");
 }

@@ -12,14 +12,15 @@ User clicks "Solve"
         ▼
 1. Collect snapshot (weapon, atree state, combo, boosts, restrictions)
 2. Build item pools (filter by level, SP direction, major-IDs)
-3. Partition search space across N web workers
-4. Each worker runs a synchronous DFS over its slice
+3. Prune dominated items from each pool (pre-search)
+4. Partition search space across N web workers
+5. Each worker runs a synchronous level-based enumeration over its slice
         │  (every 5 000 candidates)
         ├──── progress message → main thread aggregates interim top-5
         └──── done message     → work-stealing: send next partition or finish
         │
         ▼
-5. Merge top-5 from all workers → fill best build into UI, show ranked list
+6. Merge top-5 from all workers → fill best build into UI, show ranked list
 ```
 
 ---
@@ -34,8 +35,10 @@ Key pieces captured:
 - **Atree state** — `atree_raw` (raw stat bonuses from the tree), `atree_merged` (full ability tree), and serialized `button_states` / `slider_states` (toggle/slider DOM state flattened to plain Maps so workers can clone them).
 - **Static boosts** — merged from the Active Boosts panel.
 - **Radiance boost** — floating multiplier (1.0–1.3) based on Radiance / Divine Honor toggles.
-- **Parsed combo** — the ordered list of `{qty, spell, boost_tokens}` rows that define what damage is optimised. Powder-special spells are synthesised and inserted here.
+- **Parsed combo** — the ordered list of `{qty, spell, boost_tokens, dmg_excl, mana_excl}` rows. `dmg_excl` skips the row in damage scoring; `mana_excl` skips it in mana cost calculation. Powder-special spells are synthesised and inserted here.
 - **Boost registry** — built from `build_combo_boost_registry`; maps boost token names to their stat/prop contributions.
+- **Scoring target** — from `#solver-target` dropdown: `combo_damage` (default), `ehp`, `total_healing`, `spd`, `poison`, `lb`, `xpb`.
+- **Mana constraint** — `combo_time` (seconds) and `allow_downtime` flag; used at the leaf to reject builds whose mana budget doesn't sustain the combo.
 - **Restrictions** — from `get_restrictions()`: level range, build direction (which SP types are used), no-major-ID flag, stat thresholds.
 
 ---
@@ -55,7 +58,23 @@ Locked slots (items the user pinned manually) are collected separately and remov
 
 ---
 
-## Step 3 — Work Partitioning (`_partition_work`)
+## Step 3 — Dominance Pruning (`_prune_dominated_items`)
+
+After the pools are built, each pool is scanned for dominated items. Item B is dominated by item A when A is a strictly-at-least-as-good drop-in replacement in any build:
+
+1. **Scoring stats** — for every stat in `_build_dmg_weights` (and any `ge` stat-threshold stats): `A.stat ≥ B.stat`.
+2. **SP requirements** — `A.reqs[i] ≤ B.reqs[i]` for all five attributes (A is at least as easy to equip).
+3. **SP provisions** — `A.skillpoints[i] ≥ B.skillpoints[i]` for all five attributes (A grants at least as much SP).
+
+Any build containing B can substitute A and achieve an equal or better score. B is therefore removed from the pool permanently.
+
+**NONE items are never pruned.** Set-bonus interactions are not modelled (an item in set X could theoretically be rescued by a set bonus), so this is an approximation — but removing obvious dominatees typically reduces pool sizes by 20–40% without meaningful loss of result quality.
+
+Dominance pruning runs in O(n² × |check\_stats|) per pool on the main thread before workers are spawned, adding only a few milliseconds of setup time.
+
+---
+
+## Step 4 — Work Partitioning (`_partition_work`)
 
 The search space is split into fine-grained partitions (4× the worker count) to enable **work-stealing**: idle workers pick up partitions that slower workers haven't started yet.
 
@@ -71,10 +90,10 @@ Each partition descriptor is `{type, slot?, start, end}`.
 
 ---
 
-## Step 4 — Worker Protocol
+## Step 5 — Worker Protocol
 
 ### Init message (main → worker, once per worker)
-Heavy structured-clone payload: serialized pools, locked items, weapon statMap, tome statMaps, guild tome statMap, atree state, combo rows, boost registry, sets data, etc. The first partition is embedded directly so the worker starts immediately on receipt.
+Heavy structured-clone payload: serialized pools, locked items, weapon statMap, tome statMaps, guild tome statMap, atree state, combo rows, boost registry, sets data, scoring target, combo time/downtime settings, etc. The first partition is embedded directly so the worker starts immediately on receipt.
 
 ### Run message (main → worker, subsequent partitions)
 Lightweight: just `{type:'run', partition, worker_id}`. The worker reuses the already-stored `_cfg` for all heavy data, only updating which slice of a pool to search.
@@ -87,45 +106,58 @@ Sent when a partition finishes. Contains final `checked`, `feasible`, and `top5`
 
 ---
 
-## Step 5 — DFS in the Worker (`_run_dfs`)
+## Step 6 — Level-Based Enumeration in the Worker (`_run_level_enum`)
 
 ### Setup (one-time per partition)
 
-1. **Running SP state** — `running_sum_prov[5]` and `running_max_req[5]` are initialised from locked items, weapon, and guild tome. These scalars track, per SP attribute, how much the current partial build provides and what the highest requirement seen so far is. They are updated incrementally as items are placed/removed.
+1. **Running statMap** — a `Map` pre-loaded with level base HP and the fixed items (locked equips + tomes + weapon). Free items are added and subtracted from this Map in-place during enumeration, avoiding a full rebuild at every leaf.
 
-2. **Suffix best-provision table** — for each free armor slot (sorted smallest pool first) the maximum SP provision any single item offers is recorded. Suffix sums of these maximums give an *optimistic upper bound* on how much SP the remaining slots could still provide. This feeds the mid-DFS SP prune check described below; that check is **known to produce false positives** (see Key Weaknesses).
+2. **Illegal-set tracker** — a lightweight counter that detects when two different items from the same illegal set are simultaneously in the partial build.
 
-3. **Running statMap** — a `Map` pre-loaded with level base HP and the fixed items (locked equips + tomes + weapon). Free items are added and subtracted from this Map in-place during DFS, avoiding a full rebuild at every leaf.
+3. **Pool ordering** — free armor/accessory slots are sorted ascending by pool size (smallest pool iterated first). This ensures the most-constrained slots are enumerated at shallower recursion depths.
 
-4. **Illegal-set tracker** — a lightweight counter that detects when two different items from the same illegal set are simultaneously in the partial build.
+4. **Maximum level** — `L_max = Σ (pool_size[slot] − 1)` over all free armor/accessory slots. This is the highest sum-of-rank-offsets any combination can have.
 
 ### Ring iteration (outermost)
 
-Rings are handled outside the main `dfs()` recursion because both rings draw from the **same pool** and the pair must be unordered (item at ring1 ≤ item at ring2 by pool index, to avoid counting `(A,B)` and `(B,A)` separately). Three cases:
+Rings are handled outside the main enumeration because both rings draw from the **same pool** and the pair must be unordered (ring1 index ≤ ring2 index). Three cases:
 
-- **Both free** — double loop `i ≤ j`; ring1 = `pool[i]`, ring2 = `pool[j]`. Partition applies to the outer index.
-- **One locked** — single loop over the free ring.
-- **Both locked** — skip ring iteration entirely, fall straight to `dfs(0)`.
+- **Both free** — double loop `i ≤ j`; ring1 = `pool[i]`, ring2 = `pool[j]`. Partition applies to the outer index `i`.
+- **One locked** — single loop over the free ring pool.
+- **Both locked** — skip ring iteration entirely, fall straight to armor enumeration.
 
-Each ring is placed via `_place_item` (updates SP state and running statMap) and removed via `_unplace_item` on backtrack.
+Each ring is placed via `_place_item` (updates running statMap) and removed via `_unplace_item` on backtrack.
 
-### Armor/accessory DFS (`dfs(slot_idx)`)
+### Level-based enumeration over armor/accessory slots (`enumerate(slot_idx, remaining_L)`)
 
-Slots are iterated in ascending pool-size order (smallest first) so the tree is widest at the bottom — this maximises the usefulness of early pruning.
+For each level `L` from 0 to `L_max`, `enumerate` assigns rank offsets to free armor/accessory slots such that their sum equals exactly `L`:
 
-For each item candidate in the current slot:
+- **L = 0**: visits the single combination `(pool[0], pool[0], …, pool[0])` — the globally best build first.
+- **L = 1**: visits all combinations with exactly one slot at pool index 1 and all others at 0.
+- **L = k**: visits all combinations where the sum of per-slot pool indices equals k.
 
-1. **Illegal-set check** — if the tracker says this item conflicts with an already-placed item from the same illegal set, skip.
-2. **Place** — `running_sum_prov`, `running_max_req`, and `running_sm` are updated.
-3. **SP prune check** (if pruning is enabled) — computes `net_i = running_max_req[i] − (running_sum_prov[i] + suffix_best_prov[next_depth][i])` for each attribute. If any `net_i > 100` or `Σ net_i > sp_budget`, the subtree is skipped. In theory this is a sound upper-bound argument: the suffix table gives the best possible additional provision from every remaining slot, so if even that cannot cover requirements, no descendant can be feasible. **In practice the check fires incorrectly and prunes many valid combinations, including the optimal build.** The root cause has not yet been isolated; see Key Weaknesses. The pruning toggle in the UI (on by default) must be turned off to guarantee a correct exhaustive search.
-4. **Recurse** — `dfs(slot_idx + 1)`.
-5. **Backtrack** — `_unplace_item` restores `running_sum_prov` and `running_sm`. `running_max_req` is restored from a saved snapshot (max-of-maximums is not directly reversible).
+This ordering guarantees the strongest builds (closest to the top of every pool) are evaluated early. No heap or visited set is needed — memory is O(k) where k is the number of free slots.
+
+**Last-slot constraint:** when `slot_idx == N_free − 1`, the item is placed at exactly `offset = remaining_L` (not `0..remaining_L`). This ensures each combination is visited at exactly one level, preventing duplicate evaluations.
+
+For each item at each slot:
+1. **Illegal-set check** — skip if the tracker reports a conflict with an already-placed item.
+2. **Place** — `_place_item` updates `running_sm`.
+3. **Recurse** — `enumerate(slot_idx + 1, remaining_L − offset)`.
+4. **Backtrack** — `_unplace_item` restores `running_sm`.
 
 ---
 
-## Step 6 — Leaf Evaluation (`_evaluate_leaf`)
+## Step 7 — Leaf Evaluation (`_evaluate_leaf`)
 
-Reached when all free armor/accessory slots have been filled. Three gates before scoring:
+Reached when all free armor/accessory slots have been filled. Five gates before scoring:
+
+### Gate 0: Fast constraint precheck (`_fast_constraint_precheck`, `_fast_ehp_precheck`)
+Runs before any SP work. For each `≥` restriction on a simple additive stat (e.g. `mr ≥ 10`, `hprRaw ≥ 200`), checks `running_sm.get(stat) ≥ adjusted_threshold` where `adjusted_threshold = user_threshold − fixed_contributions` (precomputed once at worker init from `atree_raw + static_boosts`). This is a conservative lower bound — it ignores radiance boost, atree scaling, and set bonuses, all of which can only increase the stat. Skills (`str`…`agi`) and `ehp` are excluded from the simple check.
+
+For EHP constraints, an optimistic upper bound is computed: `totalHp / ehp_divisor` where `totalHp` comes from `running_sm` + fixed HP contributions, and `ehp_divisor` is precomputed assuming max def/agi skill points (100 each) and no extra `defMult` penalties. If even this generous estimate falls short, the candidate is rejected.
+
+Both checks use only precomputed constants + a single Map lookup per constraint, making them essentially free compared to the gates that follow.
 
 ### Gate 1: Quick SP pre-filter (`_sp_prefilter`)
 An O(1) sanity check (no `calculate_skillpoints` call yet). For each attribute, computes `max_req − sum_prov` across all 9 items. If any attribute's net deficit > 100 or the total > `sp_budget`, reject immediately.
@@ -146,15 +178,18 @@ Then `_assemble_combo_stats` layers on top:
 4. Run `worker_atree_scaling` to apply conditional/slider-driven atree bonuses.
 5. Merge atree-scaling stats and static boosts (for threshold checking).
 
-### Gate 3: Stat thresholds
-If the user set any restrictions (e.g. "EHP ≥ 50000", "hprRaw ≥ 200"), the assembled stats are checked. EHP is computed via `getDefenseStats`. Any violation rejects the candidate.
+### Gate 3: Stat thresholds (full)
+If the user set any restrictions (e.g. "EHP ≥ 50000", "hprRaw ≥ 200"), the fully assembled stats are checked. EHP is computed via `getDefenseStats`. Any violation rejects the candidate. (Gate 0 is a cheap pre-filter; this gate is the authoritative check using final stat values including radiance, atree scaling, set bonuses, and actual skill points.)
 
-### Scoring (`_eval_combo_damage`)
-For each combo row:
-1. Apply per-row boost tokens via `apply_combo_row_boosts` → cloned stats with updated `damMult` / `defMult`.
-2. Apply spell property overrides (e.g. slider-driven hit-count changes) via `apply_spell_prop_overrides`.
-3. Compute average damage via `computeSpellDisplayAvg` (calls `calculateSpellDamage` internally, blends normal and crit damage by dexterity crit chance).
-4. Multiply by quantity.
+### Gate 4: Mana constraint (`_eval_combo_mana_check`)
+Only active when `combo_time > 0`. Computes starting mana (100 + item mana + Int bonus), total spell cost (sum of `getSpellCost × qty` for rows not marked `mana_excl`), and mana regen over the combo time. If `allow_downtime` is false, the build is rejected when `start_mana − end_mana > 5` (mana deficit too high for sustainability). If `allow_downtime` is true, the build is rejected only if `end_mana ≤ 0`.
+
+### Scoring (`_eval_score`)
+Dispatches to the appropriate objective based on the snapshot's `scoring_target`:
+- **`combo_damage`** (default): for each combo row not marked `dmg_excl`, applies boost tokens via `apply_combo_row_boosts`, applies spell property overrides via `apply_spell_prop_overrides`, then calls `computeSpellDisplayAvg` (which calls `calculateSpellDamage` internally and blends normal/crit by dexterity crit chance). Multiplies by quantity and sums.
+- **`total_healing`**: same row loop but calls `computeSpellHealingTotal` for each row.
+- **`ehp`**: reads EHP (agility-weighted) from `getDefenseStats(thresh_stats)[1][0]`.
+- **`spd`, `poison`, `lb`, `xpb`**: reads the named stat directly from `thresh_stats`.
 
 The total is the candidate's **score**.
 
@@ -163,7 +198,7 @@ If the score beats the current 5th-best, the candidate is inserted and the list 
 
 ---
 
-## Step 7 — Result Aggregation (main thread)
+## Step 8 — Result Aggregation (main thread)
 
 ### Interim updates (every 5 seconds)
 The main thread's progress timer checks each worker's latest `_cur_top5` (from the most recent progress message) and each worker's cumulative `top5` (from completed partitions). These are merged into a global top-5, the best build is loaded into the UI via `_fill_build_into_ui`, and the results panel is refreshed.
@@ -185,37 +220,23 @@ Each of the top-5 results is shown as a clickable row. Clicking calls `_fill_bui
 
 | Technique | Where | Effect |
 |-----------|-------|--------|
-| Incremental SP state | `_place_item` / `_unplace_item` | Tracks running provision/requirement totals; used correctly at the leaf and as input to the (currently broken) mid-DFS prune |
-| Suffix best-provision table | Built once before DFS | Feeds mid-DFS SP pruning — **currently produces false positives; see Key Weaknesses** |
+| Level-based enumeration | `_run_level_enum` | Evaluates the globally best build (L=0) first; each subsequent level is one rank-step further from optimal, so strong builds surface in interim results early |
+| Item priority scoring | `_prioritize_pools` + `_build_dmg_weights` | Pools pre-sorted by damage/constraint relevance before search; top of each pool is the highest-priority item |
 | Incremental statMap | `_init_running_statmap` + `_incr_add/remove_item` | Avoids full stat rebuild at every leaf |
 | Leaf SP pre-filter | `_sp_prefilter` before `calculate_skillpoints` | Rejects infeasible combos before expensive solver call |
-| Pool sort (smallest first) | `free_armor_slots.sort(...)` | Maximises pruning effectiveness |
+| Pool sort (smallest first) | `free_armor_slots.sort(...)` | Visits slots with fewer choices first |
 | Work-stealing partitions | 4× worker count | Keeps all cores busy even when partition sizes are unequal |
 | Illegal-set tracker | `_make_illegal_tracker()` | O(1) check per item for set-conflict rejection |
 | Triangular ring partitioning | `_partition_work` | Equal work distribution for the (i,j) ring double-loop |
+| Dominance pruning | `_prune_dominated_items` | Removes items dominated on all scoring stats + SP reqs/provisions before search; shrinks pools without losing optimality (set-bonus interactions not modelled) |
+| Fast constraint precheck | `_fast_constraint_precheck` + `_fast_ehp_precheck` | Rejects leaves that can't meet `≥` stat thresholds using only the incremental running statMap + precomputed fixed offsets, before any SP or stat assembly work |
 
 ---
 
 ## Key Weaknesses
 
-### SP pruning produces false positives (active bug)
-The mid-DFS SP prune check (`_sp_prune_check`) eliminates many valid item combinations, including the optimal build. It is enabled by default, meaning the solver currently cannot be trusted to find the best build without first toggling pruning off.
-
-The check is intended to be a sound upper-bound argument: for each SP attribute, compute the maximum provision the remaining free slots could possibly contribute (sum of per-slot maxima, precomputed in `suffix_best_prov`). If even this optimistic total cannot cover the maximum requirement seen so far, no descendant build can be SP-feasible, so prune. Theoretically this should only ever prune branches that are genuinely infeasible.
-
-In practice the check fires on feasible branches. The root cause is not yet pinned down; leading theories:
-
-- **Wynncraft SP is order-dependent.** `calculate_skillpoints` uses recursive backtracking because the order in which items are equipped matters — bonus SP from one item may enable another item's requirement to be met. The prune check models SP as a simple scalar budget, ignoring this sequencing. In some configurations the minimum *assignable* SP is higher than the `max_req − sum_prov` estimate predicts, causing the estimate to be too optimistic. It is not yet clear how this creates false prunes (the wrong direction of error) rather than missed prunes.
-- **Items with negative `skillpoints` values** (items that subtract SP from an attribute) make `running_sum_prov[i]` smaller, which inflates the apparent deficit. If the suffix table simultaneously underestimates remaining provision for that attribute (e.g. only the NONE item offers non-negative provision), the check can compute a deficit large enough to trigger pruning even when `calculate_skillpoints` would find a valid assignment.
-- **Guild tome omission in the leaf pre-filter.** `_sp_prefilter` sums `skillpoints` for the 8 equipment statMaps and the weapon but not the guild tome, whose bonuses ARE counted by `calculate_skillpoints`. Builds right at the edge of feasibility may be incorrectly rejected at the leaf. This doesn't explain DFS-level false prunes but compounds the issue.
-
-**Workaround:** turn off the Pruning toggle in the solver UI. This forces an exhaustive search and is the only way to guarantee the optimal build is found.
-
-### Score-blind DFS
-The DFS has no awareness of damage potential while traversing the tree. It prunes only on SP feasibility, never on whether remaining slots could possibly beat the current best score. This means the search does full work even when an entire subtree is provably suboptimal — slow for large pools once a good build has already been found.
-
-### No item dominance pre-filtering
-Pool items are not compared against each other before search. If item A has equal-or-better damage-relevant stats and equal-or-lower SP requirements than item B, B can never be part of an optimal solution, but it still occupies a pool slot and receives full DFS visits. Pools could be 20–40% smaller without losing optimality.
+### Score-blind enumeration
+The level-based enumeration visits combinations in order of sum-of-rank-offsets (best-first within each level), but it has no branch-and-bound pruning based on the current best score. Every combination at every level is fully evaluated — there is no early exit when remaining levels cannot possibly produce a better result. This means the search remains exhaustive, just with a better visitation order. Interim results are much stronger than before (L=0 is evaluated first), but the total work is unchanged.
 
 ### `calculate_skillpoints` called at every feasible leaf
 Even when the running incremental SP state already shows `sum_prov[i] ≥ max_req[i]` for every attribute — meaning no manual SP assignment is needed — the full recursive backtracking solver is still invoked. This is the most expensive single call per leaf. A fast-path that skips it when provably unnecessary was designed but deferred because `sum_prov ≥ max_req` is necessary but not sufficient for zero-assignment (Wynncraft's equipping order adds further constraints).
@@ -223,33 +244,26 @@ Even when the running incremental SP state already shows `sum_prov[i] ≥ max_re
 ### Ring slots are special-cased throughout
 Because both rings draw from the same pool and the pair is unordered, rings are handled with a separate double-loop outside the generic `dfs()` function. This creates three code paths (both free, one free, both locked) and complicates partitioning. Armor slots benefit from the generic slot-ordering optimisation; rings cannot be trivially slotted into it.
 
-### Worker count is user-controlled without hardware validation
-The thread-count selector allows up to 16 workers regardless of the machine's actual core count. Over-provisioning creates OS-level context-switch overhead that can make search slower, not faster. `navigator.hardwareConcurrency` is used for the "Auto" setting but manual selection has no cap enforcement.
+---
 
-### Single-target, single-combo objective only
-Scoring is defined as the sum of average damage over one fixed combo sequence. Builds that are strong on AoE, sustained damage over time, or defensive value (EHP) are evaluated only through stat thresholds, not as first-class objectives. Multi-target or weighted multi-objective scoring is not supported.
+## High priority improvements
+
+### Intelligent priority scoring
+Order items by whatever is needed most in the build, focusing on fulfilling constraints first
+i.e. (target ehp - current ehp) / current ehp vs (target MR - current MR) / current MR
+
+### Tune item pool ordering
+Develop a testing suite for `_build_dmg_weights` in `solver_search.js`.
 
 ---
 
 ## Potential Improvements
 
-### Correct mid-DFS SP pruning
-Design and verify a pruning predicate that is provably sound — i.e. one that never prunes a SP-feasible combination. The core challenge is that Wynncraft's SP system is order-dependent: the minimum assigned SP required by a set of items can be higher than `max(reqs) − Σ(bonuses)` due to equipping-order constraints. Any correct predicate must either (a) account for ordering by running a lightweight feasibility check mid-DFS rather than the full backtracking solver, or (b) derive a provably conservative lower bound on assigned SP that is still tight enough to prune meaningfully. Once a correct predicate exists, the `suffix_best_prov` table can be reintroduced to compute the complementary upper bound on remaining provision.
-
-### Damage-based branch-and-bound
-Precompute per pool the maximum damage any single item could contribute (e.g., by running the combo calc against each item independently). During DFS, sum the optimistic per-slot maxima for remaining slots. If `current_partial_damage + optimistic_remaining < best_score_so_far`, prune the subtree. Even a loose upper bound becomes highly effective once a good initial solution seeds `best_score_so_far`.
-
-### Two-phase solve
-Phase 1: run a fast heuristic (greedy best-item-per-slot, beam search, or random sampling) to quickly find a strong build. Phase 2: run the full DFS with branch-and-bound seeded by Phase 1's score. A tight initial bound can prune the majority of the search space on the very first pass.
-
-### Item dominance pruning (pre-search)
-Before spawning workers, scan each pool for dominated items. Item B is dominated by item A if A has equal-or-better values for every damage-relevant stat and equal-or-lower SP requirements. Remove B from the pool permanently. Since stat interactions are nonlinear (e.g., elemental damage is multiplicative), this is approximate — but removing obvious dominatees shrinks pool sizes without affecting result quality in practice.
-
-### Fast-path for zero-assignment SP
-When the incremental state shows `sum_prov[i] ≥ max_req[i]` for all attributes, skip `calculate_skillpoints` and set `assigned_sp = 0`, `total_sp = base_sp` directly. The blocker is that Wynncraft's equipping order can cause the SP solver to fail even when aggregate provision exceeds aggregate requirement (order-dependent SP propagation). A correct fast-path requires either a greedy order-check or a proof that the SP state is order-independent.
+### Fruma skillpoint changes are goated
+Period.
 
 ### Integrate rings into generic slot ordering
-Move ring iteration into the main `dfs()` loop (treating rings as a single "ring pair" slot with a pool of `(i, j)` pairs). This would unify the three ring-case code paths, allow rings to participate in the smallest-first slot ordering, and simplify partitioning. The `i ≤ j` constraint and pool-level duplicate filtering would need to be encoded in the pair pool.
+Move ring iteration into the main `enumerate()` loop (treating rings as a single "ring pair" slot with a pool of `(i, j)` pairs). This would unify the three ring-case code paths, allow rings to participate in the smallest-first slot ordering and level-based enumeration, and simplify partitioning. The `i ≤ j` constraint and pool-level duplicate filtering would need to be encoded in the pair pool.
 
 ### Weighted multi-objective scoring
 Replace the single combo-damage score with a weighted sum of multiple objectives: `w₁ × damage + w₂ × EHP + w₃ × mana_sustain + ...`. Users specify weights. This makes the solver useful for tank, support, or hybrid builds without changing the search algorithm — only the leaf scoring function changes.

@@ -83,6 +83,7 @@ class SolverComboTotalNode extends ComputeNode {
 
         const rows = this._read_combo_rows(aug_spell_map);
         let total      = 0;
+        let total_heal = 0;
         let mana_cost  = 0;
         const spell_costs = []; // [{name, qty, cost_per_cast}] for tooltip breakdown
         for (const { qty, spell, boost_tokens, dom_row } of rows) {
@@ -90,9 +91,12 @@ class SolverComboTotalNode extends ComputeNode {
             const dmg_span  = dmg_wrap?.querySelector('.combo-row-damage')
                            ?? dom_row?.querySelector('.combo-row-damage');
             const dmg_popup = dmg_wrap?.querySelector('.combo-dmg-popup');
+            const heal_span = dom_row?.querySelector('.combo-row-heal');
             if (qty <= 0 || !spell) {
                 if (dmg_span)  dmg_span.textContent  = '';
                 if (dmg_popup) dmg_popup.textContent = '';
+                dmg_wrap?.classList.remove('has-popup', 'popup-locked');
+                if (heal_span) { heal_span.textContent = ''; heal_span.style.display = 'none'; }
                 continue;
             }
             const { stats, prop_overrides } =
@@ -105,13 +109,27 @@ class SolverComboTotalNode extends ComputeNode {
                                          ?.classList.contains('dmg-excluded') ?? false;
             if (!dmg_excluded) total += per_cast * qty;
             if (dmg_span) dmg_span.textContent = Math.round(per_cast).toLocaleString();
+            // Per-row healing output
+            const heal_per_cast = computeSpellHealingTotal(stats, mod_spell);
+            total_heal += heal_per_cast * qty;
+            if (heal_span) {
+                if (heal_per_cast > 0) {
+                    heal_span.textContent  = '+' + Math.round(heal_per_cast).toLocaleString();
+                    heal_span.style.display = '';
+                } else {
+                    heal_span.textContent  = '';
+                    heal_span.style.display = 'none';
+                }
+            }
             // Populate the breakdown popup (shown on hover/click of the damage number).
             if (dmg_popup && full && full.avg > 0) {
                 const spell_cost = full.has_cost && mod_spell.cost != null
                     ? getSpellCost(base_stats, mod_spell) : null;
                 dmg_popup.innerHTML = renderSpellPopupHTML(full, crit_chance, spell_cost);
+                dmg_wrap?.classList.add('has-popup');
             } else if (dmg_popup) {
                 dmg_popup.textContent = '';
+                dmg_wrap?.classList.remove('has-popup', 'popup-locked');
             }
             // Mana cost: use base_stats (not row-boosted) for consistent cost calculation.
             // spell.cost may be null (e.g. Bamboozle) — skip those.
@@ -267,18 +285,19 @@ class SolverComboTotalNode extends ComputeNode {
         const container = document.getElementById('combo-selection-rows');
         if (!container) return;
 
-        const all_damaging = [...spell_map.entries()].filter(([, s]) => spell_has_damage(s));
+        const all_selectable = [...spell_map.entries()]
+            .filter(([, s]) => spell_has_damage(s) || spell_has_heal(s));
         // Regular spells (positive IDs) sorted ascending; powder specials (negative IDs) last.
-        const regular = all_damaging.filter(([id]) => id >= 0).sort((a, b) => a[0] - b[0]);
-        const powder  = all_damaging.filter(([id]) => id <  0).sort((a, b) => b[0] - a[0]);
-        const damaging = [...regular, ...powder];
+        const regular = all_selectable.filter(([id]) => id >= 0).sort((a, b) => a[0] - b[0]);
+        const powder  = all_selectable.filter(([id]) => id <  0).sort((a, b) => b[0] - a[0]);
+        const selectable = [...regular, ...powder];
 
         for (const row of container.querySelectorAll('.combo-row')) {
             const sel = row.querySelector('.combo-row-spell');
             if (!sel) continue;
             const cur = sel.value;
             sel.innerHTML = '<option value="">— Select Attack —</option>';
-            for (const [id, s] of damaging) {
+            for (const [id, s] of selectable) {
                 const opt = document.createElement('option');
                 opt.value       = String(id);
                 opt.textContent = s._is_powder_special ? s.name + ' (Powder Special)' : s.name;
@@ -367,6 +386,8 @@ class SolverComboTotalNode extends ComputeNode {
                 area.appendChild(wrap);
             }
             _update_boost_btn_highlight(row);
+            const boost_btn_el = row.querySelector('.combo-boost-menu-btn');
+            if (boost_btn_el) boost_btn_el.disabled = (registry.length === 0);
         }
     }
 
@@ -540,9 +561,13 @@ function _build_selection_row(qty_val, pending_spell, pending_boosts, pending_ma
     const dmg_span = document.createElement('span');
     dmg_span.className   = 'combo-row-damage Damage text-nowrap small ms-1';
     dmg_span.textContent = '';
+    const heal_span = document.createElement('span');
+    heal_span.className      = 'combo-row-heal text-success text-nowrap small ms-1';
+    heal_span.textContent    = '';
+    heal_span.style.display  = 'none';
     const dmg_popup = document.createElement('div');
     dmg_popup.className = 'combo-dmg-popup text-light';
-    dmg_wrap.append(dmg_span, dmg_popup);
+    dmg_wrap.append(dmg_span, heal_span, dmg_popup);
     // Reposition popup above or below the row depending on available viewport space.
     const _update_dmg_popup_pos = () => {
         const rect = dmg_wrap.getBoundingClientRect();

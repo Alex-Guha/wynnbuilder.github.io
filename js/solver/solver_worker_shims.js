@@ -504,7 +504,7 @@ const _INCR_STATIC_ID_SET = new Set(_INCR_STATIC_IDS);
 /**
  * Add an item's stats to a running statMap (incremental accumulation).
  * Only handles additive stats (staticIDs + maxRolls). damMult/defMult/healMult
- * are set up at the leaf, not during DFS.
+ * are set up at the leaf, not during incremental search.
  */
 function _incr_add_item(running_sm, item_sm) {
     const maxRolls = item_sm.get('maxRolls');
@@ -542,7 +542,7 @@ function _incr_remove_item(running_sm, item_sm) {
 
 /**
  * Initialize a running statMap from level + fixed items (locked equips, tomes, weapon).
- * This is the base that free items are incrementally added to/removed from during DFS.
+ * This is the base that free items are incrementally added to/removed from during search.
  */
 function _init_running_statmap(level, fixed_item_sms) {
     const must_ids = [
@@ -607,5 +607,68 @@ function _finalize_leaf_statmap(running_sm, weapon_sm, activeSetCounts, sets_map
     sm.set("atkSpd", weapon_sm.get("atkSpd"));
 
     return sm;
+}
+
+// ── Spell cost helpers (shims of display.js) ────────────────────────────────
+
+function getBaseSpellCost(stats, spell) {
+    const int_reduction = skillPointsToPercentage(stats.get('int') ?? 0) * skillpoint_final_mult[2];
+    let cost = spell.cost * (1 - int_reduction);
+    cost += (stats.get('spRaw' + spell.base_spell) ?? 0);
+    return cost * (1 + (stats.get('spPct' + spell.base_spell) ?? 0) / 100);
+}
+
+function getSpellCost(stats, spell) {
+    const final_pct = stats.get('spPct' + spell.base_spell + 'Final') ?? 0;
+    return Math.max(1, getBaseSpellCost(stats, spell) * (1 + final_pct / 100));
+}
+
+// ── Heal spell helpers (shims of solver_combo_boost.js) ──────────────────────
+
+function spell_has_heal(spell) {
+    const by_name = new Map((spell.parts ?? []).map(p => [p.name, p]));
+    function part_heal(p) {
+        if ('power' in p) return true;
+        if ('hits' in p) return Object.keys(p.hits).some(n => { const s = by_name.get(n); return s && part_heal(s); });
+        return false;
+    }
+    return (spell.parts ?? []).some(part_heal);
+}
+
+function computeSpellHealingTotal(stats, spell) {
+    const spell_result_map = new Map();
+    for (const part of spell.parts) {
+        spell_result_map.set(part.name, { type: 'need_eval', store_part: part });
+    }
+    function eval_part(part_name) {
+        const dat = spell_result_map.get(part_name);
+        if (!dat || dat.type !== 'need_eval') return dat;
+        const part    = dat.store_part;
+        const part_id = spell.base_spell + '.' + part.name;
+        let result;
+        if ('power' in part) {
+            const mult_map = stats.get('healMult');
+            let heal_mult = 1;
+            for (const [k, v] of mult_map.entries()) {
+                if (!k.includes(':') || k.split(':')[1] === part_id) heal_mult *= (1 + v / 100);
+            }
+            result = { type: 'heal', heal_amount: part.power * getDefenseStats(stats)[0] * heal_mult };
+        } else if ('multipliers' in part) {
+            result = { type: 'damage', heal_amount: 0 };
+        } else {
+            result = { type: null, heal_amount: 0 };
+            for (const [sub_name, hits] of Object.entries(part.hits ?? {})) {
+                const sub = eval_part(sub_name);
+                if (!sub) continue;
+                if (!result.type) result.type = sub.type;
+                result.heal_amount += (sub.heal_amount ?? 0) * hits;
+            }
+        }
+        result.name = part.name;
+        spell_result_map.set(part_name, result);
+        return result;
+    }
+    const all = spell.parts.map(p => eval_part(p.name));
+    return all.reduce((sum, r) => sum + (r?.heal_amount ?? 0), 0);
 }
 

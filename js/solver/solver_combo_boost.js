@@ -741,6 +741,61 @@ function spell_has_damage(spell) {
 }
 
 /**
+ * Return true if a spell has at least one heal-type part (directly or via hits).
+ */
+function spell_has_heal(spell) {
+    const by_name = new Map((spell.parts ?? []).map(p => [p.name, p]));
+    function part_heal(p) {
+        if ('power' in p) return true;
+        if ('hits' in p) return Object.keys(p.hits).some(n => { const s = by_name.get(n); return s && part_heal(s); });
+        return false;
+    }
+    return (spell.parts ?? []).some(part_heal);
+}
+
+/**
+ * Compute the total healing output of a spell for a given stat context.
+ * Mirrors computeSpellDisplayAvg but sums heal parts instead of damage parts.
+ * Returns 0 when the spell has no heal parts.
+ */
+function computeSpellHealingTotal(stats, spell) {
+    const spell_result_map = new Map();
+    for (const part of spell.parts) {
+        spell_result_map.set(part.name, { type: 'need_eval', store_part: part });
+    }
+    function eval_part(part_name) {
+        const dat = spell_result_map.get(part_name);
+        if (!dat || dat.type !== 'need_eval') return dat;
+        const part    = dat.store_part;
+        const part_id = spell.base_spell + '.' + part.name;
+        let result;
+        if ('power' in part) {
+            const mult_map = stats.get('healMult');
+            let heal_mult = 1;
+            for (const [k, v] of mult_map.entries()) {
+                if (!k.includes(':') || k.split(':')[1] === part_id) heal_mult *= (1 + v / 100);
+            }
+            result = { type: 'heal', heal_amount: part.power * getDefenseStats(stats)[0] * heal_mult };
+        } else if ('multipliers' in part) {
+            result = { type: 'damage', heal_amount: 0 };
+        } else {
+            result = { type: null, heal_amount: 0 };
+            for (const [sub_name, hits] of Object.entries(part.hits ?? {})) {
+                const sub = eval_part(sub_name);
+                if (!sub) continue;
+                if (!result.type) result.type = sub.type;
+                result.heal_amount += (sub.heal_amount ?? 0) * hits;
+            }
+        }
+        result.name = part.name;
+        spell_result_map.set(part_name, result);
+        return result;
+    }
+    const all = spell.parts.map(p => eval_part(p.name));
+    return all.reduce((sum, r) => sum + (r?.heal_amount ?? 0), 0);
+}
+
+/**
  * Parse the boost column of a combo row (comma-separated boost tokens).
  * Returns [{name, value, is_pct}].
  *   - "Boost N%"  → {name:'Boost', value:N, is_pct:true}

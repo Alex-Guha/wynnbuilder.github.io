@@ -6,6 +6,11 @@
 
 const SOLVER_VERSION = "0.1.0";
 
+// ── Lock toggle SVG icons ───────────────────────────────────────────────────
+
+const LOCK_SVG   = '<svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M11 6V4a3 3 0 0 0-6 0v2H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1zM7 4a1 1 0 0 1 2 0v2H7V4z"/></svg>';
+const UNLOCK_SVG = '<svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M11 4a3 3 0 0 0-6 0H7a1 1 0 0 1 2 0v2H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1V4z"/></svg>';
+
 // ── Item slot definitions ────────────────────────────────────────────────────
 
 let equipment_fields = [
@@ -195,7 +200,13 @@ const RESTRICTION_STATS = [
     { key: 'sprint',     label: 'Sprint Bonus' },
     { key: 'sprintReg',  label: 'Sprint Regen Bonus' },
     { key: 'jh',         label: 'Jump Height' },
-    { key: 'kb',         label: 'Knockback' },
+    { key: 'kb',          label: 'Knockback' },
+    { key: 'weakenEnemy', label: 'Weaken Enemy' },
+    { key: 'slowEnemy',   label: 'Slow Enemy' },
+    // ── Loot / XP ───────────────────────────────────────────────────────
+    { key: 'lb',          label: 'Loot Bonus' },
+    { key: 'lq',          label: 'Loot Quality' },
+    { key: 'xpb',         label: 'XP Bonus' },
 ];
 
 /**

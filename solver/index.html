@@ -118,6 +118,7 @@
                         <!-- HELMET (left col) -->
                         <div class="col rounded order-xl-0 order-0 my-0">
                             <div class="row h-100 px-1" id="helmet-dropdown">
+                                <div class="col-auto d-flex align-items-center p-0 solver-lock-col" id="helmet-lock" style="display: none;"></div>
                                 <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
                                     id="helmet-img-loc">
                                     <div id="helmet-img" class="img-fluid rounded item-display-new-toggleable"
@@ -149,6 +150,7 @@
                         <!-- RING 1 (right col) -->
                         <div class="col order-xl-0 order-1 my-0">
                             <div class="row h-100 px-1" id="ring1-dropdown">
+                                <div class="col-auto d-flex align-items-center p-0 solver-lock-col" id="ring1-lock" style="display: none;"></div>
                                 <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
                                     id="ring1-img-loc">
                                     <div id="ring1-img" class="img-fluid rounded item-display-new-toggleable"
@@ -177,6 +179,7 @@
                         <!-- CHESTPLATE (left col) -->
                         <div class="col order-xl-0 order-0">
                             <div class="row h-100 px-1" id="chestplate-dropdown">
+                                <div class="col-auto d-flex align-items-center p-0 solver-lock-col" id="chestplate-lock" style="display: none;"></div>
                                 <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
                                     id="chestplate-img-loc">
                                     <div id="chestplate-img" class="img-fluid rounded item-display-new-toggleable"
@@ -211,6 +214,7 @@
                         <!-- RING 2 (right col) -->
                         <div class="col order-xl-0 order-1">
                             <div class="row h-100 px-1" id="ring2-dropdown">
+                                <div class="col-auto d-flex align-items-center p-0 solver-lock-col" id="ring2-lock" style="display: none;"></div>
                                 <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
                                     id="ring2-img-loc">
                                     <div id="ring2-img" class="img-fluid rounded item-display-new-toggleable"
@@ -239,6 +243,7 @@
                         <!-- LEGGINGS (left col) -->
                         <div class="col order-xl-0 order-0">
                             <div class="row h-100 px-1" id="leggings-dropdown">
+                                <div class="col-auto d-flex align-items-center p-0 solver-lock-col" id="leggings-lock" style="display: none;"></div>
                                 <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
                                     id="leggings-img-loc">
                                     <div id="leggings-img" class="img-fluid rounded item-display-new-toggleable"
@@ -271,6 +276,7 @@
                         <!-- BRACELET (right col) -->
                         <div class="col order-xl-0 order-1">
                             <div class="row h-100 px-1" id="bracelet-dropdown">
+                                <div class="col-auto d-flex align-items-center p-0 solver-lock-col" id="bracelet-lock" style="display: none;"></div>
                                 <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
                                     id="bracelet-img-loc">
                                     <div id="bracelet-img" class="img-fluid rounded item-display-new-toggleable"
@@ -300,6 +306,7 @@
                         <!-- BOOTS (left col) -->
                         <div class="col order-xl-0 order-0">
                             <div class="row h-100 px-1" id="boots-dropdown">
+                                <div class="col-auto d-flex align-items-center p-0 solver-lock-col" id="boots-lock" style="display: none;"></div>
                                 <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
                                     id="boots-img-loc">
                                     <div id="boots-img" class="img-fluid rounded item-display-new-toggleable"
@@ -331,6 +338,7 @@
                         <!-- NECKLACE (right col) -->
                         <div class="col order-xl-0 order-1">
                             <div class="row h-100 px-1" id="necklace-dropdown">
+                                <div class="col-auto d-flex align-items-center p-0 solver-lock-col" id="necklace-lock" style="display: none;"></div>
                                 <div class="col-auto px-lg-1 g-0 dark-7 rounded-end my-auto text-center scaled-item-icon"
                                     id="necklace-img-loc">
                                     <div id="necklace-img" class="img-fluid rounded item-display-new-toggleable"
@@ -410,10 +418,10 @@
                                             </select>
                                         </div>
                                         <!-- Reset -->
-                                        <div class="col-auto d-flex flex-column justify-content-end">
+                                        <!-- <div class="col-auto d-flex flex-column justify-content-end">
                                             <button class="button py-0 fw-bold text-light dark-5 scaled-font rounded"
                                                 onclick="resetSolverFields()">Reset</button>
-                                        </div>
+                                        </div> -->
                                         <!-- Copy URL + Export to Builder -->
                                         <div class="col-auto d-flex flex-column gap-1">
                                             <button class="button py-0 fw-bold text-light dark-5 scaled-font rounded"
@@ -1015,12 +1023,26 @@
                 <div class="mb-2 scaled-font dark-5 rounded dark-shadow" id="solver-run-section">
                     <div class="fw-bold dark-4 rounded-top p-1 text-center">Solver</div>
                     <div class="px-2 py-2">
+                        <div class="d-flex align-items-center gap-1 mb-2">
+                            <span class="text-secondary small" style="white-space:nowrap">Target:</span>
+                            <select id="solver-target" class="solver-select form-select form-select-sm" style="flex:1"
+                                title="What the solver optimizes for">
+                                <option value="combo_damage">Combo Damage</option>
+                                <option value="ehp">Effective HP</option>
+                                <option value="total_healing">Total Healing</option>
+                                <option value="spd">Walk Speed</option>
+                                <option value="poison">Poison</option>
+                                <option value="lb">Loot Bonus</option>
+                                <option value="xpb">XP Bonus</option>
+                            </select>
+                        </div>
                         <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                             <div class="d-flex align-items-center gap-1 w-100">
                                 <button id="solver-run-btn" class="btn btn-sm btn-outline-success flex-grow-1"
                                     onclick="toggle_solver()">Solve</button>
-                                <select id="solver-thread-count" class="form-select form-select-sm"
-                                    style="width:auto; min-width:55px" title="Number of worker threads">
+                                <select id="solver-thread-count" class="form-select form-select-sm bg-dark text-light"
+                                    style="width:auto; min-width:55px; border-color: rgba(255, 255, 255, 0.15) !important"
+                                    title="Number of worker threads">
                                     <option value="auto">Auto</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -1031,13 +1053,6 @@
                                     <option value="20">20</option>
                                     <option value="24">24</option>
                                 </select>
-                                <button id="solver-pruning-toggle" class="btn btn-sm btn-outline-info"
-                                    onclick="this.classList.toggle('toggleOn'); document.getElementById('pruning-warning').style.display = this.classList.contains('toggleOn') ? '' : 'none';"
-                                    title="Enable search pruning for faster solves (may miss optimal builds)">Pruning</button>
-                            </div>
-                            <div id="pruning-warning" class="text-warning small mt-1" style="display:none;">
-                                &#9888; Pruning is experimental and may miss optimal builds or fail on some
-                                configurations. Use exhaustive search for guaranteed results.
                             </div>
                             <div id="solver-progress-text" style="display:none" class="text-secondary small mt-1">
                                 <div>Checked: <span id="solver-checked-count">0</span> / <span
@@ -1045,6 +1060,7 @@
                                         id="solver-feasible-count">0</span></div>
                                 <div><span id="solver-elapsed-text">0s</span>
                                     <span id="solver-remaining-text" class="ms-1"></span>
+                                    <span id="solver-hotpath-status" class="ms-2"></span>
                                     <span id="solver-eta-warning" class="text-warning ms-1" style="display:none">&#9888;
                                         Long solve expected (&gt;20 min)</span>
                                 </div>

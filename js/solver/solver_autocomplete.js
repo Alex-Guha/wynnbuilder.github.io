@@ -13,9 +13,9 @@
 function autocomplete_msg(equipment_type) {
     return (list, data) => {
         let position = document.getElementById(equipment_type + '-dropdown').getBoundingClientRect();
-        list.style.top      = position.bottom + window.scrollY + "px";
-        list.style.left     = position.x + "px";
-        list.style.width    = position.width + "px";
+        list.style.top = position.bottom + window.scrollY + "px";
+        list.style.left = position.x + "px";
+        list.style.width = position.width + "px";
         list.style.maxHeight = position.height * 2 + "px";
 
         if (!data.results.length) {
@@ -97,7 +97,6 @@ function add_tome_autocomplete(tome_type) {
 function add_item_autocomplete(item_type) {
     let item_arr = [];
     const category = item_type.replace(/[0-9]/g, '');
-    console.log("[solver] add_item_autocomplete:", item_type, "category:", category, "has list:", itemLists.has(category));
     if (item_type === 'weapon') {
         for (const weaponType of weapon_keys) {
             for (const weapon of itemLists.get(weaponType)) {
@@ -115,7 +114,6 @@ function add_item_autocomplete(item_type) {
             item_arr.push(item);
         }
     }
-    console.log("[solver]   →", item_arr.length, "items for", item_type);
     create_autocomplete(item_arr, itemMap, item_type, (v) => v);
 }
 
