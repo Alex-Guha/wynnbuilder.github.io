@@ -3,6 +3,12 @@
  * TODO: split this file into separate parts for each "component".
  */
 
+/*
+ * Non exhaustive list of dependencies (add them here if you see them!)
+ *
+ * js/utils.js:ROMAN_NUMERAL_MAP
+ */
+
 const itemBGPositions = {"bow": "0 0", "spear": "9.090909090909088% 0", "wand": "18.181818181818183% 0", "dagger": "27.27272727272727% 0", "relik": "36.36363636363637% 0",
     "helmet": "45.45454545454546% 0", "chestplate": "54.54545454545454% 0", "leggings": "63.63636363636363% 0", "boots": "72.72727272727272% 0",
     "ring": "81.81818181818181% 0", "bracelet": "90.90909090909092% 0", "necklace": "100% 0",
@@ -248,7 +254,6 @@ function displayExpandedItem(item, parent_id){
                     let p_elem = make_elem("div", ["col"]);
 
                     // PROPER POWDER DISPLAYING
-                    let numerals = new Map([[1, "I"], [2, "II"], [3, "III"], [4, "IV"], [5, "V"], [6, "VI"], [7, "VII"]]);
 
                     p_elem.appendChild(make_elem("b", [], {
                         textContent: "Powder Slots: " + item.get(id) + " ["
@@ -257,7 +262,7 @@ function displayExpandedItem(item, parent_id){
                     let powders = item.get("powders");
                     for (let i = 0; i < powders.length; i++) {
                         p_elem.appendChild(make_elem("b", [damageClasses[Math.floor(powders[i]/POWDER_TIERS)+1]+"_powder"], {
-                            textContent: numerals.get((powders[i]%POWDER_TIERS)+1)+" "
+                            textContent: ROMAN_NUMERAL_MAP.get((powders[i]%POWDER_TIERS)+1)+" "
                         }));
                     }
 
@@ -1147,20 +1152,6 @@ function displayPoisonDamage(overallparent_elem, statMap) {
     spell_summary.append(overallpoisonDamage);
     container.append(spell_summary);
     overallparent_elem.append(container);
-}
-
-function displayEquipOrder(parent_elem, buildOrder){
-    parent_elem.textContent = "";
-    const order = buildOrder.slice();
-    let title_elem = document.createElement("b");
-    title_elem.textContent = "Equip order ";
-    title_elem.classList.add("Normal", "text-center");
-    parent_elem.append(title_elem);
-    for (const item of order) {
-        let p_elem = document.createElement("b");
-        p_elem.textContent = item.get("displayName");
-        parent_elem.append(p_elem);
-    }
 }
 
 function displayDefenseStats(parent_elem, statMap, insertSummary){
