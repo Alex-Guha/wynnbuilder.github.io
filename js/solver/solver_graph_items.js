@@ -146,6 +146,7 @@ class SolverItemDisplayNode extends ComputeNode {
         this.level_field  = document.getElementById(eq + '-lv')     || null;
         this.slot_elem    = document.getElementById(eq + '-dropdown') || null;
         this.item_image   = document.getElementById(eq + '-img')    || null;
+        this.lock_elem    = document.getElementById(eq + '-lock')   || null;
         this.fail_cb      = true;
     }
 
@@ -163,10 +164,12 @@ class SolverItemDisplayNode extends ComputeNode {
         if (!item) {
             this.input_field.classList.add('is-invalid');
             if (this.slot_elem) this.slot_elem.classList.add('slot-unlocked');
+            if (this.lock_elem) this.lock_elem.style.display = 'none';
             return null;
         }
         if (item.statMap.has('NONE')) {
             if (this.slot_elem) this.slot_elem.classList.add('slot-unlocked');
+            if (this.lock_elem) this.lock_elem.style.display = 'none';
             return null;
         }
 
@@ -175,9 +178,17 @@ class SolverItemDisplayNode extends ComputeNode {
         if (this.health_field) this.health_field.textContent = item.statMap.get('hp') || '0';
         if (this.level_field)  this.level_field.textContent  = item.statMap.get('lvl') || '0';
         if (this.item_image)   this.item_image.classList.add(tier + '-shadow');
-        // Use slot-solver styling when the solver filled this slot (not the user).
-        const is_solver_filled = this.input_field.dataset.solverFilled === 'true';
-        if (this.slot_elem) this.slot_elem.classList.add(is_solver_filled ? 'slot-solver' : 'slot-locked');
+        // Use slot-solver styling when the slot is free (solver-filled or user-toggled).
+        const is_free = this.input_field.dataset.solverFilled === 'true';
+        if (this.slot_elem) this.slot_elem.classList.add(is_free ? 'slot-solver' : 'slot-locked');
+        // Show lock toggle and update its icon/class
+        if (this.lock_elem) {
+            this.lock_elem.style.display = '';
+            this.lock_elem.innerHTML = is_free ? UNLOCK_SVG : LOCK_SVG;
+            this.lock_elem.classList.toggle('solver-lock-free', is_free);
+            this.lock_elem.title = is_free ? 'Slot free \u2014 solver will search (click to lock)' :
+                                             'Slot locked \u2014 solver will keep this item (click to unlock)';
+        }
         return null;
     }
 }

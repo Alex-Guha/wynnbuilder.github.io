@@ -74,8 +74,8 @@ function setRollMode(mode) {
 
 const SOLVER_PANELS = ["tomes-dropdown", "atree-dropdown", "aspects-dropdown"];
 const SOLVER_PANEL_BTNS = {
-    "tomes-dropdown":   "toggle-tomes",
-    "atree-dropdown":   "toggle-atree",
+    "tomes-dropdown": "toggle-tomes",
+    "atree-dropdown": "toggle-atree",
     "aspects-dropdown": "toggle-aspects",
 };
 
@@ -125,6 +125,46 @@ function toggleItemTooltip(tooltip_id) {
     }
 }
 
+
+// ── Slot lock toggle ─────────────────────────────────────────────────────────
+
+/**
+ * Toggles a filled equipment slot between locked (solver skips) and free
+ * (solver searches).  Called when the user clicks the lock icon.
+ * @param {number} i  Slot index into equipment_fields (0-7, weapon excluded).
+ */
+function toggleSlotLock(i) {
+    const eq = equipment_fields[i];
+    const input = document.getElementById(eq + '-choice');
+    if (!input || !input.value) return;             // empty slot — nothing to toggle
+
+    const is_free = input.dataset.solverFilled === 'true';
+    if (is_free) {
+        // free → locked
+        input.dataset.solverFilled = 'false';
+        _solver_free_mask &= ~(1 << i);
+    } else {
+        // locked → free
+        input.dataset.solverFilled = 'true';
+        _solver_free_mask |= (1 << i);
+    }
+    _write_sfree_url();
+
+    // Update visuals on the slot row
+    const dropdown = document.getElementById(eq + '-dropdown');
+    if (dropdown) {
+        dropdown.classList.remove('slot-locked', 'slot-solver');
+        dropdown.classList.add(is_free ? 'slot-locked' : 'slot-solver');
+    }
+    const lockEl = document.getElementById(eq + '-lock');
+    if (lockEl) {
+        const now_free = !is_free;
+        lockEl.innerHTML = now_free ? UNLOCK_SVG : LOCK_SVG;
+        lockEl.classList.toggle('solver-lock-free', now_free);
+        lockEl.title = now_free ? 'Slot free \u2014 solver will search (click to lock)' :
+            'Slot locked \u2014 solver will keep this item (click to unlock)';
+    }
+}
 
 // ── Reset ─────────────────────────────────────────────────────────────────────
 
@@ -186,7 +226,6 @@ function resetSolverFields() {
 // ── Initialisation ────────────────────────────────────────────────────────────
 
 async function init() {
-    console.log("solver.js init");
 
     // Disable thread count options that exceed the browser-reported logical CPU count.
     const hw = navigator.hardwareConcurrency;
@@ -210,7 +249,6 @@ async function init() {
         console.error("[solver] decodeHash failed:", e);
         return;
     }
-    console.log("[solver] data loaded — itemMap:", itemMap?.size);
 
     // Restore roll mode and combo from URL query params (solver-specific; not in the binary hash).
     const urlParams = new URLSearchParams(window.location.search);
@@ -264,15 +302,15 @@ async function init() {
             const parts = entry.split(':');
             if (parts.length < 3) continue;
             const stat_key = parts[0];
-            const op       = parts[1];
-            const value    = parts.slice(2).join(':');
+            const op = parts[1];
+            const value = parts.slice(2).join(':');
             const stat_obj = RESTRICTION_STATS.find(s => s.key === stat_key);
             if (!stat_obj) continue;
             const row = restriction_add_row();
             if (!row) continue;
             const stat_input = row.querySelector('.restr-stat-input');
-            const op_select  = row.querySelector('select');
-            const val_input  = row.querySelector('input[type="number"]');
+            const op_select = row.querySelector('select');
+            const val_input = row.querySelector('input[type="number"]');
             if (stat_input) {
                 stat_input.value = stat_obj.label;
                 stat_input.dataset.statKey = stat_key;
@@ -304,18 +342,16 @@ async function init() {
         }
     }
 
-    // When the user manually edits an equipment slot, clear its solver-filled flag so it
-    // becomes a locked target for the next solve run.
+    // When the user manually edits an equipment slot, revert it to locked.
+    // This handles both solver-filled and user-toggled-free slots.
     for (let i = 0; i < 8; i++) {
         const input = document.getElementById(equipment_fields[i] + '-choice');
         if (!input) continue;
         input.addEventListener('change', () => {
             if (_solver_filling_ui) return;   // triggered by _fill_build_into_ui — keep flag
-            if (input.dataset.solverFilled === 'true') {
-                input.dataset.solverFilled = 'false';
-                _solver_free_mask &= ~(1 << i);
-                _write_sfree_url();
-            }
+            input.dataset.solverFilled = 'false';
+            _solver_free_mask &= ~(1 << i);
+            _write_sfree_url();
         });
     }
 
@@ -331,17 +367,25 @@ async function init() {
         }
     }
 
+    // Wire lock toggle click listeners on each equipment slot (not weapon)
+    for (let i = 0; i < 8; i++) {
+        const eq = equipment_fields[i];
+        const lockEl = document.getElementById(eq + '-lock');
+        if (!lockEl) continue;
+        lockEl.innerHTML = LOCK_SVG;   // default icon (hidden until slot is filled)
+        lockEl.addEventListener('click', (e) => {
+            e.stopPropagation();       // don't trigger tooltip toggle on the row
+            toggleSlotLock(i);
+        });
+    }
+
     try {
-        console.log("[solver] calling init_autocomplete...");
         init_autocomplete();
-        console.log("[solver] init_autocomplete done");
     } catch (e) {
         console.error("[solver] init_autocomplete failed:", e, e.stack);
     }
 
-    console.log("[solver] calling solver_graph_init...");
     solver_graph_init();
-    console.log("[solver] solver_graph_init done");
 
     // Restore ability tree from URL hash (mirrors builder_graph.js post-decode logic).
     // atree_data is set by decodeHash(); atree_node.value is set once the weapon populates
@@ -384,14 +428,14 @@ async function init() {
                 solver_combo_total_node._write_rows_from_data(data);
                 solver_combo_total_node.mark_dirty().update();
             }
-        } catch(e) { console.warn('[solver] combo URL restore failed:', e); }
+        } catch (e) { console.warn('[solver] combo URL restore failed:', e); }
     }
 }
 
-window.onerror = function(message, source, lineno, colno, error) {
+window.onerror = function (message, source, lineno, colno, error) {
     const errBox = document.getElementById('err-box');
     const stackBox = document.getElementById('stack-box');
-    if (errBox)   errBox.textContent   = message;
+    if (errBox) errBox.textContent = message;
     if (stackBox) stackBox.textContent = error ? error.stack : "";
 };
 

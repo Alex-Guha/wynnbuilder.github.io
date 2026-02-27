@@ -122,22 +122,16 @@ http://localhost:8000/solver/?combo=c%3AM7RQqFHwTS1JzS9SqFEIz8xLSU1RMDNQqFEw5DJU
 
 ## Todo
 
-### Solver: skill point system and pruning
-
-The mid-DFS SP pruning check (`_sp_prune_check` in `solver_worker.js`) is known to produce false positives — it eliminates valid combinations, including the optimal build. The Pruning toggle in the UI defaults to on but must be turned off to guarantee correctness. Fixing it requires designing a sound upper-bound predicate that accounts for Wynncraft's order-dependent SP assignment rules. See SOLVER.md ("Key Weaknesses") for the full analysis and SOLVER.md ("Potential Improvements") for the design direction.
-
-Relatedly, the leaf `_sp_prefilter` does not account for the guild tome's SP bonuses, so builds at the edge of feasibility can be incorrectly rejected even in exhaustive mode.
+### Improve Solver
+See SOLVER.md for details.
 
 ### UI polish
 
-- **Level / roll mode / reset / copy row** — the controls in this row need visual refinement: consistent sizing, spacing, and alignment with the rest of the panel.
-- **Solver restrictions panel** — the stat threshold rows would benefit from better layout (aligned columns, cleaner autocomplete styling) and clearer labeling of the min/max selector.
-- **Tomes / Ability Tree / Aspects toggle buttons** — on page load, whichever section is shown by default does not receive the active hover highlight. The button hover/active state needs to be set programmatically at init to match the visible section.
-- **General design** — various small inconsistencies across sections (font sizing, border radii, button heights) that could be unified in a polish pass.
-
-### UX improvements
-
-- **Per-item solver toggle** — instead of clearing an item field to make a slot free for the solver, users should be able to click a small lock/unlock icon next to each filled slot to toggle whether that item is treated as fixed or searched. This would make it much easier to explore "what if I keep this ring but let the solver pick armor" workflows.
+- **Level / roll mode / reset / copy row** - the controls in this row need visual refinement: consistent sizing, spacing, and alignment with the rest of the panel.
+- **Solver restrictions panel** - the stat threshold rows would benefit from better layout (aligned columns, cleaner autocomplete styling) and clearer labeling of the min/max selector.
+- **Tomes / Ability Tree / Aspects toggle buttons** - on page load, whichever section is shown by default does not receive the active hover highlight. The button hover/active state needs to be set programmatically at init to match the visible section.
+- **General design** - various small inconsistencies across sections (font sizing, border radii, button heights) that could be unified in a polish pass.
+- **UI Scaling** - Test different aspect ratios and improve css
 
 ### Future
 
