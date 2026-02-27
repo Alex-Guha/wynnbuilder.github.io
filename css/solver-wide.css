@@ -66,12 +66,22 @@
 /* ── Combo row layout ────────────────────────────────────────────────────── */
 
 /*
+ * Flex children default to min-width:auto which prevents shrinking below
+ * content size.  min-width:0 + overflow:hidden lets the row compress to fit
+ * its container at narrow viewports instead of overflowing the right edge.
+ */
+.combo-row {
+    min-width: 0;
+    overflow: hidden;
+}
+
+/*
  * Spell select grows to fill available space; inline width in JS is omitted.
  * min-width keeps it readable when the panel is narrow.
  */
 .combo-row-spell {
     flex: 1 1 0;
-    min-width: 8em;
+    min-width: 4em;
 }
 
 /* Boosts wrapper and button stay at natural (content) width. */
