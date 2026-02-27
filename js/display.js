@@ -1154,20 +1154,6 @@ function displayPoisonDamage(overallparent_elem, statMap) {
     overallparent_elem.append(container);
 }
 
-function displayEquipOrder(parent_elem, buildOrder){
-    parent_elem.textContent = "";
-    const order = buildOrder.slice();
-    let title_elem = document.createElement("b");
-    title_elem.textContent = "Equip order ";
-    title_elem.classList.add("Normal", "text-center");
-    parent_elem.append(title_elem);
-    for (const item of order) {
-        let p_elem = document.createElement("b");
-        p_elem.textContent = item.get("displayName");
-        parent_elem.append(p_elem);
-    }
-}
-
 function displayDefenseStats(parent_elem, statMap, insertSummary){
     let defenseStats = getDefenseStats(statMap);
     insertSummary = (typeof insertSummary !== 'undefined') ? insertSummary : false;
