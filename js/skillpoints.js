@@ -51,6 +51,9 @@ function calculate_skillpoints(equipment, weapon) {
     let assign = [0, 0, 0, 0, 0];
     let total_assigned = 0;
     for (let i = 0; i < 5; ++i) {
+        if(req_skillpoints[i] == 0)
+            continue; // no need to assign if req is 0 anyway
+
         if (req_skillpoints[i] > bonus_skillpoints[i]) {
             const delta = req_skillpoints[i] - bonus_skillpoints[i];
             assign[i] = delta;
