@@ -12,17 +12,26 @@ function inplace_vadd5(target, delta) {
     }
 }
 
+function pull_req(req_skillpoints, item) {
+    const req = item.get('reqs');
+    for (let i = 0; i < 5; ++i) {
+        if (req[i] > req_skillpoints[i]) {
+            req_skillpoints[i] = req[i];
+        }
+    }
+}
+
 function calculate_skillpoints(equipment, weapon) {
     // Calculate equipment required skillpoints.
     // Return value: [best_skillpoints, final_skillpoints, best_total, set_info];
-    let crafted_items = [];
+    let no_bonus_items = [weapon];
 
     let bonus_skillpoints = [0, 0, 0, 0, 0];
     let req_skillpoints = [0, 0, 0, 0, 0];
-    let set_counts = Map();
+    let set_counts = new Map();
     for (const item of equipment) {
         if (item.get("crafted")) {
-            crafted_items.push(item);
+            no_bonus_items.push(item);
         }
         // Add skillpoints, and record set bonuses
         else {
@@ -35,14 +44,10 @@ function calculate_skillpoints(equipment, weapon) {
                 set_counts.set(set_name, set_counts.get(set_name) + 1);
             }
         }
-        // Reqs are just the max req
-        const req = item.get('reqs');
-        for (let i = 0; i < 5; ++i) {
-            if (req[i] > req_skillpoints[i]) {
-                req_skillpoints[i] = req[i];
-            }
-        }
+        pull_req(req_skillpoints, item);
     }
+    pull_req(req_skillpoints, weapon);
+
     let assign = [0, 0, 0, 0, 0];
     let total_assigned = 0;
     for (let i = 0; i < 5; ++i) {
@@ -54,12 +59,11 @@ function calculate_skillpoints(equipment, weapon) {
     }
     let final_skillpoints = assign.slice();
     inplace_vadd5(final_skillpoints, bonus_skillpoints);
-    inplace_vadd5(final_skillpoints, weapon.get('skillpoints'));
-    for (const item of crafted_items) {
+    for (const item of no_bonus_items) {
         inplace_vadd5(final_skillpoints, item.get('skillpoints'));
     }
     for (const [set_name, count] of set_counts) {
-        const bonus = sets.get(setName).bonuses[count];
+        const bonus = sets.get(set_name).bonuses[count - 1];
         for (const i in skp_order) {
             const delta = (bonus[skp_order[i]] || 0);
             final_skillpoints[i] += delta;
