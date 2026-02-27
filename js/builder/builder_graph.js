@@ -783,7 +783,6 @@ class BuildDisplayNode extends ComputeNode {
         // displayDefenseStats(document.getElementById("defensive-stats"), stats);
 
         displayPoisonDamage(document.getElementById("build-poison-stats"), stats);
-        displayEquipOrder(document.getElementById("build-order"), build.equip_order);
     }
 }
 
