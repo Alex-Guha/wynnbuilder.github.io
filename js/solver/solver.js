@@ -16,7 +16,7 @@ function copy_build_to_wynnbuilder() {
         }
         return;
     }
-    const builder_url = window.location.origin + '/builder/' + hash;
+    const builder_url = window.location.origin + SITE_BASE + '/builder/' + hash;
     navigator.clipboard.writeText(builder_url)
         .then(() => {
             const btn = document.getElementById('copy-to-builder-btn');
