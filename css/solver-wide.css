@@ -92,12 +92,18 @@
 }
 
 /*
- * Damage spans form a right-aligned column so numbers line up vertically
- * across all rows.  5.5em comfortably fits 8-digit comma-formatted values.
+ * Damage/heal spans form fixed-width columns so numbers line up vertically
+ * across all rows.  Heal sits to the left of damage so the more common
+ * damage column stays flush-right at the row edge.
  */
+.combo-row-heal {
+    display: inline-block;
+    text-align: right;
+    flex-shrink: 0;
+}
+
 .combo-row-damage {
     display: inline-block;
-    width: 5.5em;
     text-align: right;
     flex-shrink: 0;
 }
