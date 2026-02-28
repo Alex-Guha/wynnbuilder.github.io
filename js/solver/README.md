@@ -135,8 +135,9 @@ See SOLVER.md for details.
 
 ### Future
 
-- **Automatic combo sequencing** — tracking state-dependent effects across a combo sequence (clone counts consumed by Bamboozle after Vanish, etc.) would require a per-spell state machine for each ability interaction. This is a significant undertaking and was deferred from the initial design.
-- **Damage-based branch-and-bound, item dominance pre-filtering, two-phase solve, weighted multi-objective scoring, tome optimization, GPU parallelization** — see SOLVER.md ("Potential Improvements") for details on each.
+- **Modified Spell Mana Cost** - Currently, spells like Eldritch Call and Bamboozle don't have automatic mana cost inference, since they modify other abilities.
+- **Automatic combo sequencing** - tracking state-dependent effects across a combo sequence (clone counts consumed by Bamboozle after Vanish, etc.) would require a per-spell state machine for each ability interaction. This is a significant undertaking and was deferred from the initial design.
+- **SOLVER.md** See "Potential Improvements" for details.
 
 ### Testing
 
