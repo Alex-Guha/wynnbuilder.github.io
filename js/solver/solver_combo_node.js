@@ -814,7 +814,7 @@ function solver_compute_result_hash(result) {
         const mock_build = {
             equipment:        result.items.slice(0, 8),
             weapon:           solver_item_final_nodes[8]?.value,
-            tomes:            solver_item_final_nodes.slice(9).map(n => n?.value).filter(Boolean),
+            tomes:            solver_item_final_nodes.slice(9).map((n, i) => n?.value ?? none_tomes[_NONE_TOME_KEY[tome_fields[i]]]),
             total_skillpoints: result.total_sp,
             level:            parseInt(document.getElementById('level-choice')?.value) || 106,
         };

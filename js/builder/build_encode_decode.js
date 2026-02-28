@@ -580,7 +580,13 @@ function decodeAspects(cursor, cls) {
                     case DEC.ASPECT_SLOT_FLAG.USED: {
                         const aspectID = cursor.advanceBy(DEC.ASPECT_ID_BITLEN);
                         const aspectTier = cursor.advanceBy(DEC.ASPECT_TIER_BITLEN);
-                        aspects.push([aspect_id_map.get(cls).get(aspectID).displayName, aspectTier + 1]);
+                        const aspectSpec = aspect_id_map.get(cls)?.get(aspectID);
+                        if (aspectSpec) {
+                            aspects.push([aspectSpec.displayName, aspectTier + 1]);
+                        } else {
+                            console.warn(`Unknown aspect ID ${aspectID} for class ${cls}, skipping`);
+                            aspects.push(null);
+                        }
                         break;
                     }
                 }
