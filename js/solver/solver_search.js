@@ -364,7 +364,7 @@ function _parse_combo_for_search(spell_map, weapon) {
             mana_excl: r.dom_row?.querySelector('.combo-mana-toggle')
                 ?.classList.contains('mana-excluded') ?? false,
         }))
-        .filter(r => r.qty > 0 && r.spell && (spell_has_damage(r.spell) || spell_has_heal(r.spell)));
+        .filter(r => r.qty > 0 && r.spell && (spell_has_damage(r.spell) || spell_has_heal(r.spell) || r.spell.cost != null));
 }
 
 /**

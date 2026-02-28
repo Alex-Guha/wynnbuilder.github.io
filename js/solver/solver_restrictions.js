@@ -7,7 +7,105 @@
 function toggle_build_dir(sp) {
     const btn = document.getElementById('dir-' + sp);
     if (btn) btn.classList.toggle('toggleOn');
+    // User has explicitly chosen — remove from auto tracking so the auto-check
+    // no longer controls this direction.
+    _auto_disabled_dirs.delete(sp);
+    _dir_user_overrides.add(sp);
     _schedule_restrictions_url_update();
+}
+
+// ── Auto build-direction ─────────────────────────────────────────────────────
+
+/**
+ * SP types currently auto-disabled based on locked-item analysis.
+ * Cleared when the user manually toggles a direction or resets the solver.
+ */
+const _auto_disabled_dirs = new Set();
+
+/**
+ * SP types where the user has manually toggled after the auto-check acted.
+ * Once a direction is in this set the auto logic will not touch it again
+ * (until a solver reset).
+ */
+const _dir_user_overrides = new Set();
+
+let _auto_dir_timer = null;
+
+/**
+ * Debounced trigger for auto_update_build_directions (150 ms).
+ * Passing reset_overrides = true clears user overrides so every direction
+ * is re-evaluated from scratch (used when items change).
+ */
+function _schedule_auto_dir_update(reset_overrides = false) {
+    if (reset_overrides) _dir_user_overrides.clear();
+    clearTimeout(_auto_dir_timer);
+    _auto_dir_timer = setTimeout(auto_update_build_directions, 150);
+}
+
+/**
+ * Examines locked items + weapon to auto-toggle build-direction buttons.
+ * If the net skillpoint provision for an SP type is negative across all locked
+ * equipment, that direction is auto-disabled (items requiring it are excluded
+ * from the search pool).  Directions the user has manually toggled are never
+ * touched.
+ */
+function auto_update_build_directions() {
+    const sp_sums = [0, 0, 0, 0, 0];
+    let has_locked = false;
+
+    // Weapon (index 8, always locked)
+    if (typeof solver_item_final_nodes !== 'undefined' && solver_item_final_nodes[8]) {
+        const weapon = solver_item_final_nodes[8].value;
+        if (weapon && !weapon.statMap.has('NONE')) {
+            has_locked = true;
+            const skp = weapon.statMap.get('skillpoints') ?? [0, 0, 0, 0, 0];
+            for (let i = 0; i < 5; i++) sp_sums[i] += skp[i] ?? 0;
+        }
+    }
+
+    // Locked armor / accessory items (indices 0-7)
+    if (typeof solver_item_final_nodes !== 'undefined') {
+        for (let i = 0; i < 8; i++) {
+            const node = solver_item_final_nodes[i];
+            const item = node?.value;
+            if (!item || item.statMap.has('NONE')) continue;
+            const input = document.getElementById(equipment_fields[i] + '-choice');
+            if (input?.dataset.solverFilled === 'true') continue; // free slot
+            has_locked = true;
+            const skp = item.statMap.get('skillpoints') ?? [0, 0, 0, 0, 0];
+            for (let j = 0; j < 5; j++) sp_sums[j] += skp[j] ?? 0;
+        }
+    }
+
+    if (!has_locked) return; // nothing to base decisions on
+
+    const sp_keys = ['str', 'dex', 'int', 'def', 'agi'];
+    let changed = false;
+    for (let i = 0; i < 5; i++) {
+        const sp = sp_keys[i];
+        if (_dir_user_overrides.has(sp)) continue; // user took manual control
+
+        const btn = document.getElementById('dir-' + sp);
+        if (!btn) continue;
+
+        if (sp_sums[i] < 0) {
+            // Auto-disable if currently enabled
+            if (btn.classList.contains('toggleOn')) {
+                btn.classList.remove('toggleOn');
+                _auto_disabled_dirs.add(sp);
+                changed = true;
+            }
+        } else {
+            // Re-enable only if we previously auto-disabled it
+            if (_auto_disabled_dirs.has(sp)) {
+                btn.classList.add('toggleOn');
+                _auto_disabled_dirs.delete(sp);
+                changed = true;
+            }
+        }
+    }
+
+    if (changed) _schedule_restrictions_url_update();
 }
 
 /**
