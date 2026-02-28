@@ -354,6 +354,7 @@ async function init() {
         if (!input) continue;
         input.addEventListener('change', () => {
             if (_solver_filling_ui) return;   // triggered by _fill_build_into_ui — keep flag
+            _solver_sp_override = null;       // manual edit — revert to normal SP display
             input.dataset.solverFilled = 'false';
             _solver_free_mask &= ~(1 << i);
             _write_sfree_url();

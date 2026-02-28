@@ -359,9 +359,70 @@ function _run_level_enum() {
                 worker_id: _cfg.worker_id,
                 checked: _checked,
                 feasible: _feasible,
-                top5_names: _top5.map(r => ({ score: r.score, item_names: r.item_names })),
+                top5_names: _top5.map(r => ({
+                    score: r.score, item_names: r.item_names,
+                    base_sp: r.base_sp, total_sp: r.total_sp, assigned_sp: r.assigned_sp,
+                })),
             });
         }
+    }
+
+    // ── Greedy extra-SP allocator ───────────────────────────────────────────
+    //
+    // After calculate_skillpoints assigns the minimum SP to equip items, any
+    // remaining budget is greedily distributed to maximise the scoring target.
+    // Uses geometric step-down (20 → 4 → 1) for O(50-95) trials worst case.
+
+    function _greedy_allocate_sp(build_sm, base_sp, total_sp, assigned_sp, weapon_sm) {
+        let remaining = sp_budget - assigned_sp;
+        if (remaining <= 0) return assigned_sp;
+
+        // Quick check: any attribute still has room?
+        let any_room = false;
+        for (let i = 0; i < 5; i++) {
+            if (base_sp[i] < 100 && total_sp[i] < 150) { any_room = true; break; }
+        }
+        if (!any_room) return assigned_sp;
+
+        const target = _cfg.scoring_target ?? 'combo_damage';
+        const need_thresh = (target !== 'combo_damage' && target !== 'total_healing');
+
+        function _trial_score() {
+            const cb = _assemble_combo_stats(build_sm, total_sp, weapon_sm);
+            const ts = need_thresh ? _assemble_threshold_stats(cb) : null;
+            return _eval_score(cb, ts);
+        }
+
+        let cur = _trial_score();
+
+        for (const step of [20, 4, 1]) {
+            let progress = true;
+            while (progress && remaining > 0) {
+                progress = false;
+                let best_i = -1, best_s = cur;
+
+                for (let i = 0; i < 5; i++) {
+                    const a = Math.min(step, remaining, 100 - base_sp[i], 150 - total_sp[i]);
+                    if (a <= 0) continue;
+                    total_sp[i] += a;
+                    const s = _trial_score();
+                    total_sp[i] -= a;
+                    if (s > best_s) { best_s = s; best_i = i; }
+                }
+
+                if (best_i >= 0) {
+                    const a = Math.min(step, remaining, 100 - base_sp[best_i], 150 - total_sp[best_i]);
+                    base_sp[best_i] += a;
+                    total_sp[best_i] += a;
+                    remaining -= a;
+                    assigned_sp += a;
+                    cur = best_s;
+                    progress = true;
+                }
+            }
+        }
+
+        return assigned_sp;
     }
 
     // ── Leaf evaluation ─────────────────────────────────────────────────────
@@ -419,6 +480,9 @@ function _run_level_enum() {
         const all_equip_sms = [...equip_8_sms, ...tome_sms, weapon_sm];
         const build_sm = _finalize_leaf_statmap(running_sm, weapon_sm, activeSetCounts, sets, all_equip_sms);
 
+        // Greedily assign any remaining SP budget to maximise the scoring target
+        const final_assigned = _greedy_allocate_sp(build_sm, base_sp, total_sp, assigned_sp, weapon_sm);
+
         // Stat assembly + atree scaling
         const combo_base = _assemble_combo_stats(build_sm, total_sp, weapon_sm);
 
@@ -444,7 +508,7 @@ function _run_level_enum() {
         // Score
         const score = _eval_score(combo_base, thresh_stats);
         const item_names = equip_8_sms.map(sm => _get_item_name(sm));
-        _insert_top5({ score, item_names, base_sp, total_sp, assigned_sp });
+        _insert_top5({ score, item_names, base_sp, total_sp, assigned_sp: final_assigned });
         _maybe_progress();
     }
 

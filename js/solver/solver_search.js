@@ -539,6 +539,12 @@ function _write_sfree_url() {
 }
 
 function _fill_build_into_ui(result) {
+    // Store solver SP data so SolverSKPNode can show "Assign: X (+Y)" format
+    // when the computation graph fires asynchronously.
+    // Only set when real SP data is present (progress messages may lack it).
+    _solver_sp_override = (result.base_sp && result.total_sp)
+        ? { base_sp: result.base_sp, total_sp: result.total_sp, assigned_sp: result.assigned_sp ?? 0 }
+        : null;
     _solver_filling_ui = true;
     _solver_free_mask = 0;
     for (let i = 0; i < 8; i++) {

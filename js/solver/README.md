@@ -122,8 +122,6 @@ http://localhost:8000/solver/?combo=c%3AM7RQqFHwTS1JzS9SqFEIz8xLSU1RMDNQqFEw5DJU
 
 ## Todo
 
-### Auto assign extra SP
-
 ### Improve Solver
 See SOLVER.md for details.
 

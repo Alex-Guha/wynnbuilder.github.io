@@ -136,10 +136,11 @@ class SolverBuildStatExtractNode extends ComputeNode {
         const stats = new Map(build.statMap);
         // Overwrite item-only skill-point values with the final totals
         // (items + assigned), mirroring AggregateEditableIDNode in builder_graph.js.
-        // Without this, getSpellCost and skillPointsToPercentage use only item-
-        // contributed int/str/dex/def/agi, producing incorrect damage and costs.
+        // When solver has greedy-allocated extra SP, use those values so the
+        // damage/mana pipeline matches the solver's scoring.
+        const sp = (_solver_sp_override?.total_sp) ?? build.total_skillpoints;
         for (const [idx, name] of skp_order.entries()) {
-            stats.set(name, build.total_skillpoints[idx]);
+            stats.set(name, sp[idx]);
         }
         const weaponType = build.weapon.statMap.get('type');
         if (weaponType) {
