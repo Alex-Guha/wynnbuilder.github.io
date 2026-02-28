@@ -1,6 +1,11 @@
 let getUrl = window.location;
 const url_base = getUrl.protocol + "//" + getUrl.host + "/" + getUrl.pathname.split('/')[1];
 
+// Base path prefix for GitHub Pages project sites (e.g. username.github.io/repo-name/).
+// On localhost or user sites (no prefix), this is empty.
+const SITE_BASE = window.location.pathname.startsWith('/wynnbuilder.github.io/')
+    ? '/wynnbuilder.github.io' : '';
+
 // huge regex :doom:
 // replace with navigator.userAgentData.mobile once it has wider support
 const isMobile = function() {
