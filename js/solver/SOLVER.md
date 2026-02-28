@@ -2,6 +2,8 @@
 
 This document describes the abstract logic of the WynnSolver search pipeline, from user click to ranked results. The code spans three files: `solver_search.js` (main thread orchestration), `solver_worker.js` (per-worker DFS), and `solver_worker_shims.js` (DOM-free utility copies).
 
+The current solver essentially searches through a priority-ordered tree for builds that maximize the solver target. Item priority is determined by solver constraints and item damage stats. This helps to ensure that the best builds are more likely to appear early.
+
 ---
 
 ## High-Level Picture

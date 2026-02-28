@@ -1,3 +1,7 @@
+// Set by solver_search.js when filling a solver result into the UI.
+// SolverSKPNode reads this to show "Assign: X (+Y)" with greedy extra SP.
+// Cleared when the user manually edits items (non-solver change).
+let _solver_sp_override = null;
 
 /**
  * Assembles a Build from all item inputs and the level field.
@@ -85,17 +89,28 @@ class SolverSKPNode extends ComputeNode {
 
         if (!build) return null;
 
-        // build.total_skillpoints = total after items + assigned
-        // build.base_skillpoints  = how many points the player must manually assign
+        // When solver has filled this build, use its greedy SP allocation data.
+        const ov = _solver_sp_override;
+        const has_override = ov && ov.base_sp && ov.total_sp;
+
         for (const [i, skp] of skp_order.entries()) {
             const totalEl  = document.getElementById(skp + '-skp-total');
             const assignEl = document.getElementById(skp + '-skp-assign');
-            if (totalEl)  totalEl.textContent  = build.total_skillpoints[i];
-            if (assignEl) assignEl.textContent = 'Assign: ' + build.base_skillpoints[i];
+            if (has_override) {
+                if (totalEl)  totalEl.textContent = ov.total_sp[i];
+                const req   = build.base_skillpoints[i];
+                const extra = ov.base_sp[i] - req;
+                if (assignEl) assignEl.textContent = extra > 0
+                    ? `Assign: ${req} (+${extra})`
+                    : `Assign: ${req}`;
+            } else {
+                if (totalEl)  totalEl.textContent  = build.total_skillpoints[i];
+                if (assignEl) assignEl.textContent = 'Assign: ' + build.base_skillpoints[i];
+            }
         }
 
         if (summaryBox) {
-            const total  = build.assigned_skillpoints;
+            const total  = has_override ? ov.assigned_sp : build.assigned_skillpoints;
             const budget = levelToSkillPoints(build.level);
             const rem    = budget - total;
             const p = document.createElement('p');
@@ -162,7 +177,10 @@ class SolverBuildEncodeNode extends ComputeNode {
 
         // Pass total_skillpoints as the finalSp argument so encodeSp computes spDeltas = [0,0,0,0,0]
         // → AUTOMATIC flag → WynnBuilder re-derives SP from items instead of using stale base values.
-        const skillpoints = build.total_skillpoints.slice();
+        // When solver has greedy-allocated extra SP, encode those instead.
+        const skillpoints = (_solver_sp_override?.total_sp)
+            ? _solver_sp_override.total_sp.slice()
+            : build.total_skillpoints.slice();
 
         // Ensure version is set (may be absent when page loaded without a hash).
         if (typeof wynn_version_id === 'undefined' || wynn_version_id === null) {
