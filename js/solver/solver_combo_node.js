@@ -96,7 +96,7 @@ class SolverComboTotalNode extends ComputeNode {
                 if (dmg_span)  dmg_span.textContent  = '';
                 if (dmg_popup) dmg_popup.textContent = '';
                 dmg_wrap?.classList.remove('has-popup', 'popup-locked');
-                if (heal_span) { heal_span.textContent = ''; heal_span.style.display = 'none'; }
+                if (heal_span) { heal_span.textContent = ''; }
                 continue;
             }
             const { stats, prop_overrides } =
@@ -115,10 +115,8 @@ class SolverComboTotalNode extends ComputeNode {
             if (heal_span) {
                 if (heal_per_cast > 0) {
                     heal_span.textContent  = '+' + Math.round(heal_per_cast).toLocaleString();
-                    heal_span.style.display = '';
                 } else {
                     heal_span.textContent  = '';
-                    heal_span.style.display = 'none';
                 }
             }
             // Populate the breakdown popup (shown on hover/click of the damage number).
@@ -140,6 +138,38 @@ class SolverComboTotalNode extends ComputeNode {
                 const cost_per = getSpellCost(base_stats, spell);
                 mana_cost += cost_per * qty;
                 spell_costs.push({ name: spell.name, qty, cost: cost_per });
+            }
+        }
+
+        // Normalize damage & heal columns: measure the widest span in each
+        // column and apply that as min-width so all rows line up.
+        const sel_rows_el = document.getElementById('combo-selection-rows');
+        if (sel_rows_el) {
+            const dmg_spans  = sel_rows_el.querySelectorAll('.combo-row-damage');
+            const heal_spans = sel_rows_el.querySelectorAll('.combo-row-heal');
+            const any_has_heal = [...heal_spans].some(s => s.textContent !== '');
+
+            // Reset min-width so we measure natural widths.
+            for (const ds of dmg_spans)  ds.style.minWidth = '';
+            for (const hs of heal_spans) {
+                hs.style.minWidth = '';
+                hs.style.display = any_has_heal ? '' : 'none';
+                hs.style.visibility = '';
+            }
+
+            // Damage column — always present.
+            let max_dmg = 0;
+            for (const ds of dmg_spans) max_dmg = Math.max(max_dmg, ds.offsetWidth);
+            for (const ds of dmg_spans) ds.style.minWidth = max_dmg + 'px';
+
+            // Heal column — only when at least one row has healing.
+            if (any_has_heal) {
+                let max_heal = 0;
+                for (const hs of heal_spans) max_heal = Math.max(max_heal, hs.offsetWidth);
+                for (const hs of heal_spans) {
+                    hs.style.minWidth = max_heal + 'px';
+                    hs.style.visibility = hs.textContent ? '' : 'hidden';
+                }
             }
         }
 
@@ -564,10 +594,10 @@ function _build_selection_row(qty_val, pending_spell, pending_boosts, pending_ma
     const heal_span = document.createElement('span');
     heal_span.className      = 'combo-row-heal text-success text-nowrap small ms-1';
     heal_span.textContent    = '';
-    heal_span.style.display  = 'none';
+    heal_span.style.visibility = 'hidden';
     const dmg_popup = document.createElement('div');
     dmg_popup.className = 'combo-dmg-popup text-light';
-    dmg_wrap.append(dmg_span, heal_span, dmg_popup);
+    dmg_wrap.append(heal_span, dmg_span, dmg_popup);
     // Reposition popup above or below the row depending on available viewport space.
     const _update_dmg_popup_pos = () => {
         const rect = dmg_wrap.getBoundingClientRect();
