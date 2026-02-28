@@ -164,6 +164,7 @@ function toggleSlotLock(i) {
         lockEl.title = now_free ? 'Slot free \u2014 solver will search (click to lock)' :
             'Slot locked \u2014 solver will keep this item (click to unlock)';
     }
+    _schedule_auto_dir_update(true);
 }
 
 // ── Reset ─────────────────────────────────────────────────────────────────────
@@ -202,6 +203,8 @@ function resetSolverFields() {
     }
 
     // Reset restriction panel to defaults
+    _auto_disabled_dirs.clear();
+    _dir_user_overrides.clear();
     for (const sp of ['str', 'dex', 'int', 'def', 'agi']) {
         const btn = document.getElementById('dir-' + sp);
         if (btn) btn.classList.add('toggleOn');
@@ -265,8 +268,10 @@ async function init() {
     const urlDir = urlParams.get('dir');
     if (urlDir) {
         for (const sp of urlDir.split(',')) {
-            const btn = document.getElementById('dir-' + sp.trim());
+            const trimmed = sp.trim();
+            const btn = document.getElementById('dir-' + trimmed);
             if (btn) btn.classList.remove('toggleOn');
+            _dir_user_overrides.add(trimmed); // treat URL-persisted as user choice
         }
     }
 
@@ -352,6 +357,7 @@ async function init() {
             input.dataset.solverFilled = 'false';
             _solver_free_mask &= ~(1 << i);
             _write_sfree_url();
+            _schedule_auto_dir_update(true);
         });
     }
 
@@ -386,6 +392,10 @@ async function init() {
     }
 
     solver_graph_init();
+
+    // Auto-disable build directions for SP types with negative net provision
+    // across locked items.  Runs after graph init so item nodes have values.
+    auto_update_build_directions();
 
     // Restore ability tree from URL hash (mirrors builder_graph.js post-decode logic).
     // atree_data is set by decodeHash(); atree_node.value is set once the weapon populates

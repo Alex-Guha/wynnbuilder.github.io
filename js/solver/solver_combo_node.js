@@ -286,7 +286,7 @@ class SolverComboTotalNode extends ComputeNode {
         if (!container) return;
 
         const all_selectable = [...spell_map.entries()]
-            .filter(([, s]) => spell_has_damage(s) || spell_has_heal(s));
+            .filter(([, s]) => spell_has_damage(s) || spell_has_heal(s) || s.cost != null);
         // Regular spells (positive IDs) sorted ascending; powder specials (negative IDs) last.
         const regular = all_selectable.filter(([id]) => id >= 0).sort((a, b) => a[0] - b[0]);
         const powder  = all_selectable.filter(([id]) => id <  0).sort((a, b) => b[0] - a[0]);
