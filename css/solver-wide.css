@@ -67,12 +67,14 @@
 
 /*
  * Flex children default to min-width:auto which prevents shrinking below
- * content size.  min-width:0 + overflow:hidden lets the row compress to fit
- * its container at narrow viewports instead of overflowing the right edge.
+ * content size.  min-width:0 lets the row compress to fit its container at
+ * narrow viewports instead of overflowing the right edge.
+ *
+ * NOTE: Do NOT add overflow:hidden here — it clips the absolutely-positioned
+ * per-spell damage popup (.combo-dmg-popup) that extends above/below the row.
  */
 .combo-row {
     min-width: 0;
-    overflow: hidden;
 }
 
 /*
