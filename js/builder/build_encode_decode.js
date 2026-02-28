@@ -143,9 +143,7 @@ function encodePowders(powderset, version) {
                 if (powder % POWDER_TIERS === previousPowder % POWDER_TIERS) {
                     powdersVec.appendFlag("POWDER_REPEAT_TIER_OP", "REPEAT_TIER");
                     const numElements = ENC.POWDER_ELEMENTS.length;
-                    const powderElement = Math.floor(powder % numElements);
-                    const previousPowderElement = Math.floor(previousPowder % numElements);
-                    const elementWrapper = mod(powderElement - previousPowderElement, numElements) - 1; 
+                    const elementWrapper = mod((powder - previousPowder) / POWDER_TIERS, numElements) - 1; 
                     powdersVec.append(elementWrapper, ENC.POWDER_WRAPPER_BITLEN);
                 } else {
                     powdersVec.appendFlag("POWDER_REPEAT_TIER_OP", "CHANGE_POWDER");
