@@ -23,15 +23,13 @@ The solver is organized into several layers: page entry, UI logic, the reactive 
 
 ### Entry point
 
-**`solver/index.html`** — page entry. Imports all shared WynnBuilder libraries (loaders, `computation_graph.js`, `damage_calc.js`, `skillpoints.js`, `build_utils.js`, `display.js`, `atree.js`, `aspects.js`, etc.) followed by all solver-specific scripts. Defines the full DOM layout: item slots, tomes, boosts, ability tree, aspect panel, combo, build stats, restrictions, and solver controls.
+**`solver/index.html`** — page entry. Imports all shared WynnBuilder libraries (loaders, `computation_graph.js`, `damage_calc.js`, `skillpoints.js`, `build_utils.js`, `display.js`, `shared_game_stats.js`, `shared_spell_nodes.js`, `autocomplete.js`, `atree.js`, `aspects.js`, etc.) followed by all solver-specific scripts. Defines the full DOM layout: item slots, tomes, boosts, ability tree, aspect panel, combo, build stats, restrictions, and solver controls.
 
 ---
 
 ### Initialization & UI helpers
 
 **`solver.js`** — page-level utilities: `copy_build_to_wynnbuilder()`, `copy_solver_url()`, `setRollMode()`, and `resetSolver()`. Also reads/writes solver-specific URL query params (combo, roll mode, guild tome, thread count, pruning toggle, etc.) on page load/save.
-
-**`solver_autocomplete.js`** — sets up `create_autocomplete()` for each item and tome input field, using position callbacks that anchor the dropdown below its parent `{slot}-dropdown` wrapper div.
 
 **`solver_constants.js`** — field name arrays (`equipment_fields`, `tome_fields`, `powderable_keys`), slot-index mappings (`_NONE_ITEM_IDX`, `_NONE_TOME_KEY`), roll mode constants, and SP attribute order.
 
@@ -41,11 +39,11 @@ The solver is organized into several layers: page entry, UI logic, the reactive 
 
 The solver uses the same push-based reactive DAG as WynnBuilder (`ComputeNode` in `computation_graph.js`). When any input changes, affected nodes recompute in topological order automatically. Node definitions are split across four files:
 
-**`solver_graph_items.js`** — `ItemInputNode`, `PowderInputNode`, `ItemPowderingNode`, `SolverItemDisplayNode`, `SolverItemTooltipNode`, `SolverWeaponDisplayNode`. These cover reading item/powder fields, applying powders, rendering tier-colored slot displays, and hover tooltips.
+**`solver_graph_items.js`** — `ItemInputNode` (extends `BaseItemInputNode`, adds roll mode), `SolverItemDisplayNode` (extends `BaseItemDisplayNode`, adds lock/slot styling), `SolverItemTooltipNode`, `SolverWeaponDisplayNode`. Shared base classes, `PowderInputNode`, and `ItemPowderingNode` are in `shared_graph_nodes.js`.
 
-**`solver_graph_build.js`** — `SolverBuildAssembleNode` (aggregates all item and tome nodes into a `Build` object, which internally runs `calculate_skillpoints`) and `SolverSKPNode` (reads the resulting SP arrays and renders the read-only skill point display).
+**`solver_graph_build.js`** — `SolverSKPNode` (reads the SP arrays from the assembled Build and renders the read-only skill point display), `SolverBuildEncodeNode`, and `SolverURLUpdateNode`. `BuildAssembleNode` is now shared in `shared_graph_nodes.js`.
 
-**`solver_graph_stat.js`** — boost button data (`damageMultipliers`, static boost handlers), `AggregateStatsNode` (merges multiple StatMaps via `merge_stat`), `PlayerClassNode` (derives class from weapon type), `SolverBuildStatExtractNode` (extracts `build.statMap` + `classDef` into a plain Map), and `SolverBuildDisplayNode` (calls `displayBuildStats()` for summary/detailed views).
+**`solver_graph_stat.js`** — `SolverBuildStatExtractNode` (extracts `build.statMap` + `classDef` into a plain Map), and `SolverBuildDisplayNode` (calls `displayBuildStats()` for summary/detailed views). `AggregateStatsNode` and `PlayerClassNode` are in `shared_graph_nodes.js`. Boost/radiance compute functions (`compute_boosts`, `compute_radiance`) are also shared. Boost button data (`damageMultipliers`) and defense stats (`getDefenseStats`) are in `shared_game_stats.js`.
 
 **`solver_graph.js`** — `solver_graph_init()`, the wiring function that instantiates all of the above nodes and links them into the full DAG: item nodes → build assembly → stat extraction → radiance scaling → stat aggregation → display nodes and combo base stats.
 
@@ -124,6 +122,9 @@ http://localhost:8000/solver/?combo=c%3AM7RQqFHwTS1JzS9SqFEIz8xLSU1RMDNQqFEw5DJU
 
 ### Improve Solver
 See SOLVER.md for details.
+
+## Bugs
+- Extra skill point assignment is not being properly encoded in the url.
 
 ### UI polish
 

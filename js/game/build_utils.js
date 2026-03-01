@@ -8,10 +8,10 @@
 function skillPointsToPercentage(skp){
     if (skp<=0) {
         return 0.0;
-    } else if (skp>=150) {
-        skp = 150;
+    } else if (skp>=SP_PERCENTAGE_INPUT_CAP) {
+        skp = SP_PERCENTAGE_INPUT_CAP;
     }
-    const r = 0.9908;
+    const r = SP_PERCENTAGE_RATE;
     return (r/(1-r)*(1 - Math.pow(r, skp))) / 100.0;
         //return (-0.0000000066695* Math.pow(Math.E, -0.00924033 * skp + 18.9) + 1.0771);
         //return(-0.0000000066695* Math.pow(Math.E, -0.00924033 * skp + 18.9) + 1.0771).toFixed(3);
@@ -32,7 +32,7 @@ function levelToSkillPoints(level){
     if(level < 1){
         return 0;
     }else if(level >= 101){
-        return 200;
+        return SP_TOTAL_CAP;
     }else{
         return (level - 1) * 2;
     }
@@ -44,8 +44,8 @@ function levelToSkillPoints(level){
 function levelToHPBase(level){
     if(level < 1){ //bad level
         return this.levelToHPBase(1);
-    }else if (level > 106){ //also bad level
-        return this.levelToHPBase(106);
+    }else if (level > MAX_PLAYER_LEVEL){ //also bad level
+        return this.levelToHPBase(MAX_PLAYER_LEVEL);
     }else{ //good level
         return 5*level + 5;
     }

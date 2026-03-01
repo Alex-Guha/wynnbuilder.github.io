@@ -3,65 +3,7 @@
 // Cleared when the user manually edits items (non-solver change).
 let _solver_sp_override = null;
 
-/**
- * Assembles a Build from all item inputs and the level field.
- * Returns null when all slots are empty (no build to display).
- *
- * Signature: SolverBuildAssembleNode(...) => Build | null
- */
-class SolverBuildAssembleNode extends ComputeNode {
-    constructor() { super('solver-make-build'); }
-
-    compute_func(input_map) {
-        const equipments = [
-            input_map.get('helmet'),
-            input_map.get('chestplate'),
-            input_map.get('leggings'),
-            input_map.get('boots'),
-            input_map.get('ring1'),
-            input_map.get('ring2'),
-            input_map.get('bracelet'),
-            input_map.get('necklace'),
-        ];
-        const tomes = [
-            input_map.get('weaponTome1'),
-            input_map.get('weaponTome2'),
-            input_map.get('armorTome1'),
-            input_map.get('armorTome2'),
-            input_map.get('armorTome3'),
-            input_map.get('armorTome4'),
-            input_map.get('guildTome1'),
-            input_map.get('lootrunTome1'),
-            input_map.get('gatherXpTome1'),
-            input_map.get('gatherXpTome2'),
-            input_map.get('dungeonXpTome1'),
-            input_map.get('dungeonXpTome2'),
-            input_map.get('mobXpTome1'),
-            input_map.get('mobXpTome2'),
-        ];
-        // Wynncraft skill-point equipping order: boots→helmet, ring1→neck, guildTome
-        const wynn_equip = [
-            input_map.get('boots'),
-            input_map.get('leggings'),
-            input_map.get('chestplate'),
-            input_map.get('helmet'),
-            input_map.get('ring1'),
-            input_map.get('ring2'),
-            input_map.get('bracelet'),
-            input_map.get('necklace'),
-            input_map.get('guildTome1'),
-        ];
-        const weapon = input_map.get('weapon');
-
-        let level = parseInt(input_map.get('level-input'));
-        if (isNaN(level)) level = 106;
-
-        const all_none = equipments.concat([...tomes, weapon]).every(x => x.statMap.has('NONE'));
-        if (all_none) return null;
-
-        return new Build(level, equipments, tomes, weapon, wynn_equip);
-    }
-}
+// BuildAssembleNode is defined in shared_graph_nodes.js
 
 /**
  * Reads SP assignment results from the assembled Build and updates the read-only
@@ -152,9 +94,11 @@ const _NONE_TOME_KEY = {
 
 /**
  * Encodes the current build state into the compact binary format used by WynnBuilder.
- * Powders are read from each PowderInputNode; skillpoints come from build.base_skillpoints.
+ * Greedy-allocated SP are obtained from the build-stats graph input (which reads
+ * _solver_sp_override in SolverBuildStatExtractNode), ensuring the encode node
+ * always uses the same SP values as the stats display pipeline.
  *
- * Signature: SolverBuildEncodeNode(build, atree, atree-state, aspects,
+ * Signature: SolverBuildEncodeNode(build, build-stats, atree, atree-state, aspects,
  *                                   helmet-powder…weapon-powder) => EncodingBitVector | null
  */
 class SolverBuildEncodeNode extends ComputeNode {
@@ -175,11 +119,13 @@ class SolverBuildEncodeNode extends ComputeNode {
             input_map.get('weapon-powder')     || [],
         ];
 
-        // Pass total_skillpoints as the finalSp argument so encodeSp computes spDeltas = [0,0,0,0,0]
-        // → AUTOMATIC flag → WynnBuilder re-derives SP from items instead of using stale base values.
-        // When solver has greedy-allocated extra SP, encode those instead.
-        const skillpoints = (_solver_sp_override?.total_sp)
-            ? _solver_sp_override.total_sp.slice()
+        // Read SP from the build-stats pipeline (SolverBuildStatExtractNode),
+        // which already applies _solver_sp_override when greedy SP were allocated.
+        // This keeps encoding in sync with the displayed stats — no separate
+        // global variable read needed here.
+        const build_stats = input_map.get('build-stats');
+        const skillpoints = build_stats
+            ? skp_order.map(name => build_stats.get(name))
             : build.total_skillpoints.slice();
 
         // Ensure version is set (may be absent when page loaded without a hash).

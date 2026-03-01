@@ -65,7 +65,7 @@ function fix_should_pop(skillpoints, item) {
 
 function check_under_100(skillpoints) {
     for (let i = 0; i < 5; ++i) {
-        if (skillpoints[i] > 100) {
+        if (skillpoints[i] > SP_PER_ATTR_CAP) {
             return false;
         }
     }

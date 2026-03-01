@@ -19,6 +19,9 @@ let _solver_free_mask = 0;
 // Set to true while _fill_build_into_ui is dispatching change events.
 let _solver_filling_ui = false;
 
+// Set to true to log priority scores and pool ordering to the console.
+const _SOLVER_DEBUG_PRIORITY = false;
+
 // ── Roll-mode helper ─────────────────────────────────────────────────────────
 
 function _apply_roll_mode_to_item(item) {
@@ -227,6 +230,13 @@ function _prioritize_pools(pools, snap, restrictions) {
     const dmg_weights = _build_dmg_weights(snap);
     const constraint_weights = _build_constraint_weights(restrictions);
 
+    if (_SOLVER_DEBUG_PRIORITY) {
+        console.log('[solver] damage weights:', Object.fromEntries(dmg_weights));
+        if (constraint_weights.length > 0) {
+            console.log('[solver] constraint weights:', constraint_weights.map(c => `${c.stat}: ${c.per_unit.toFixed(4)}/unit`));
+        }
+    }
+
     for (const [slot, pool] of Object.entries(pools)) {
         const none_bucket = [];
         const real_bucket = [];
@@ -238,6 +248,22 @@ function _prioritize_pools(pools, snap, restrictions) {
             _score_item_priority(b.statMap, dmg_weights, constraint_weights) -
             _score_item_priority(a.statMap, dmg_weights, constraint_weights)
         );
+
+        if (_SOLVER_DEBUG_PRIORITY) {
+            console.log(`[solver] priority order for ${slot} (${real_bucket.length} items):`);
+            for (let i = 0; i < Math.min(real_bucket.length, 20); i++) {
+                const it = real_bucket[i];
+                const name = it.statMap.get('displayName') ?? it.statMap.get('name') ?? '?';
+                const score = _score_item_priority(it.statMap, dmg_weights, constraint_weights);
+                console.log(`  #${i + 1}: ${name} (score: ${score.toFixed(1)})`);
+            }
+            if (real_bucket.length > 20) {
+                const last = real_bucket[real_bucket.length - 1];
+                const last_name = last.statMap.get('displayName') ?? last.statMap.get('name') ?? '?';
+                const last_score = _score_item_priority(last.statMap, dmg_weights, constraint_weights);
+                console.log(`  ... ${real_bucket.length - 20} more ... last: ${last_name} (score: ${last_score.toFixed(1)})`);
+            }
+        }
 
         pool.length = 0;
         for (const it of real_bucket) pool.push(it);
@@ -397,8 +423,8 @@ function _build_solver_snapshot(restrictions) {
     if (document.getElementById('radiance-boost')?.classList.contains('toggleOn')) radiance_boost += 0.2;
     if (document.getElementById('divinehonor-boost')?.classList.contains('toggleOn')) radiance_boost += 0.1;
 
-    const sp_budget = restrictions.guild_tome === 2 ? 205 :
-        restrictions.guild_tome === 1 ? 204 : 200;
+    const sp_budget = restrictions.guild_tome === 2 ? SP_GUILD_TOME_RARE :
+        restrictions.guild_tome === 1 ? SP_GUILD_TOME_STD : SP_TOTAL_CAP;
 
     const guild_tome_idx = tome_fields.indexOf('guildTome1');
     const guild_tome_item = (guild_tome_idx >= 0 && solver_item_final_nodes[9 + guild_tome_idx]?.value)
@@ -547,6 +573,7 @@ function _fill_build_into_ui(result) {
         : null;
     _solver_filling_ui = true;
     _solver_free_mask = 0;
+    let any_item_changed = false;
     for (let i = 0; i < 8; i++) {
         const slot = equipment_fields[i];
         const item = result.items[i];
@@ -559,6 +586,7 @@ function _fill_build_into_ui(result) {
                 _solver_free_mask |= (1 << i);
                 input.value = name;
                 input.dispatchEvent(new Event('change'));
+                any_item_changed = true;
             } else if (input.dataset.solverFilled === 'true') {
                 _solver_free_mask |= (1 << i);
             }
@@ -566,6 +594,14 @@ function _fill_build_into_ui(result) {
     }
     _solver_filling_ui = false;
     _write_sfree_url();
+
+    // When the SP override changed but no items changed, the graph won't
+    // recompute on its own (no change events were dispatched).  Force a
+    // recomputation so SolverBuildStatExtractNode and downstream nodes
+    // pick up the new greedy SP values.
+    if (!any_item_changed && _solver_sp_override && solver_build_node) {
+        solver_build_node.mark_dirty(2).update();
+    }
 }
 
 function _display_solver_results(top5) {
@@ -948,7 +984,7 @@ function _run_solver_search_workers(pools, locked, snap) {
     // Spawn workers: send heavy 'init' with first partition, then 'run' for subsequent
     const actual_workers = Math.min(num_workers, partitions.length);
     for (let i = 0; i < actual_workers; i++) {
-        const w = new Worker('../js/solver/solver_worker.js');
+        const w = new Worker('../js/solver/solver_worker.js?v=3');
         const wstate = {
             worker: w, done: true, checked: 0, feasible: 0, top5: [],
             _cur_checked: 0, _cur_feasible: 0, _cur_top5: [],

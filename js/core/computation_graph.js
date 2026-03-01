@@ -57,7 +57,7 @@ class ComputeNode {
                         console.log(node_debug_stack);
                         console.log(this);
                     }
-                    throw "Invalid compute graph state!";
+                    throw new Error("Invalid compute graph state!");
                 }
                 calc_inputs.set(input.translation, input.node.value);
             }
@@ -117,7 +117,7 @@ class ComputeNode {
      * Abstract method for computing something. Return value is set into this.value
      */
     compute_func(input_map) {
-        throw "no compute func specified";
+        throw new Error("no compute func specified");
     }
 
     /**

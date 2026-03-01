@@ -246,8 +246,9 @@ async function init() {
 
     // decodeHash() loads all game data (items, tomes, aspects, atree, encoding constants)
     // and, when a URL hash is present, populates all input fields from the encoded build.
+    let decoded_sp = null;
     try {
-        await decodeHash();
+        decoded_sp = await decodeHash();
     } catch (e) {
         console.error("[solver] decodeHash failed:", e);
         return;
@@ -413,6 +414,30 @@ async function init() {
             } catch (e) {
                 console.error("[solver] Failed to decode atree:", e);
             }
+        }
+    }
+
+    // Restore any manually-assigned skill points from the URL hash.
+    // decodeHash() returns non-null when SP were encoded as ASSIGNED (e.g.,
+    // greedy allocation from a previous solver search).  Merge the decoded
+    // values with auto-calculated SP and set _solver_sp_override so the stat
+    // pipeline and URL encoding preserve them across page reloads.
+    if (decoded_sp && solver_build_node?.value) {
+        const build = solver_build_node.value;
+        const total_sp = decoded_sp.map((v, i) =>
+            v !== null ? v : build.total_skillpoints[i]
+        );
+        const has_extra = total_sp.some((v, i) => v !== build.total_skillpoints[i]);
+        if (has_extra) {
+            const base_sp = build.base_skillpoints.map((v, i) =>
+                v + (total_sp[i] - build.total_skillpoints[i])
+            );
+            _solver_sp_override = {
+                base_sp,
+                total_sp,
+                assigned_sp: base_sp.reduce((a, b) => a + b, 0),
+            };
+            solver_build_node.mark_dirty(2).update();
         }
     }
 

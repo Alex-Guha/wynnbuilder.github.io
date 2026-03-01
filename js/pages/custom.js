@@ -424,7 +424,7 @@ function getCustomFromHash(hash) {
 }
 
 /** An object representing a Custom Item. Mostly for vanity purposes.
- * @dep Requires the use of attackSpeeds from `builder/build.js`.
+ * @dep Requires the use of attackSpeeds from `game/build.js`.
 */
 class Custom {
     /**
