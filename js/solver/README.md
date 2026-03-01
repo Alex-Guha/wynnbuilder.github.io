@@ -51,13 +51,15 @@ The solver uses the same push-based reactive DAG as WynnBuilder (`ComputeNode` i
 
 ### Combo system
 
-**`solver_combo_node.js`** — `SolverComboTotalNode`, which listens to the combo base stats, the parsed spell list, and the atree merge node, then computes and renders total combo damage. Also manages all selection-mode row UI: add/remove rows, drag-and-drop reordering, per-row spell picker, per-row boost dropdown, per-spell damage display with expandable breakdown tooltip, and mana tracking.
+**`solver_combo_node.js`** — `SolverComboTotalNode`, the main combo computation graph node. Listens to combo base stats, the parsed spell list, and the atree merge node. Computes and renders total combo damage. Manages selection-mode row lifecycle: reads/writes row data, refreshes spell and boost dropdowns when the atree changes, applies per-row boosts and spell property overrides, computes per-spell damage with expandable breakdown tooltips, tracks mana, and schedules URL updates.
+
+**`solver_combo_ui.js`** — DOM construction helpers for combo selection rows. `_build_selection_row()` creates a full row element (quantity, spell picker, boost popup, mana/damage toggle dots, damage/heal display). Also provides the global helpers `combo_add_row()`, `combo_remove_row()`, `set_combo_mode()`, and `combo_toggle_downtime()`.
+
+**`solver_combo_codec.js`** — combo serialization. `combo_data_to_text()` / `combo_text_to_data()` convert between the row data model and the multi-line text format. `combo_encode_for_url()` / `combo_decode_from_url()` handle deflate-compressed URL persistence. `combo_export()` / `combo_import()` copy/paste via the clipboard API.
 
 **`solver_combo_boost.js`** — the boost logic that operates per combo row:
 - `build_combo_boost_registry(atree_merged, build)` — scans the active ability tree for raw-stat toggle nodes and stat-scaling slider nodes; appends weapon powder boost toggles (Curse, Courage, Wind Prison) and armor powder buff sliders (Rage, Kill Streak, Concentration, Endurance, Dodge).
-- `apply_combo_row_boosts(base_stats, boost_tokens, registry)` — clones the stat map and applies per-row boost activations.
-- `apply_spell_prop_overrides(spell, prop_overrides, atree_merged)` — clones a spell with hit-count overrides for ability-tree prop-type sliders.
-- `find_all_matching_boosts(name, value, is_pct, registry)` — case-insensitive boost lookup with alias resolution.
+- `renderSpellPopupHTML(full, crit_chance, spell_cost)` — builds HTML for per-spell damage breakdown popups.
 
 ---
 
@@ -72,6 +74,8 @@ The solver uses the same push-based reactive DAG as WynnBuilder (`ComputeNode` i
 **`solver_search.js`** — everything between "Solve" click and final result display:
 - `_build_solver_snapshot()` — freezes all mutable state (weapon, atree, combo, boosts, restrictions) into a plain-object snapshot before spawning workers.
 - `_build_item_pools()` — filters `itemMap` per free slot by level range, major-ID flag, SP direction, and roll mode. Prepends a NONE item to each pool. Tracks illegal-set pairs.
+- `_prune_dominated_items()` — O(n²) per pool: removes items dominated on all scoring stats + SP reqs + SP provisions, typically shrinking pools by 20–40%.
+- `_prioritize_pools()` — sorts each pool by a weighted priority score (`_build_dmg_weights` for damage-relevant stats, `_build_constraint_weights` for restriction stats) so the level-based enumerator in the worker evaluates the strongest items first.
 - `_partition_work()` — splits the search space into 4× worker-count fine-grained partitions using triangular balancing for the ring double-loop and equal-chunk slicing for armor slots.
 - Worker management: spawn workers, send init + run messages, collect progress/done messages, do work-stealing from the partition queue, merge top-5 results across workers, update UI every 5 seconds, display final summary.
 
@@ -79,14 +83,18 @@ The solver uses the same push-based reactive DAG as WynnBuilder (`ComputeNode` i
 
 ### Worker
 
-**`solver_worker.js`** — the Web Worker that runs the synchronous DFS over its assigned partition. Key internals:
-- Initializes running SP state (`running_sum_prov`, `running_max_req`) from locked items + weapon + guild tome.
-- Builds a suffix best-provision table for mid-DFS SP pruning (currently known to produce false positives — see SOLVER.md).
-- Maintains an incremental running `statMap` that is updated/reverted as items are placed/backtracked, avoiding a full rebuild at every leaf.
-- Handles rings in a separate double-loop (same pool, unordered pairs) with partition slicing on the outer index.
-- Evaluates each leaf: quick SP pre-filter → `calculate_skillpoints` → stat finalization → restriction threshold check → combo damage scoring → top-5 heap update.
+**`solver_pure.js`** — pure functions shared between the main thread and the Web Worker (loaded via `<script>` on the page and `importScripts` in the worker). Contains `computeSpellDisplayAvg()`, `computeSpellDisplayFull()`, `computeSpellHealingTotal()`, `apply_combo_row_boosts()`, `apply_spell_prop_overrides()`, `find_all_matching_boosts()`, `_apply_radiance_scale()`, and `_sp_prefilter()`. Zero DOM references.
 
-**`solver_worker_shims.js`** — DOM-free copies of functions the worker needs but that normally read/write the DOM. Specifically: `worker_init_build_stats()` (replaces `Build` constructor) and `worker_atree_scaling()` (replaces the DOM-read atree scaling node by operating on serialized button/slider states).
+**`solver_worker.js`** — the Web Worker that runs a synchronous level-based enumeration over its assigned partition. Key internals:
+- Maintains an incremental running `statMap` that is updated/reverted as items are placed/backtracked, avoiding a full rebuild at every leaf.
+- Level-based enumeration: items in each pool are pre-sorted by priority score; the outer loop iterates `L = 0..L_max` where L is the sum of per-slot rank offsets. L=0 evaluates the globally best combination first; each subsequent level steps one rank further from optimal. This ensures strong builds surface early in interim results.
+- Handles rings in a separate double-loop (same pool, unordered pairs) with partition slicing on the outer index.
+- Multi-gate leaf evaluation: fast constraint precheck → SP pre-filter → full `calculate_skillpoints` → stat finalization (set bonuses, multiplier maps) → greedy SP allocation → restriction threshold check → mana check → combo damage scoring → top-5 heap update.
+
+**`solver_worker_shims.js`** — DOM-free copies of functions the worker needs but that normally read/write the DOM:
+- `worker_init_build_stats()` — replaces the `Build` constructor's stat initialization.
+- `worker_atree_scaling()` — replaces the DOM-reading atree scaling node using serialized button/slider states.
+- `_init_running_statmap()` / `_incr_add_item()` / `_incr_remove_item()` / `_finalize_leaf_statmap()` — incremental stat accumulation functions for the DFS, avoiding full rebuilds at every leaf.
 
 ---
 
