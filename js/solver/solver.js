@@ -251,6 +251,13 @@ async function init() {
         decoded_sp = await decodeHash();
     } catch (e) {
         console.error("[solver] decodeHash failed:", e);
+        const banner = document.getElementById('header');
+        if (banner) {
+            const errDiv = document.createElement('div');
+            errDiv.style.cssText = 'background:#a00;color:#fff;padding:10px;text-align:center;font-size:14px;';
+            errDiv.textContent = 'Failed to load game data. Try clearing your browser storage (IndexedDB) and refreshing.';
+            banner.after(errDiv);
+        }
         return;
     }
 

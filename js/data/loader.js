@@ -131,11 +131,15 @@ class Loader {
      * Upgrades the linked database in case of a version change, then reads the data into memory.
      */
     async load_init() {
-        return new Promise((resolve, reject) => {
+        const _openDB = () => new Promise((resolve, reject) => {
             let request = window.indexedDB.open(this.db_name, this.db_version);
 
-            request.onerror = () => {
-                reject("DB failed to open...");
+            request.onerror = (event) => {
+                reject(event.target.error || `DB ${this.db_name} failed to open`);
+            };
+
+            request.onblocked = () => {
+                console.warn(`[loader] DB ${this.db_name} is blocked by another connection. Close other tabs and refresh.`);
             };
 
             request.onsuccess = async (event) => {
@@ -164,7 +168,7 @@ class Loader {
                 this.reload = true;
 
                 let db = event.target.result;
-                
+
                 try {
                     for (const existing_obj_store of db.objectStoreNames) {
                         db.deleteObjectStore(existing_obj_store);
@@ -181,6 +185,22 @@ class Loader {
                 console.log("DB setup complete...");
             };
         });
+
+        try {
+            return await _openDB();
+        } catch (err) {
+            // DB may be corrupted — delete it and retry once from network.
+            console.warn(`[loader] IndexedDB open failed for ${this.db_name}:`, err,
+                         '— deleting DB and retrying...');
+            await new Promise((resolve, reject) => {
+                const delReq = window.indexedDB.deleteDatabase(this.db_name);
+                delReq.onsuccess = resolve;
+                delReq.onerror = () => reject(`Failed to delete ${this.db_name}`);
+                delReq.onblocked = () => reject(`Delete of ${this.db_name} blocked by another connection`);
+            });
+            this.reload = true;
+            return await _openDB();
+        }
     }
 
     /**
