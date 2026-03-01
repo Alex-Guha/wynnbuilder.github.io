@@ -207,7 +207,7 @@ class TooltipGeneratorNode extends ComputeNode {
 
         // NOTE: A bit junky, but listener clean-up is done in child classes
 
-        // Further comments at js/builder/atrree.js:render-AT
+        // Further comments at js/game/atree.js:render-AT
         if (!isMobile) {
             this.trigger.onmouseover = (e) => {
                 this.tooltip_elem = make_elem("div", ["rounded-bottom", "dark-4", "border", "dark-shadow", "text-start"], {

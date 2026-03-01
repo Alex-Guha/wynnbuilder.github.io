@@ -5,7 +5,7 @@ function solver_graph_init() {
     const level_input = new InputNode('level-input', document.getElementById('level-choice'));
 
     // ── Build assembly (collects all item/tome nodes + level) ────────────────
-    solver_build_node = new SolverBuildAssembleNode();
+    solver_build_node = new BuildAssembleNode('solver-make-build');
     solver_build_node.link_to(level_input);  // keyed as 'level-input' (node.name)
 
     // ── Equipment slots ──────────────────────────────────────────────────────
@@ -156,6 +156,7 @@ function solver_graph_init() {
     // ── URL encoding ─────────────────────────────────────────────────────────
     const encode_node = new SolverBuildEncodeNode()
         .link_to(solver_build_node, 'build')
+        .link_to(build_stat_node, 'build-stats')
         .link_to(atree_node, 'atree')
         .link_to(atree_state_node, 'atree-state')
         .link_to(aspect_agg_node, 'aspects');

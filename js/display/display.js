@@ -78,7 +78,7 @@ function displayBuildStats(parent_id,build,command_group,stats){
     let last_command;
     let elemental_format = false;
 
-    //TODO this is put here for readability, consolidate with definition in `builder/build.js`
+    //TODO this is put here for readability, consolidate with definition in `game/build.js`
     // TODO amend: uuhhhhh these two constants have diverged too far...
     let staticIDs = ["hp", "eDef", "tDef", "wDef", "fDef", "aDef"];
 
@@ -442,9 +442,6 @@ function displayExpandedItem(item, parent_id){
                 if (fix_id) {
                     p_elem = document.createElement("div");
                     p_elem.classList.add("col", "text-nowrap");
-                    if (id == "dex") {
-                        console.log("dex activated at fix_id")
-                    }
                     displayFixedID(p_elem, id, item.get("minRolls").get(id), elemental_format, style);
                     parent_div.appendChild(p_elem);
                 }

@@ -7,10 +7,14 @@
 'use strict';
 
 importScripts(
-    '../build_utils.js',
-    '../powders.js',
-    '../skillpoints.js',
-    '../damage_calc.js',
+    '../core/utils.js',
+    '../game/game_rules.js',
+    '../game/build_utils.js',
+    '../game/powders.js',
+    '../game/skillpoints.js',
+    '../game/damage_calc.js',
+    '../game/shared_game_stats.js',
+    './solver_pure.js',
     './solver_worker_shims.js'
 );
 

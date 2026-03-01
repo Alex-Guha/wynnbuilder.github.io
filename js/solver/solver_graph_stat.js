@@ -1,125 +1,11 @@
 /**
- * Solver computation graph: node definitions and graph initialization.
+ * Solver computation graph: stat aggregation and display nodes.
  *
- * Phase 2: Item input, display, powder, tooltip, build assembly, SP display.
- * Phase 3: Active boosts, atree, aspects, stat aggregation pipeline.
+ * Pure constants and functions (damageMultipliers, specialNames, radiance_affected,
+ * getDefenseStats) are defined in shared_game_stats.js which loads before this file.
  */
 
-// ── Boost button data (mirrors builder_graph.js) ─────────────────────────────
-
-const damageMultipliers = new Map([
-    ["totem",          0.20],
-    ["warscream",      0.00],
-    ["emboldeningcry", 0.00],
-    ["fortitude",      0.40],
-    ["radiance",       0.00],
-    ["eldritchcall",   0.00],
-    ["divinehonor",    0.00],
-]);
-
-const specialNames = ["Quake", "Chain Lightning", "Curse", "Courage", "Wind Prison"];
-
-// Stats scaled by Radiance / Divine Honor (mirrors builder_graph.js radiance_affected list).
-const radiance_affected = [
-    "fDef","wDef","aDef","tDef","eDef","hprPct","mr","sdPct","mdPct","ls","ms",
-    "ref","thorns","expd","spd","atkTier","poison","hpBonus","spRegen","eSteal",
-    "hprRaw","sdRaw","mdRaw","fDamPct","wDamPct","aDamPct","tDamPct","eDamPct",
-    "fDefPct","wDefPct","aDefPct","tDefPct","eDefPct","fixID","category",
-    "spPct1","spRaw1","spPct2","spRaw2","spPct3","spRaw3","spPct4","spRaw4",
-    "rSdRaw","sprint","sprintReg","jh",
-    "eMdPct","eMdRaw","eSdPct","eSdRaw","eDamRaw",
-    "tMdPct","tMdRaw","tSdPct","tSdRaw","tDamRaw",
-    "wMdPct","wMdRaw","wSdPct","wSdRaw","wDamRaw",
-    "fMdPct","fMdRaw","fSdPct","fSdRaw","fDamRaw",
-    "aMdPct","aMdRaw","aSdPct","aSdRaw","aDamRaw",
-    "nMdPct","nMdRaw","nSdPct","nSdRaw","nDamPct","nDamRaw",
-    "damPct","damRaw",
-    "rMdPct","rMdRaw","rSdPct","rDamPct","rDamRaw",
-    "critDamPct","healPct","kb","weakenEnemy","slowEnemy","rDefPct",
-];
-
-// ── Defense stat utility (mirrors builder_graph.js; needed by display.js) ────
-// display.js calls getDefenseStats() as a global but it is defined only in
-// builder_graph.js, which the solver page does not import.
-
-function getDefenseStats(stats) {
-    let defenseStats = [];
-    let def_pct = skillPointsToPercentage(stats.get('def')) * skillpoint_final_mult[3];
-    let agi_pct = skillPointsToPercentage(stats.get('agi')) * skillpoint_final_mult[4];
-    // total hp
-    let totalHp = stats.get("hp") + stats.get("hpBonus");
-    if (totalHp < 5) totalHp = 5;
-    defenseStats.push(totalHp);
-    // EHP
-    let ehp = [totalHp, totalHp];
-    let defMult = (2 - stats.get("classDef"));
-    for (const [, v] of stats.get("defMult").entries()) {
-        defMult *= (1 - v/100);
-    }
-    let agi_reduction = (100 - stats.get("agiDef")) / 100;
-    ehp[0] = ehp[0] / (agi_reduction*agi_pct + (1-agi_pct) * (1-def_pct));
-    ehp[0] /= defMult;
-    ehp[1] /= (1-def_pct) * defMult;
-    defenseStats.push(ehp);
-    // HPR
-    let totalHpr = rawToPct(stats.get("hprRaw"), stats.get("hprPct")/100.);
-    defenseStats.push(totalHpr);
-    // EHPR
-    let ehpr = [totalHpr, totalHpr];
-    ehpr[0] = ehpr[0] / (agi_reduction*agi_pct + (1-agi_pct) * (1-def_pct));
-    ehpr[0] /= defMult;
-    ehpr[1] /= (1-def_pct) * defMult;
-    defenseStats.push(ehpr);
-    // skp stats
-    defenseStats.push([def_pct*100, agi_pct*100]);
-    // elemental defenses
-    let eledefs = [0, 0, 0, 0, 0];
-    for (const i in skp_elements) {
-        eledefs[i] = rawToPctUncapped(stats.get(skp_elements[i] + "Def"), (stats.get(skp_elements[i] + "DefPct") + stats.get("rDefPct"))/100.);
-    }
-    defenseStats.push(eledefs);
-    // [totalHp, [ehp w/agi, ehp w/o agi], totalHpr, [ehpr w/agi, ehpr w/o agi], [def%, agi%], [edef, tdef, wdef, fdef, adef]]
-    return defenseStats;
-}
-
-// ── Stat aggregation utility classes ─────────────────────────────────────────
-
-/**
- * Merges multiple StatMap inputs into one StatMap.
- * Skips null inputs (fail_cb = true allows partial computation).
- *
- * Signature: AggregateStatsNode(...maps) => StatMap
- */
-class AggregateStatsNode extends ComputeNode {
-    constructor(name) { super(name); this.fail_cb = true; }
-
-    compute_func(input_map) {
-        const out = new Map();
-        for (const v of input_map.values()) {
-            if (!v) continue;
-            for (const [k, v2] of v.entries()) {
-                merge_stat(out, k, v2);
-            }
-        }
-        return out;
-    }
-}
-
-/**
- * Detects player class from weapon type.
- * Returns null when no weapon is selected.
- *
- * Signature: PlayerClassNode(build: Build) => string | null
- */
-class PlayerClassNode extends ValueCheckComputeNode {
-    constructor(name) { super(name); }
-
-    compute_func(input_map) {
-        const build = input_map.get('build');
-        if (!build || build.weapon.statMap.has('NONE')) return null;
-        return wep_to_class.get(build.weapon.statMap.get('type'));
-    }
-}
+// AggregateStatsNode, PlayerClassNode are defined in shared_graph_nodes.js
 
 /**
  * Extracts build.statMap into a plain Map for the stat aggregation pipeline.
@@ -232,64 +118,17 @@ class SolverBuildDisplayNode extends ComputeNode {
 // These read DOM state directly; created here so the update_* handlers can
 // reference them before solver_graph_init() runs.
 
-/**
- * Reads the active boost buttons and produces a damMult / defMult StatMap.
- * Mirrors builder_graph.js boosts_node.
- */
+// compute_boosts and compute_radiance are defined in shared_graph_nodes.js
+
 let solver_boosts_node = new (class extends ComputeNode {
     constructor() { super('solver-boost-input'); }
-
-    compute_func(_input_map) {
-        let damage_boost = 0;
-        let str_boost    = 0;
-        let vuln_boost   = 0;
-        let def_boost    = 0;
-        for (const [key, value] of damageMultipliers) {
-            const elem = document.getElementById(key + '-boost');
-            if (elem && elem.classList.contains('toggleOn')) {
-                if (value > damage_boost) { damage_boost = value; }
-                if (key === 'warscream')       { def_boost  += 0.20; }
-                else if (key === 'emboldeningcry') { def_boost += 0.05; str_boost += 0.08; }
-                else if (key === 'eldritchcall')   { vuln_boost += 0.15; }
-            }
-        }
-        const res = new Map();
-        res.set('damMult.Potion',        100 * damage_boost);
-        res.set('damMult.Strength',      100 * str_boost);
-        res.set('damMult.Vulnerability', 100 * vuln_boost);
-        res.set('defMult.Potion',        100 * def_boost);
-        return res;
-    }
+    compute_func(_input_map) { return compute_boosts(); }
 })().update();
 
-/**
- * Scales the pre-scale StatMap by Radiance (+20%) and/or Divine Honor (+10%).
- * When neither is active, passes the input through unchanged.
- * fail_cb = true so it still runs when pre_scale_agg has null inputs.
- */
 let solver_radiance_node = new (class extends ComputeNode {
     constructor() { super('solver-radiance-node'); this.fail_cb = true; }
-
     compute_func(input_map) {
-        const statmap = input_map.get('stats');
-        if (!statmap) return new Map();
-
-        let boost = 1;
-        if (document.getElementById('radiance-boost')?.classList.contains('toggleOn'))    { boost += 0.2; }
-        if (document.getElementById('divinehonor-boost')?.classList.contains('toggleOn')) { boost += 0.1; }
-
-        if (boost === 1) return statmap;
-
-        const ret = new Map(statmap);
-        for (const id of radiance_affected) {
-            const val = ret.get(id) || 0;
-            if (reversedIDs.includes(id)) {
-                if (val < 0) { ret.set(id, Math.floor(val * boost)); }
-            } else {
-                if (val > 0) { ret.set(id, Math.floor(val * boost)); }
-            }
-        }
-        return ret;
+        return compute_radiance(input_map.get('stats'));
     }
 })();
 
@@ -306,19 +145,7 @@ function update_radiance(input) {
     solver_radiance_node.mark_dirty().update();
 }
 
+// togglePowderSpecialButton is defined in shared_graph_nodes.js
 function updatePowderSpecials(buttonId) {
-    const prefix = buttonId.split("-")[0].replace(' ', '_') + '-';
-    const elem = document.getElementById(buttonId);
-    if (!elem) return;
-    if (elem.classList.contains("toggleOn")) {
-        elem.classList.remove("toggleOn");
-    } else {
-        for (let i = 1; i < 6; i++) {
-            const other = document.getElementById(prefix + i);
-            if (other && other.classList.contains("toggleOn")) {
-                other.classList.remove("toggleOn");
-            }
-        }
-        elem.classList.add("toggleOn");
-    }
+    togglePowderSpecialButton(buttonId);
 }

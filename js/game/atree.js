@@ -236,7 +236,7 @@ function get_sorted_class_atree(atrees, player_class) {
  * Signature: AbilityTreeUpdateNode(player-class: str) => ATree (List of atree nodes in topological order)
  */
 const atree_node = new (class extends ComputeNode {
-    constructor() { super('builder-atree-update'); }
+    constructor() { super('atree-update'); }
 
     compute_func(input_map) {
         if (input_map.size !== 1) { throw "AbilityTreeUpdateNode accepts exactly one input (player-class)"; }
@@ -252,7 +252,7 @@ const atree_node = new (class extends ComputeNode {
  */
 const atree_render = new (class extends ComputeNode {
     constructor() {
-        super('builder-atree-render');
+        super('atree-render');
         this.UI_elem = document.getElementById("atree-ui");
         this.list_elem = document.getElementById("atree-header");
     }
@@ -277,7 +277,7 @@ const atree_render = new (class extends ComputeNode {
 
 // This exists so i don't have to re-render the UI to push atree updates.
 const atree_state_node = new (class extends ComputeNode {
-    constructor() { super('builder-atree-state'); }
+    constructor() { super('atree-state'); }
 
     compute_func(input_map) {
         if (input_map.size !== 1) { throw "AbilityTreeStateNode accepts exactly one input (atree-rendered)"; }
@@ -445,7 +445,7 @@ const atree_validate = new (class extends ComputeNode {
  * Signature: AbilityTreeMergeNode(player-class: WeaponType, atree: ATree, atree-state: RenderedATree) => Map[id, Ability]
  */
 const atree_merge = new (class extends ComputeNode {
-    constructor() { super('builder-atree-merge'); }
+    constructor() { super('atree-merge'); }
 
     compute_func(input_map) {
         const [hard_error, errors] = input_map.get('atree-errors');
@@ -1103,67 +1103,7 @@ const atree_raw_stats = new (class extends ComputeNode {
     }
 })().link_to(atree_merge, 'atree-merged');
 
-/**
- * Construct compute nodes to link builder items and edit IDs to the appropriate display outputs.
- * To make things a bit cleaner, the compute graph structure goes like
- * [builder, build stats] -> [one agg node that is just a passthrough] -> all the spell calc nodes
- * This way, when things have to be deleted i can just delete one node from the dependencies of builder/build stats...
- * thats the idea anyway.
- *
- * Whenever this is updated, it forces an update of all the newly created spell nodes (if the build is clean).
- *
- * Signature: AbilityEnsureSpellsNodes(spells: Map[id, Spell]) => null
- */
-class AbilityTreeEnsureNodesNode extends ComputeNode {
-    
-    /**
-     * Kinda "hyper-node": Constructor takes nodes that should be linked to (build node and stat agg node)
-     */
-    constructor(build_node, stat_agg_node) {
-        super('atree-make-nodes');
-        this.build_node = build_node;
-        this.stat_agg_node = stat_agg_node;
-        // Slight amount of wasted compute to keep internal state non-changing.
-        this.passthrough = new PassThroughNode('spell-calc-buffer').link_to(this.build_node, 'build').link_to(this.stat_agg_node, 'stats');
-        this.spelldmg_nodes = [];   // debugging use
-        this.spell_display_elem = document.getElementById("all-spells-display");
-    }
-
-    compute_func(input_map) {
-        this.passthrough.remove_link(this.build_node);
-        this.passthrough.remove_link(this.stat_agg_node);
-        this.passthrough = new PassThroughNode('spell-calc-buffer').link_to(this.build_node, 'build').link_to(this.stat_agg_node, 'stats');
-        this.spell_display_elem.textContent = "";
-        const build_node = this.passthrough.get_node('build');   // aaaaaaaaa performance... savings... help.... 
-        const stat_agg_node = this.passthrough.get_node('stats');
-
-        const spell_map = input_map.get('spells');  // TODO: is this gonna need more? idk...
-                                                    // TODO shortcut update path for sliders
-
-        for (const [spell_id, spell] of new Map([...spell_map].sort((a, b) => a[0] - b[0])).entries()) {
-            let calc_node = new SpellDamageCalcNode(spell)
-                .link_to(build_node, 'build')
-                .link_to(stat_agg_node, 'stats');
-            this.spelldmg_nodes.push(calc_node);
-
-            let display_elem = make_elem('div', ["col", "pe-0"]);
-            // TODO: just pass these elements into the display node instead of juggling the raw IDs...
-            let spell_summary = make_elem('div', ["col", "spell-display", "fake-button", "dark-5", "rounded", "dark-shadow", "pt-2", "border", "border-dark"],
-                    { id: "spell"+spell.base_spell+"-infoAvg" }); 
-            let spell_detail = make_elem('div', ["col", "spell-display", "dark-5", "rounded", "dark-shadow", "py-2"],
-                    { id: "spell"+spell.base_spell+"-info", style: { display: 'none' } });
-
-            display_elem.append(spell_summary, spell_detail);
-
-            let display_node = new SpellDisplayNode(spell)
-                .link_to(stat_agg_node, 'stats')
-                .link_to(calc_node, 'spell-damage');
-
-            this.spell_display_elem.appendChild(display_elem);
-        }
-        this.passthrough.mark_dirty().update(); // Force update once.
-    }
-}
+// AbilityTreeEnsureNodesNode is defined in builder_graph.js (builder-only)
 
 /** The main function for rendering an ability tree. 
  * 

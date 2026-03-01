@@ -1,7 +1,6 @@
 /**
- * Solver page constants.
- * Mirrors builder_constants.js but WITHOUT any DOM manipulation at load time,
- * so this file is safe to load on the solver page.
+ * Solver-specific constants.
+ * Shared slot/field definitions are in ../shared_constants.js (loaded first).
  */
 
 const SOLVER_VERSION = "0.1.0";
@@ -10,82 +9,6 @@ const SOLVER_VERSION = "0.1.0";
 
 const LOCK_SVG   = '<svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M11 6V4a3 3 0 0 0-6 0v2H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1zM7 4a1 1 0 0 1 2 0v2H7V4z"/></svg>';
 const UNLOCK_SVG = '<svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M11 4a3 3 0 0 0-6 0H7a1 1 0 0 1 2 0v2H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1V4z"/></svg>';
-
-// ── Item slot definitions ────────────────────────────────────────────────────
-
-let equipment_fields = [
-    "helmet",
-    "chestplate",
-    "leggings",
-    "boots",
-    "ring1",
-    "ring2",
-    "bracelet",
-    "necklace",
-    "weapon"
-];
-
-let equipment_names = [
-    "Helmet",
-    "Chestplate",
-    "Leggings",
-    "Boots",
-    "Ring 1",
-    "Ring 2",
-    "Bracelet",
-    "Necklace",
-    "Weapon"
-];
-
-let tome_fields = [
-    "weaponTome1",
-    "weaponTome2",
-    "armorTome1",
-    "armorTome2",
-    "armorTome3",
-    "armorTome4",
-    "guildTome1",
-    "lootrunTome1",
-    "gatherXpTome1",
-    "gatherXpTome2",
-    "dungeonXpTome1",
-    "dungeonXpTome2",
-    "mobXpTome1",
-    "mobXpTome2"
-];
-
-let aspect_fields = [
-    "aspect1",
-    "aspect2",
-    "aspect3",
-    "aspect4",
-    "aspect5",
-];
-
-// Derived input element ID arrays
-let equipment_inputs    = equipment_fields.map(x => x + "-choice");
-let tomeInputs          = tome_fields.map(x => x + "-choice");
-let aspectInputs        = aspect_fields.map(x => x + "-choice");
-let aspectTierInputs    = aspect_fields.map(x => x + "-tier-choice");
-
-// Powder-accepting slots
-let powder_inputs = [
-    "helmet-powder",
-    "chestplate-powder",
-    "leggings-powder",
-    "boots-powder",
-    "weapon-powder",
-];
-
-// Slot category groupings (mirrors build_utils.js globals)
-let weapon_keys      = ['dagger', 'wand', 'bow', 'relik', 'spear'];
-let armor_keys       = ['helmet', 'chestplate', 'leggings', 'boots'];
-let accessory_keys   = ['ring1', 'ring2', 'bracelet', 'necklace'];
-let powderable_keys  = ['helmet', 'chestplate', 'leggings', 'boots', 'weapon'];
-let equipment_keys   = ['helmet', 'chestplate', 'leggings', 'boots', 'ring1', 'ring2', 'bracelet', 'necklace', 'weapon'];
-let tome_keys        = ['weaponTome1', 'weaponTome2', 'armorTome1', 'armorTome2', 'armorTome3', 'armorTome4',
-                        'guildTome1', 'lootrunTome1', 'gatherXpTome1', 'gatherXpTome2',
-                        'dungeonXpTome1', 'dungeonXpTome2', 'mobXpTome1', 'mobXpTome2'];
 
 // ── Solver-specific constants ────────────────────────────────────────────────
 

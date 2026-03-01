@@ -1,9 +1,10 @@
 /**
- * WynnSolver main page logic.
- * Handles autocomplete setup, reset, and page initialization.
+ * Shared autocomplete helpers for equipment and tome input fields.
+ * Used by both the builder and solver pages.
+ *
+ * Dependencies: autoComplete.js library, itemMap, tomeMap, itemLists, tomeLists globals.
+ *               shared_constants.js: equipment_keys, tome_keys
  */
-
-// ── Autocomplete helpers (adapted from builder.js) ───────────────────────────
 
 /**
  * Returns a callback that positions the autocomplete dropdown beneath its
@@ -119,6 +120,7 @@ function add_item_autocomplete(item_type) {
 
 /**
  * Initialises autocomplete for all equipment and tome slots.
+ * Shared by both builder and solver pages.
  */
 function init_autocomplete() {
     for (const eq of equipment_keys) {
@@ -126,15 +128,5 @@ function init_autocomplete() {
     }
     for (const eq of tome_keys) {
         add_tome_autocomplete(eq);
-    }
-    // Clear solver-filled flag on user-initiated changes so the slot
-    // reverts to locked styling when the user manually sets an item.
-    for (const eq of equipment_keys) {
-        const input = document.getElementById(eq + '-choice');
-        if (input) {
-            input.addEventListener('change', (e) => {
-                if (e.isTrusted) delete input.dataset.solverFilled;
-            });
-        }
     }
 }

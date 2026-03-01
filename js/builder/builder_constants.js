@@ -1,12 +1,11 @@
 /**
- * I kinda lied. Theres some listener stuff in here
- * but its mostly constants for builder page specifically.
+ * Builder-specific constants and DOM listeners.
+ * Shared slot/field definitions are in ../shared_constants.js (loaded first).
  */
 
 const BUILD_VERSION = "7.0.20";
 
 
-// THIS IS SUPER DANGEROUS, WE SHOULD NOT BE KEEPING THIS IN SO MANY PLACES
 let editable_item_fields = [ "sdPct", "sdRaw", "mdPct", "mdRaw", "poison",
                              "fDamPct", "wDamPct", "aDamPct", "tDamPct", "eDamPct",
                              "fDefPct", "wDefPct", "aDefPct", "tDefPct", "eDefPct",
@@ -39,53 +38,6 @@ function clear_highlights() {
 }
 
 
-let equipment_fields = [
-    "helmet",
-    "chestplate",
-    "leggings",
-    "boots",
-    "ring1",
-    "ring2",
-    "bracelet",
-    "necklace",
-    "weapon"
-];
-let tome_fields = [
-    "weaponTome1",
-    "weaponTome2",
-    "armorTome1",
-    "armorTome2",
-    "armorTome3",
-    "armorTome4",
-    "guildTome1",
-    "lootrunTome1",
-    "gatherXpTome1",
-    "gatherXpTome2", 
-    "dungeonXpTome1", 
-    "dungeonXpTome2", 
-    "mobXpTome1", 
-    "mobXpTome2"
-]
-
-let aspect_fields = [
-    "aspect1",
-    "aspect2",
-    "aspect3",
-    "aspect4",
-    "aspect5",
-]
-let equipment_names = [
-    "Helmet",
-    "Chestplate",
-    "Leggings",
-    "Boots",
-    "Ring 1",
-    "Ring 2",
-    "Bracelet",
-    "Necklace",
-    "Weapon"
-];
-
 let tome_names = [
     "Weapon Tome",
     "Weapon Tome",
@@ -95,26 +47,7 @@ let tome_names = [
     "Armor Tome",
     "Guild Tome",
 ]
-let equipment_inputs = equipment_fields.map(x => x + "-choice");
 let build_fields = equipment_fields.map(x => x+"-tooltip");
-let tomeInputs = tome_fields.map(x => x + "-choice");
-let aspectInputs = aspect_fields.map(x => x + "-choice");
-let aspectTierInputs = aspect_fields.map(x => x + "-tier-choice");
-
-let powder_inputs = [
-    "helmet-powder",
-    "chestplate-powder",
-    "leggings-powder",
-    "boots-powder",
-    "weapon-powder",
-];
-
-let weapon_keys = ['dagger', 'wand', 'bow', 'relik', 'spear'];
-let armor_keys = ['helmet', 'chestplate', 'leggings', 'boots'];
-let accessory_keys= ['ring1', 'ring2', 'bracelet', 'necklace'];
-let powderable_keys = ['helmet', 'chestplate', 'leggings', 'boots', 'weapon'];
-let equipment_keys = ['helmet', 'chestplate', 'leggings', 'boots', 'ring1', 'ring2', 'bracelet', 'necklace', 'weapon'];
-let tome_keys = ['weaponTome1', 'weaponTome2', 'armorTome1', 'armorTome2', 'armorTome3', 'armorTome4', 'guildTome1', 'lootrunTome1', 'gatherXpTome1', 'gatherXpTome2', 'dungeonXpTome1', 'dungeonXpTome2', 'mobXpTome1', 'mobXpTome2'];
 
 let spell_disp = ['build-melee-stats', 'spell0-info', 'spell1-info', 'spell2-info', 'spell3-info'];
 let other_disp = ['build-order', 'set-info', 'int-info'];

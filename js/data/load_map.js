@@ -67,8 +67,6 @@ async function load_map(init_func) {
     maplocs = result.locations;
 
     refreshData();
-    console.log(terrdata);
-    console.log(maplocs);
 
 
     // https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/clear
