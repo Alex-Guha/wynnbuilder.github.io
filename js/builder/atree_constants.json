@@ -5925,7 +5925,9 @@
                 "col": 6,
                 "icon": "node_2"
             },
-            "properties": {},
+            "properties": {
+                "meleeBonus": 40
+            },
             "effects": [
                 {
                     "type": "raw_stat",
@@ -5934,12 +5936,12 @@
                         {
                             "type": "stat",
                             "name": "damMult.Luster Purge:0.Melee",
-                            "value": 40
+                            "value": "Luster Purge.meleeBonus"
                         },
                         {
                             "type": "stat",
                             "name": "damMult.Luster Purge:0.Powder Special",
-                            "value": 40
+                            "value": "Luster Purge.meleeBonus"
                         }
                     ]
                 }
@@ -8087,7 +8089,7 @@
         },
         {
             "display_name": "Wind Slash",
-            "desc": "When using Teleport, slash through the air and deal damage to enemies you pierce. </br> </br><span class='mc-white'>Total Damage</span>: 100% (of your DPS)   </br>&emsp;(<span class='nDam'>Damage</span>: 75%)   </br>&emsp;(<span class='aDam'>Air</span>: 25%) </br>Area of Effect: 1.5 Blocks (Circle-Shaped)",
+            "desc": "When using Teleport, slash through the air and deal damage to enemies you pierce. </br> </br><span class='mc-white'>Total Damage</span>: 160% (of your DPS)   </br>&emsp;(<span class='nDam'>Damage</span>: 120%)   </br>&emsp;(<span class='aDam'>Air</span>: 40%) </br>Area of Effect: 1.5 Blocks (Circle-Shaped)",
             "archetype": "Riftwalker",
             "base_abil": "Teleport",
             "parents": [
@@ -8110,12 +8112,12 @@
                     "target_part": "Wind Slash",
                     "base_spell": 2,
                     "multipliers": [
-                        75,
+                        120,
                         0,
                         0,
                         0,
                         0,
-                        25
+                        40
                     ]
                 },
                 {
@@ -8560,7 +8562,7 @@
         },
         {
             "display_name": "Etheric Slice",
-            "desc": "Teleport will blind enemies, confusing them for a brief period of time. </br> </br>Effect: Blindness to Enemies </br>Duration: 1s",
+            "desc": "Wind Slash will deal additional damage, gain a bigger area of effect and add an additional +2 Distortion to you when it hits an enemy.</br></br>Damage: [55%n/15%a]</br>Area of Effect: +0.5 Blocks",
             "archetype": "Riftwalker",
             "base_abil": "Teleport",
             "parents": [
@@ -8568,7 +8570,7 @@
                 "Frozen Tornado"
             ],
             "dependencies": [
-                "Teleport"
+                "Distortion"
             ],
             "blockers": [],
             "cost": 1,
@@ -8578,7 +8580,21 @@
                 "icon": "node_1"
             },
             "properties": {},
-            "effects": []
+            "effects": [
+                {
+                    "type": "add_spell_prop",
+                    "target_part": "Wind Slash",
+                    "base_spell": 2,
+                    "multipliers": [
+                        55,
+                        0,
+                        0,
+                        0,
+                        0,
+                        15
+                    ]
+                }
+            ]
         },
         {
             "display_name": "Frozen Tornado",
@@ -9400,8 +9416,22 @@
                 "col": 6,
                 "icon": "node_2"
             },
-            "properties": {},
-            "effects": []
+            "properties": {
+                "speed_boost": 40
+            },
+            "effects": [
+                {
+                    "type": "raw_stat",
+                    "toggle": "Arcane Speed",
+                    "bonuses": [
+                        {
+                            "type": "stat",
+                            "name": "spd",
+                            "value": "Heal.speed_boost"
+                        }
+                    ]
+                }
+            ]
         },
         {
             "display_name": "Larger Mana Bank II",
@@ -10333,8 +10363,9 @@
         },
         {
             "display_name": "Interweave",
-            "desc": "attach lightweaver orb to other players to heal",
+            "desc": "Hitting an ally with a Lightweaver orb consumes the orb and applies Shining.</br></br>Shining players can be healed from any distance, and they deal the orb's damage to nearby enemies.</br></br>Duration: 6s",
             "archetype":"Light Bender",
+            "archetype_req": 10,
             "parents": [
                 "Sunflare"
             ],
@@ -10351,7 +10382,7 @@
         },
         {
             "display_name": "Gospel of Light",
-            "desc": "shares your 20% of mana steal & regen",
+            "desc": "Nearby players gain 20% of the Mana you gain from Mana Regen and Mana Steal.</br></br>Area of Effect: 8 Blocks",
             "parents": [
                 "Interweave"
             ],
@@ -10409,12 +10440,14 @@
         },
         {
             "display_name": "Diffraction",
-            "desc": "spreads crystallized on death",
+            "desc": "When an enemy dies, leftover Crystallized is transferred to other nearby enemies.</br></br>Ophanim also applies +1 Crystallized.</br></br>Range: 8 Blocks",
             "archetype": "Light Bender",
             "parents": [
                 "Crystallize"
             ],
-            "dependencies": [],
+            "dependencies": [
+                "Crystallize"
+            ],
             "blockers": [],
             "cost": 1,
             "display": {
@@ -10463,7 +10496,7 @@
             "display_name": "Dawn",
             "archetype": "Light Bender",
             "archetype_req": 18,
-            "desc": "Summons the Sun.</br></br>The Sun will summon solar wisps, that home in on nearby enemies and deal damage.</br></br>Damage: [325%n/175%f]</br>Area of Effect: 2.5 Blocks</br>Range: 24 Blocks</br>Duration:8s",
+            "desc": "Channel the power of Orphion and summon the sun itself above you.</br></br>The Sun will summon solar wisps that move outwards, damaging all enemies and healing all allies in their path.</br></br>Damage: [200%n/100%f]</br>Area of Effect: 2.5 Blocks</br>Range: 24 Blocks</br>Duration:10s",
             "parents": [
                 "Gleam"
             ],
@@ -10487,11 +10520,11 @@
                             "name": "Wisp Damage",
                             "type": "damage",
                             "multipliers": [
-                                325,
+                                200,
                                 0,
                                 0,
                                 0,
-                                175,
+                                100,
                                 0
                             ]
                         }
@@ -14298,7 +14331,7 @@
         },
         {
             "display_name": "Serpent's Garden",
-            "desc": "Leap into the air before plummeting back to earth, spurring a garden of flowers to grow at your feet.They deal damage to enemies within every 0.25s.</br></br>While above your garden, your momentum doesn't deplete, charges twice as fast, and caps at 15.</br></br>Damage: [200%n/100%e/100%a]",
+            "desc": "Leap into the air before plummeting back to earth, spurring a garden of flowers to grow at your feet.They deal damage to enemies within every 0.25s.</br></br>While above your garden, your momentum doesn't deplete, charges twice as fast, and gains +5 maximum stacks.</br></br>Damage: [200%n/100%e/100%a]</br>Duration: 20s",
             "archetype": "Acrobat",
             "archetype_req": 18,
             "parents": [
@@ -17612,7 +17645,9 @@
                 "col": 2,
                 "icon": "node_4"
             },
-            "properties": {},
+            "properties": {
+                "resistance": 50
+            },
             "effects": [
                 {
                     "type": "raw_stat",
@@ -17621,7 +17656,7 @@
                         {
                             "type": "stat",
                             "name": "defMult.Protection",
-                            "value": 50
+                            "value": "Crimson Effigy.resistance"
                         }
                     ]
                 }
