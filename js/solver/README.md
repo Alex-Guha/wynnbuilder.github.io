@@ -123,9 +123,6 @@ http://localhost:8000/solver/?combo=c%3AM7RQqFHwTS1JzS9SqFEIz8xLSU1RMDNQqFEw5DJU
 ### Improve Solver
 See SOLVER.md for details.
 
-## Bugs
-- Extra skill point assignment is not being properly encoded in the url.
-
 ### UI polish
 
 - **Level / roll mode / reset / copy row** - the controls in this row need visual refinement: consistent sizing, spacing, and alignment with the rest of the panel.
