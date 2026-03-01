@@ -3,6 +3,9 @@
     {
       "displayName": "Aspect of Chaotic Demolition",
       "id": 0,
+      "aliases": [
+        "trapCount"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -49,6 +52,9 @@
     {
       "displayName": "Aspect of Extreme Current",
       "id": 1,
+      "aliases": [
+        "coursingRestraintDuration"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -95,6 +101,9 @@
     {
       "displayName": "Aspect of the Inexhaustible Quiver",
       "id": 2,
+      "aliases": [
+        "arrowStormCount"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -141,6 +150,9 @@
     {
       "displayName": "Aspect of the Poltergeist",
       "id": 3,
+      "aliases": [
+        "phantomRayDuration"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -196,6 +208,9 @@
     {
       "displayName": "Aspect of Undercrank",
       "id": 5,
+      "aliases": [
+        "frenzyCap"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -278,6 +293,9 @@
     {
       "displayName": "Aspect of Fragmentation Rounds",
       "id": 6,
+      "aliases": [
+        "grapeBombCount"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -324,6 +342,9 @@
     {
       "displayName": "Aspect of Clinging Lichen",
       "id": 8,
+      "aliases": [
+        "bryophyteAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -395,6 +416,9 @@
     {
       "displayName": "Aspect of the North Wind",
       "id": 9,
+      "aliases": [
+        "snowStormRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -462,6 +486,9 @@
     {
       "displayName": "Aspect of Bullet Hell",
       "id": 10,
+      "aliases": [
+        "shrapnelCount"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -521,6 +548,9 @@
     {
       "displayName": "Aspect of Further Horizons",
       "id": 11,
+      "aliases": [
+        "arrowStormRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -580,6 +610,9 @@
     {
       "displayName": "Aspect of Dynamic Entry",
       "id": 12,
+      "aliases": [
+        "fierceStompAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -651,6 +684,9 @@
     {
       "displayName": "Aspect of Extreme Firepower",
       "id": 13,
+      "aliases": [
+        "arrowBombAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -710,6 +746,9 @@
     {
       "displayName": "Aspect of Battlement Fortification",
       "id": 14,
+      "aliases": [
+        "arrowShieldResistance"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1012,6 +1051,9 @@
     {
       "displayName": "Aspect of the Beastmaster",
       "id": 18,
+      "aliases": [
+        "summonsBuff"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -1096,7 +1138,7 @@
         },
         {
           "threshold": 75,
-          "description": "Increase your Hound's attack speed by +67% and movement speed by +25%. </br> Increase your Snake's weakness effect by +4%. </br> Increase your Crow's distraction duration by +0.2s.",
+          "description": "Increase your Hound's attack speed by +25% and movement speed by +50%. </br> Increase your Snake's weakness effect by +4%. </br> Increase your Crow's distraction duration by +0.2s.",
           "abilities": [
             {
               "base_abil": "Arrow Storm",
@@ -1127,7 +1169,7 @@
                   "target_part": "DPS",
                   "base_spell": 8,
                   "hits": {
-                    "Single Hit": 2.66666666667
+                    "Single Hit": 1.0
                   }
                 }
               ]
@@ -1139,6 +1181,9 @@
     {
       "displayName": "Aspect of the Steadying Hand",
       "id": 19,
+      "aliases": [
+        "ghostlyTriggerCD"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -1159,28 +1204,31 @@
       ]
     },
     {
-      "displayName": "Aspect of Illegal Explosives",
+      "displayName": "Aspect of the Barley-Woven",
       "id": 20,
+      "aliases": [
+        "grappleHookRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
           "threshold": 1,
-          "description": "Increase Implosion's pull strength by 10%.",
+          "description": "Increase Grappling Hook's range by +10%.",
           "abilities": []
         },
         {
           "threshold": 5,
-          "description": "Increase Implosion's pull strength by 15%.",
+          "description": "Increase Grappling Hook's range by +18%.",
           "abilities": []
         },
         {
           "threshold": 30,
-          "description": "Increase Implosion's pull strength by 20%.",
+          "description": "Increase Grappling Hook's range by +26%.",
           "abilities": []
         },
         {
           "threshold": 150,
-          "description": "Increase Implosion's pull strength by 25%.",
+          "description": "Increase Grappling Hook's range by +30%.",
           "abilities": []
         }
       ]
@@ -1188,6 +1236,9 @@
     {
       "displayName": "Aspect of the Iron String",
       "id": 22,
+      "aliases": [
+        "phasingBeamPierce"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1215,6 +1266,9 @@
     {
       "displayName": "Aspect of the Heavenly Mandate",
       "id": 23,
+      "aliases": [
+        "guardianAngelsAmmo"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -1282,6 +1336,9 @@
     {
       "displayName": "Aspect of the Thunderbolt",
       "id": 24,
+      "aliases": [
+        "shockingBombSpeed"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1305,12 +1362,179 @@
           "abilities": []
         }
       ]
+    },
+    {
+      "displayName": "Aspect of the Battle-Fletcher",
+      "id": 25,
+      "aliases": [
+        "flintArrowsCount"
+      ],
+      "tier": "Fabled",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Increase your maximum Flint Arrows by +1.</br><span class='mc-white'>Total Damage</span>: -1% (Main Attack Damage, per arrow)   </br>&emsp;(<span class='nDam'>Damage</span>: -1%)",
+          "abilities": [
+            {
+              "base_abil": 999,
+              "effects": [
+                {
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Flint Arrows",
+                    "output": {
+                        "type": "stat",
+                        "name": "nConvBase:0.Flint Arrows"
+                    },
+                    "scaling": [
+                        -1
+                    ],
+                    "slider_max": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 15,
+          "description": "Increase your maximum Flint Arrows by +2.</br><span class='mc-white'>Total Damage</span>: -2% (Main Attack Damage, per arrow)   </br>&emsp;(<span class='nDam'>Damage</span>: -2%)",
+          "abilities": [
+            {
+              "base_abil": 999,
+              "effects": [
+                {
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Flint Arrows",
+                    "output": {
+                        "type": "stat",
+                        "name": "nConvBase:0.Flint Arrows"
+                    },
+                    "scaling": [
+                        -2
+                    ],
+                    "slider_max": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 75,
+          "description": "Increase your maximum Flint Arrows by +3.</br><span class='mc-white'>Total Damage</span>: -3% (Main Attack Damage, per arrow)   </br>&emsp;(<span class='nDam'>Damage</span>: -3%)",
+          "abilities": [
+            {
+              "base_abil": 999,
+              "effects": [
+                {
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Flint Arrows",
+                    "output": {
+                        "type": "stat",
+                        "name": "nConvBase:0.Flint Arrows"
+                    },
+                    "scaling": [
+                        -3
+                    ],
+                    "slider_max": 3
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of Olfactorial Enhancement",
+      "id": 26,
+      "aliases": [
+        "snifferDogCD"
+      ],
+      "tier": "Legendary",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Reduces Sniffer Dog's cooldown by -0.35s.",
+          "abilities": []
+        },
+        {
+          "threshold": 5,
+          "description": "Reduces Sniffer Dog's cooldown by -0.6s.",
+          "abilities": []
+        },
+        {
+          "threshold": 30,
+          "description": "Reduces Sniffer Dog's cooldown by -0.85s.",
+          "abilities": []
+        },
+        {
+          "threshold": 150,
+          "description": "Reduces Sniffer Dog's cooldown by -1s.",
+          "abilities": []
+        }
+      ]
+    },
+    {
+      "displayName": "Archer's Embodiment of Perceptive Finesse",
+      "id": 27,
+      "tier": "Mythic",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Your Ultimate charges 10% faster.",
+          "abilities": []
+        },
+        {
+          "threshold": 5,
+          "description": "Your Ultimate charges 10% faster.</br>Ascension lasts +20% longer.</br>Extinction Event spawns +20% bombs.</br>Twilight Zone's mark cap is +20% higher.",
+          "abilities": [
+            {
+              "base_abil": "The Twilight Zone",
+              "dependencies": [
+                "The Twilight Zone"
+              ],
+              "effects": [
+                {
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Twilight Stacks",
+                    "slider_max": 20
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 15,
+          "description": "Your Ultimate charges 15% faster.</br>Ascension lasts +20% longer.</br>Extinction Event spawns +20% bombs.</br>Twilight Zone's mark cap is +20% higher.",
+          "abilities": [
+            {
+              "base_abil": "The Twilight Zone",
+              "dependencies": [
+                "The Twilight Zone"
+              ],
+              "effects": [
+                {
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Twilight Stacks",
+                    "slider_max": 20
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "Warrior": [
     {
       "displayName": "Aspect of Rallying Fervor",
       "id": 1,
+      "aliases": [
+        "surgeholyPowerGain"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -1333,6 +1557,9 @@
     {
       "displayName": "Aspect of Unquenching Flames",
       "id": 2,
+      "aliases": [
+        "boilingBloodCD"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -1355,6 +1582,9 @@
     {
       "displayName": "Aspect of Hyper-Perception",
       "id": 3,
+      "aliases": [
+        "counterCD"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -1377,6 +1607,9 @@
     {
       "displayName": "Aspect of Empowering Fantasy",
       "id": 4,
+      "aliases": [
+        "radianceDuration"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -1399,6 +1632,9 @@
     {
       "displayName": "Aspect of the Anvil Drop",
       "id": 5,
+      "aliases": [
+        "chargeAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1458,6 +1694,9 @@
     {
       "displayName": "Aspect of Earthshaking",
       "id": 6,
+      "aliases": [
+        "bashAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1517,6 +1756,9 @@
     {
       "displayName": "Aspect of Overflowing Hope",
       "id": 7,
+      "aliases": [
+        "sparklingHopeThreshold"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1544,6 +1786,9 @@
     {
       "displayName": "Aspect of Steel Chords",
       "id": 8,
+      "aliases": [
+        "warscreamAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1659,6 +1904,9 @@
     {
       "displayName": "Aspect of the Returning Javelin",
       "id": 9,
+      "aliases": [
+        "mainAttackRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1718,6 +1966,9 @@
     {
       "displayName": "Aspect of Deafening Echoes",
       "id": 10,
+      "aliases": [
+        "tempestSpeed"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1745,6 +1996,9 @@
     {
       "displayName": "Aspect of Turbulence",
       "id": 11,
+      "aliases": [
+        "cycloneAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1772,6 +2026,9 @@
     {
       "displayName": "Aspect of the Megaphone",
       "id": 12,
+      "aliases": [
+        "airShoutAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -1799,6 +2056,9 @@
     {
       "displayName": "Aspect of Skyward Strikes",
       "id": 13,
+      "aliases": [
+        "uppercutRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -2006,6 +2266,9 @@
     {
       "displayName": "Aspect of Seeing Stars",
       "id": 17,
+      "aliases": [
+        "discombobulateCap"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -2154,6 +2417,9 @@
     {
       "displayName": "Aspect of Rekindling",
       "id": 18,
+      "aliases": [
+        "rejuvenatingSkinSpeed"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -2176,6 +2442,9 @@
     {
       "displayName": "Aspect of the Berserker",
       "id": 19,
+      "aliases": [
+        "armourBreakerStrength"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -2231,6 +2500,9 @@
     {
       "displayName": "Aspect of the Tightrope Walk",
       "id": 20,
+      "aliases": [
+        "brinkThreshold"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -2253,6 +2525,9 @@
     {
       "displayName": "Aspect of Maniacal Frisson",
       "id": 21,
+      "aliases": [
+        "exhilarateHeal"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -2280,6 +2555,9 @@
     {
       "displayName": "Aspect of Bovine Inspiration",
       "id": 22,
+      "aliases": [
+        "emboldeningCryResistance"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -2303,12 +2581,263 @@
           "abilities": []
         }
       ]
+    },
+    {
+      "displayName": "Aspect of Humming Choir",
+      "id": 23,
+      "aliases": [
+        "devoutUnionAOE"
+      ],
+      "tier": "Legendary",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Devout Union gains +1.35 Area of Effect",
+          "abilities": []
+        },
+        {
+          "threshold": 5,
+          "description": "Devout Union gains +2.35 Area of Effect",
+          "abilities": []
+        },
+        {
+          "threshold": 30,
+          "description": "Devout Union gains +3.35 Area of Effect",
+          "abilities": []
+        },
+        {
+          "threshold": 150,
+          "description": "Devout Union gains +4 Area of Effect",
+          "abilities": []
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of the Golden Dawn",
+      "id": 24,
+      "aliases": [
+        "lusterPurgeStrength"
+      ],
+      "tier": "Legendary",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Luster Purge grants +4% Main Attack Damage</br>and +4% Main Attack Range.",
+          "abilities": [
+            {
+              "base_abil": "Luster Purge",
+              "properties": {
+                "meleeBonus": 4
+              },
+              "effects": []
+            }
+          ]
+        },
+        {
+          "threshold": 5,
+          "description": "Luster Purge grants +6% Main Attack Damage</br>and +6% Main Attack Range.",
+          "abilities": [
+            {
+              "base_abil": "Luster Purge",
+              "properties": {
+                "meleeBonus": 6
+              },
+              "effects": []
+            }
+          ]
+        },
+        {
+          "threshold": 30,
+          "description": "Luster Purge grants +8% Main Attack Damage</br>and +8% Main Attack Range.",
+          "abilities": [
+            {
+              "base_abil": "Luster Purge",
+              "properties": {
+                "meleeBonus": 8
+              },
+              "effects": []
+            }
+          ]
+        },
+        {
+          "threshold": 150,
+          "description": "Luster Purge grants +10% Main Attack Damage</br>and +10% Main Attack Range.",
+          "abilities": [
+            {
+              "base_abil": "Luster Purge",
+              "properties": {
+                "meleeBonus": 10
+              },
+              "effects": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of the Enforcer",
+      "id": 25,
+      "aliases": [
+        "harmonyCap"
+      ],
+      "tier": "Fabled",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Increase your maximum Harmony by +1.",
+          "abilities": [
+            {
+              "base_abil": "Harmony",
+              "dependencies": [
+                "Harmony"
+              ],
+              "effects": [
+                {
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Harmony",
+                    "slider_max": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 15,
+          "description": "Increase your maximum Harmony by +2.",
+          "abilities": [
+            {
+              "base_abil": "Harmony",
+              "dependencies": [
+                "Harmony"
+              ],
+              "effects": [
+                {
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Harmony",
+                    "slider_max": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 75,
+          "description": "Increase your maximum Harmony by +3.",
+          "abilities": [
+                      {
+              "base_abil": "Harmony",
+              "dependencies": [
+                "Harmony"
+              ],
+              "effects": [
+                {
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Harmony",
+                    "slider_max": 3
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of the Crimson Scrivener",
+      "id": 26,
+      "aliases": [
+        "bloodiedArmoryAOE"
+      ],
+      "tier": "Legendary",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Increase Bloodied Armory's angle by +13°.",
+          "abilities": []
+        },
+        {
+          "threshold": 5,
+          "description": "Increase Bloodied Armory's angle by +23°.",
+          "abilities": []
+        },
+        {
+          "threshold": 30,
+          "description": "Increase Bloodied Armory's angle by +33°.",
+          "abilities": []
+        },
+        {
+          "threshold": 150,
+          "description": "Increase Bloodied Armory's angle by +40°.",
+          "abilities": []
+        }
+      ]
+    },
+    {
+      "displayName": "Warrior's Embodiment of Everlasting Perseverance",
+      "id": 27,
+      "tier": "Mythic",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Your Ultimate charges 10% faster.",
+          "abilities": []
+        },
+        {
+          "threshold": 5,
+          "description": "Your Ultimate charges 10% faster.</br>Beyond Salvation spawns +2 spikes.</br>Zenith Stance lasts +2s longer.</br>Judgement lasts +20% longer.",
+          "abilities": [
+            {
+              "base_abil": "Beyond Salvation",
+              "dependencies": [
+                "Beyond Salvation"
+              ],
+              "effects": [
+                {
+                  "type": "add_spell_prop",
+                  "base_spell": 9,
+                  "target_part": "Total Damage",
+                  "hits": {
+                    "Spike Detonation Hit": 2
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 15,
+          "description": "Your Ultimate charges 15% faster.</br>Beyond Salvation spawns +2 spikes.</br>Zenith Stance lasts +2s longer.</br>Judgement lasts +20% longer.",
+          "abilities": [
+            {
+              "base_abil": "Beyond Salvation",
+              "dependencies": [
+                "Beyond Salvation"
+              ],
+              "effects": [
+                {
+                  "type": "add_spell_prop",
+                  "base_spell": 9,
+                  "target_part": "Total Damage",
+                  "hits": {
+                    "Spike Detonation Hit": 2
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "Mage": [
     {
       "displayName": "Aspect of Runic Extravagance",
       "id": 0,
+      "aliases": [
+        "sigilAOE"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -2331,6 +2860,9 @@
     {
       "displayName": "Aspect of Mystic Transfer",
       "id": 1,
+      "aliases": [
+        "fortitudeDuration"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -2353,6 +2885,9 @@
     {
       "displayName": "Aspect of Shining Status",
       "id": 2,
+      "aliases": [
+        "lightweaverThreshold"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -2373,57 +2908,35 @@
       ]
     },
     {
-      "displayName": "Aspect of Flickering Transmission",
+      "displayName": "Aspect of the Inescapable Void",
       "id": 3,
+      "aliases": [
+        "dimensionalTearAOE"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
           "threshold": 1,
-          "description": "Blink gains +1 teleport, and loses -3.5 Range.",
-          "abilities": [
-            {
-              "base_abil": "Teleport",
-              "dependencies": [
-                "Blink"
-              ],
-              "properties": {
-                "range": -3.5
-              },
-              "effects": [
-                {
-                  "type": "add_spell_prop",
-                  "behavior": "modify",
-                  "target_part": "Total Damage",
-                  "base_spell": 2,
-                  "hits": {
-                    "Single Teleport": 1
-                  }
-                }
-              ]
-            }
-          ]
+          "description": "Dimensional Tear and Rift Rupture gain +2 Area of Effect.",
+          "abilities": []
         },
         {
           "threshold": 15,
-          "description": "Blink gains +2 teleports, and loses -5 Range.",
+          "description": "Dimensional Tear and Rift Rupture gain +2 Area of Effect.</br>Dimensional Tear gains +5% Resistance.",
           "abilities": [
             {
-              "base_abil": "Teleport",
-              "dependencies": [
-                "Blink"
-              ],
-              "properties": {
-                "range": -5
-              },
+              "base_abil": "Distortion",
               "effects": [
                 {
-                  "type": "add_spell_prop",
-                  "behavior": "modify",
-                  "target_part": "Total Damage",
-                  "base_spell": 2,
-                  "hits": {
-                    "Single Teleport": 2
-                  }
+                  "type": "raw_stat",
+                  "toggle": "Activate Dimensional Tear",
+                  "bonuses": [
+                    {
+                        "type": "stat",
+                        "name": "defMult.Potion",
+                        "value": 5
+                    }
+                  ]
                 }
               ]
             }
@@ -2431,25 +2944,21 @@
         },
         {
           "threshold": 75,
-          "description": "Blink gains +3 teleports, and loses -6 Range.",
+          "description": "Dimensional Tear and Rift Rupture gain +3 Area of Effect.</br>Dimensional Tear gains +5% Resistance.",
           "abilities": [
             {
-              "base_abil": "Teleport",
-              "dependencies": [
-                "Blink"
-              ],
-              "properties": {
-                "range": -6
-              },
+              "base_abil": "Distortion",
               "effects": [
                 {
-                  "type": "add_spell_prop",
-                  "behavior": "modify",
-                  "target_part": "Total Damage",
-                  "base_spell": 2,
-                  "hits": {
-                    "Single Teleport": 3
-                  }
+                  "type": "raw_stat",
+                  "toggle": "Activate Dimensional Tear",
+                  "bonuses": [
+                    {
+                        "type": "stat",
+                        "name": "defMult.Potion",
+                        "value": 5
+                    }
+                  ]
                 }
               ]
             }
@@ -2460,6 +2969,9 @@
     {
       "displayName": "Aspect of Burning Providence",
       "id": 4,
+      "aliases": [
+        "sunflareThreshold"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -2480,84 +2992,36 @@
       ]
     },
     {
-      "displayName": "Aspect of Fatal Fulguration",
+      "displayName": "Aspect of the Forbidden Ritual",
       "id": 5,
+      "aliases": [
+        "judrajimCD"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
           "threshold": 1,
-          "description": "Thunderstorm gains +1 strike. </br> Arcane Transfer gains -1 Mana from Meteor.",
-          "abilities": [
-            {
-              "base_abil": "Meteor",
-              "dependencies": [
-                "Thunderstorm"
-              ],
-              "effects": [
-                {
-                  "type": "add_spell_prop",
-                  "target_part": "Total Damage",
-                  "base_spell": 3,
-                  "hits": {
-                    "Lightning Damage": 1,
-                    "Winded Damage": 1
-                  }
-                }
-              ]
-            }
-          ]
+          "description": "Reduce Judrajim's cooldown by 0.75s.",
+          "abilities": []
         },
         {
           "threshold": 15,
-          "description": "Thunderstorm gains +2 strikes. </br> Arcane Transfer gains -1 Mana from Meteor.",
-          "abilities": [
-            {
-              "base_abil": "Meteor",
-              "dependencies": [
-                "Thunderstorm"
-              ],
-              "effects": [
-                {
-                  "type": "add_spell_prop",
-                  "target_part": "Total Damage",
-                  "base_spell": 3,
-                  "hits": {
-                    "Lightning Damage": 2,
-                    "Winded Damage": 2
-                  }
-                }
-              ]
-            }
-          ]
+          "description": "Reduce Judrajim's cooldown by 1.25.",
+          "abilities": []
         },
         {
           "threshold": 75,
-          "description": "Thunderstorm gains +3 strikes. </br> Arcane Transfer gains -1 Mana from Meteor.",
-          "abilities": [
-            {
-              "base_abil": "Meteor",
-              "dependencies": [
-                "Thunderstorm"
-              ],
-              "effects": [
-                {
-                  "type": "add_spell_prop",
-                  "target_part": "Total Damage",
-                  "base_spell": 3,
-                  "hits": {
-                    "Lightning Damage": 3,
-                    "Winded Damage": 3
-                  }
-                }
-              ]
-            }
-          ]
+          "description": "Reduce Judrajim's cooldown by 1.5s.",
+          "abilities": []
         }
       ]
     },
     {
       "displayName": "Aspect of the Dimension's Door",
       "id": 6,
+      "aliases": [
+        "teleportRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -2617,6 +3081,9 @@
     {
       "displayName": "Aspect of the Ray of Frost",
       "id": 7,
+      "aliases": [
+        "iceSnakeAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -2676,6 +3143,9 @@
     {
       "displayName": "Aspect of the Magic Missile",
       "id": 8,
+      "aliases": [
+        "psychokinesisRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -2747,6 +3217,10 @@
     {
       "displayName": "Aspect of the Comet",
       "id": 9,
+      "aliases": [
+        "meteorRange",
+        "ophanimSpeed"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -2846,33 +3320,71 @@
     {
       "displayName": "Aspect of Wind Walking",
       "id": 10,
+      "aliases": [
+        "arcaneSpeedBonus"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
           "threshold": 1,
-          "description": "Arcane Speed gains +0.65s Duration.",
-          "abilities": []
+          "description": "Arcane Speed gains +5% speed.",
+          "abilities": [
+            {
+              "base_abil": "Heal",
+              "properties": {
+                "speed_boost": 5
+              },
+              "effects": []
+            }
+          ]
         },
         {
           "threshold": 5,
-          "description": "Arcane Speed gains +1.15s Duration.",
-          "abilities": []
+          "description": "Arcane Speed gains +10% speed.",
+          "abilities": [
+            {
+              "base_abil": "Heal",
+              "properties": {
+                "speed_boost": 5
+              },
+              "effects": []
+            }
+          ]
         },
         {
           "threshold": 30,
-          "description": "Arcane Speed gains +1.65s Duration.",
-          "abilities": []
+          "description": "Arcane Speed gains +15% speed.",
+          "abilities": [
+            {
+              "base_abil": "Heal",
+              "properties": {
+                "speed_boost": 5
+              },
+              "effects": []
+            }
+          ]
         },
         {
           "threshold": 150,
-          "description": "Arcane Speed gains +2s Duration.",
-          "abilities": []
+          "description": "Arcane Speed gains +20% speed.",
+          "abilities": [
+            {
+              "base_abil": "Heal",
+              "properties": {
+                "speed_boost": 5
+              },
+              "effects": []
+            }
+          ]
         }
       ]
     },
     {
       "displayName": "Aspect of the Apprentice's Bolt",
       "id": 11,
+      "aliases": [
+        "mainAttackRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -2932,6 +3444,9 @@
     {
       "displayName": "Aspect of the Savior",
       "id": 13,
+      "aliases": [
+        "healRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -2995,32 +3510,61 @@
       "tiers": [
         {
           "threshold": 1,
-          "description": "Timelock gains +0.25s Duration for every 5 Winded absorbed. Timelock gains +1.5s maximum Duration.",
-          "abilities": []
+          "description": "Increase your maximum Distortion by +10.",
+          "abilities": [
+            {
+              "base_abil": "Distortion",
+              "effects": [
+                {
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Distortion",
+                    "slider_max": 10
+                }
+              ]
+            },
+            {
+              "base_abil": "Distortion",
+              "dependencies": [
+                "Riftbound"
+              ],
+              "effects": [
+                {
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Distortion",
+                    "slider_max": 15
+                }
+              ]
+            }
+          ]
         },
         {
           "threshold": 5,
-          "description": "Timelock gains +0.25s Duration for every 5 Winded absorbed. Timelock gains +1.5s maximum Duration. </br> Increase your maximum Winded by +5.",
+          "description": "Increase your maximum Distortion by +10.</br>Riftbound stops Distortion decay for +2s.",
           "abilities": [
             {
-              "base_abil": "Windsweeper",
+              "base_abil": "Distortion",
               "effects": [
                 {
-                  "type": "raw_stat",
-                  "bonuses": [
-                    {
-                      "type": "prop",
-                      "abil": "Windsweeper",
-                      "name": "max",
-                      "value": 5
-                    }
-                  ]
-                },
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Distortion",
+                    "slider_max": 10
+                }
+              ]
+            },
+            {
+              "base_abil": "Distortion",
+              "dependencies": [
+                "Riftbound"
+              ],
+              "effects": [
                 {
-                  "type": "stat_scaling",
-                  "slider": true,
-                  "slider_name": "Winded",
-                  "slider_max": 5
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Distortion",
+                    "slider_max": 15
                 }
               ]
             }
@@ -3028,27 +3572,30 @@
         },
         {
           "threshold": 15,
-          "description": "Timelock gains +0.5s Duration for every 5 Winded absorbed. Timelock gains +3s maximum Duration. </br> Increase your maximum Winded by +5.",
+          "description": "Increase your maximum Distortion by +15.</br>Riftbound stops Distortion decay for +2s.",
           "abilities": [
             {
-              "base_abil": "Windsweeper",
+              "base_abil": "Distortion",
               "effects": [
                 {
-                  "type": "raw_stat",
-                  "bonuses": [
-                    {
-                      "type": "prop",
-                      "abil": "Windsweeper",
-                      "name": "max",
-                      "value": 5
-                    }
-                  ]
-                },
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Distortion",
+                    "slider_max": 15
+                }
+              ]
+            },
+            {
+              "base_abil": "Distortion",
+              "dependencies": [
+                "Riftbound"
+              ],
+              "effects": [
                 {
-                  "type": "stat_scaling",
-                  "slider": true,
-                  "slider_name": "Winded",
-                  "slider_max": 5
+                    "type": "stat_scaling",
+                    "slider": true,
+                    "slider_name": "Distortion",
+                    "slider_max": 23
                 }
               ]
             }
@@ -3159,6 +3706,9 @@
     {
       "displayName": "Aspect of Manaflux",
       "id": 17,
+      "aliases": [
+        "manastormThreshold"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -3181,6 +3731,9 @@
     {
       "displayName": "Aspect of a Thousand Hours",
       "id": 18,
+      "aliases": [
+        "timeDilationAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -3208,6 +3761,9 @@
     {
       "displayName": "Aspect of a Scorching Sun",
       "id": 19,
+      "aliases": [
+        "pyrokinesisAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -3231,12 +3787,257 @@
           "abilities": []
         }
       ]
+    },
+    {
+      "displayName": "Aspect of Indoctrination",
+      "id": 20,
+      "aliases": [
+        "gospelOfLightAOE"
+      ],
+      "tier": "Legendary",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Gospel of Light gains +2.65 Area of Effect.",
+          "abilities": []
+        },
+        {
+          "threshold": 5,
+          "description": "Gospel of Light gains +4.65 Area of Effect.",
+          "abilities": []
+        },
+        {
+          "threshold": 30,
+          "description": "Gospel of Light gains +6.65 Area of Effect.",
+          "abilities": []
+        },
+        {
+          "threshold": 150,
+          "description": "Gospel of Light gains +8 Area of Effect.",
+          "abilities": []
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of Limitless Knowledge",
+      "id": 21,
+      "aliases": [
+        "manaBankCap"
+      ],
+      "tier": "Fabled",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Increase your maximum Mana Bank</br>and your maximum Overflow mana by +17%.",
+          "abilities": []
+        },
+        {
+          "threshold": 15,
+          "description": "Increase your maximum Mana Bank</br>and your maximum Overflow mana by +25%.",
+          "abilities": []
+        },
+        {
+          "threshold": 75,
+          "description": "Increase your maximum Mana Bank</br>and your maximum Overflow mana by +33%.",
+          "abilities": []
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of the Indescribable",
+      "id": 22,
+      "aliases": [
+        "riftspawnSpeed"
+      ],
+      "tier": "Fabled",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Increase your Riftspawn's attack speed by +25%.",
+          "abilities": [
+            {
+              "base_abil": "Portal to the Beyond",
+              "dependencies": [
+                "Portal to the Beyond"
+              ],
+              "effects": [
+                {
+                    "type": "add_spell_prop",
+                    "base_spell": 8,
+                    "target_part": "Rift DPS",
+                    "hits": {
+                        "Riftspawn Damage": 0.5
+                    }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 15,
+          "description": "Increase your Riftspawn's attack speed by +25%.</br>Riftspawn gains +3 Vision.",
+          "abilities": [
+            {
+              "base_abil": "Portal to the Beyond",
+              "dependencies": [
+                "Portal to the Beyond"
+              ],
+              "effects": [
+                {
+                    "type": "add_spell_prop",
+                    "base_spell": 8,
+                    "target_part": "Rift DPS",
+                    "hits": {
+                        "Riftspawn Damage": 0.5
+                    }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 75,
+          "description": "Increase your Riftspawn's attack speed by +50%.</br>Riftspawn gains +3 Vision.",
+          "abilities": [
+            {
+              "base_abil": "Portal to the Beyond",
+              "dependencies": [
+                "Portal to the Beyond"
+              ],
+              "effects": [
+                {
+                    "type": "add_spell_prop",
+                    "base_spell": 8,
+                    "target_part": "Rift DPS",
+                    "hits": {
+                        "Riftspawn Damage": 1
+                    }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of Futures Rewritten",
+      "id": 23,
+      "aliases": [
+        "rewindStrength"
+      ],
+      "tier": "Fabled",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Rewind delays +2.5% more damage.",
+          "abilities": []
+        },
+        {
+          "threshold": 15,
+          "description": "Rewind delays +3.5% more damage.",
+          "abilities": []
+        },
+        {
+          "threshold": 75,
+          "description": "Rewind delays +5% more damage.",
+          "abilities": []
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of the Vast Emptiness",
+      "id": 24,
+      "aliases": [
+        "vacuokinesisThreshold"
+      ],
+      "tier": "Legendary",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Vacuokinesis requires -6 Distortion to activate.",
+          "abilities": []
+        },
+        {
+          "threshold": 5,
+          "description": "Vacuokinesis requires -9 Distortion to activate.",
+          "abilities": []
+        },
+        {
+          "threshold": 30,
+          "description": "Vacuokinesis requires -12 Distortion to activate.",
+          "abilities": []
+        },
+        {
+          "threshold": 150,
+          "description": "Vacuokinesis requires -15 Distortion to activate.",
+          "abilities": []
+        }
+      ]
+    },
+    {
+      "displayName": "Mage's Embodiment of Morbid Curiosity",
+      "id": 25,
+      "tier": "Mythic",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Your Ultimate charges 10% faster.",
+          "abilities": []
+        },
+        {
+          "threshold": 5,
+          "description": "Your Ultimate charges 10% faster.</br>Dawn spawns +20% more wisps.</br>Gravitational Collapse lasts +1.6s longer.</br>Tangled Origin attacks +10% faster.",
+          "abilities": [
+            {
+              "base_abil": "Tangled Origin",
+              "dependencies": [
+                "Tangled Origin"
+              ],
+              "effects": [
+                {
+                    "name": "Total Serpent DPS",
+                    "type": "total",
+                    "hits": {
+                        "Thunder Serpent Hit": 0.1,
+                        "Fire Serpent Hit": 0.034
+                    }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 15,
+          "description": "Your Ultimate charges 15% faster.</br>Dawn spawns +20% more wisps.</br>Gravitational Collapse lasts +1.6s longer.</br>Tangled Origin attacks +10% faster.",
+          "abilities": [
+            {
+              "base_abil": "Tangled Origin",
+              "dependencies": [
+                "Tangled Origin"
+              ],
+              "effects": [
+                {
+                    "name": "Total Serpent DPS",
+                    "type": "total",
+                    "hits": {
+                        "Thunder Serpent Hit": 0.1,
+                        "Fire Serpent Hit": 0.034
+                    }
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "Assassin": [
     {
       "displayName": "Aspect of Seeking Stars",
       "id": 0,
+      "aliases": [
+        "ricochetCount"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -3259,6 +4060,9 @@
     {
       "displayName": "Aspect of Sleight-Of-Hand",
       "id": 1,
+      "aliases": [
+        "shurikenCount"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -3383,6 +4187,9 @@
     {
       "displayName": "Aspect of False Coercing",
       "id": 2,
+      "aliases": [
+        "sandbaggingThreshold"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -3405,6 +4212,9 @@
     {
       "displayName": "Aspect of the Calling Card",
       "id": 3,
+      "aliases": [
+        "marksCap"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -3490,6 +4300,9 @@
     {
       "displayName": "Aspect of the Dagger's Silhouette",
       "id": 4,
+      "aliases": [
+        "nightcloakKnives"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -3575,6 +4388,9 @@
     {
       "displayName": "Aspect of the Airborne",
       "id": 6,
+      "aliases": [
+        "jasmineBloomAOE"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -3597,6 +4413,9 @@
     {
       "displayName": "Aspect of Unyielding Fate",
       "id": 7,
+      "aliases": [
+        "backstabRadius"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -3619,6 +4438,9 @@
     {
       "displayName": "Aspect of the Chain Knife",
       "id": 8,
+      "aliases": [
+        "mainAttackRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -3678,6 +4500,9 @@
     {
       "displayName": "Aspect of the Stellar Flurry",
       "id": 9,
+      "aliases": [
+        "multihitCount"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -3941,6 +4766,9 @@
     {
       "displayName": "Aspect of Shadow Armor",
       "id": 11,
+      "aliases": [
+        "dissolutionDuration"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -4012,6 +4840,10 @@
     {
       "displayName": "Aspect of the Pinwheel",
       "id": 12,
+      "aliases": [
+        "spinAttackAOE",
+        "lacerateAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -4039,6 +4871,9 @@
     {
       "displayName": "Aspect of the Fog Machine",
       "id": 13,
+      "aliases": [
+        "smokeBombAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -4066,6 +4901,10 @@
     {
       "displayName": "Aspect of Redoublement",
       "id": 14,
+      "aliases": [
+        "multihitRange",
+        "backstabRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -4191,6 +5030,9 @@
     {
       "displayName": "Aspect of the Agile Blade",
       "id": 18,
+      "aliases": [
+        "aerialAceDuration"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -4213,6 +5055,9 @@
     {
       "displayName": "Aspect of the Pernicious Prankster",
       "id": 19,
+      "aliases": [
+        "tricksCap"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -4298,6 +5143,9 @@
     {
       "displayName": "Aspect of Clouded Vision",
       "id": 20,
+      "aliases": [
+        "smokeBombDuration"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -4368,6 +5216,9 @@
     {
       "displayName": "Aspect of the Disappearing Act",
       "id": 21,
+      "aliases": [
+        "shadowProjectionCD"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -4390,6 +5241,9 @@
     {
       "displayName": "Aspect of the Unstoppable Force",
       "id": 22,
+      "aliases": [
+        "aerialAceStrength"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -4436,6 +5290,9 @@
     {
       "displayName": "Aspect of Visual Distortion",
       "id": 23,
+      "aliases": [
+        "mirageCD"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -4458,6 +5315,9 @@
     {
       "displayName": "Aspect of Flamboyance",
       "id": 24,
+      "aliases": [
+        "bamboozleAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -4485,6 +5345,9 @@
     {
       "displayName": "Aspect of Enduring Illusions",
       "id": 26,
+      "aliases": [
+        "mirrorClonesDR"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -4647,6 +5510,9 @@
     {
       "displayName": "Aspect of Athleticism",
       "id": 28,
+      "aliases": [
+        "dashSpeed"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -4670,56 +5536,180 @@
           "abilities": []
         }
       ]
+    },
+    {
+      "displayName": "Assassin's Embodiment of Otherworldly Detachment",
+      "id": 29,
+      "tier": "Mythic",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Your Ultimate charges 10% faster.",
+          "abilities": []
+        },
+        {
+          "threshold": 5,
+          "description": "Your Ultimate charges 10% faster.</br>Pierce the Veil lasts +3s longer.</br>Serpent's Garden lasts +20% longer.",
+          "abilities": []
+        },
+        {
+          "threshold": 15,
+          "description": "Your Ultimate charges 15% faster.</br>Pierce the Veil lasts +3s longer.</br>Serpent's Garden lasts +20% longer.",
+          "abilities": []
+        }
+      ]
     }
   ],
   "Shaman": [
     {
       "displayName": "Aspect of Stances",
       "id": 0,
+      "aliases": [
+        "maskStrength"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
           "threshold": 1,
-          "description": "Mask of the Lunatic gains +5% Damage Bonus. </br> Mask of the Fanatic gains +5% Resistance. </br> Mask of the Heretic gains +10% Walk Speed.",
+          "description": "Mystic Masks bonus effect is increased by 1.15x.",
           "abilities": [
             {
               "base_abil": "Uproot",
-              "properties": {
-                "lunatic_damage": 5,
-                "fanatic_res": 5,
-                "heretic_speed": 10
-              },
-              "effects": []
+              "properties": {},
+              "effects": [
+                {
+                  "type": "raw_stat",
+                  "bonuses": [
+                    {
+                      "type": "prop",
+                      "abil": "Uproot",
+                      "name": "lunatic_damage",
+                      "mult": true,
+                      "value": 1.15
+                    }
+                  ]
+                },
+                {
+                  "type": "raw_stat",
+                  "bonuses": [
+                    {
+                      "type": "prop",
+                      "abil": "Uproot",
+                      "name": "fanatic_res",
+                      "mult": true,
+                      "value": 1.15
+                    }
+                  ]
+                },
+                {
+                  "type": "raw_stat",
+                  "bonuses": [
+                    {
+                      "type": "prop",
+                      "abil": "Uproot",
+                      "name": "heretic_speed",
+                      "mult": true,
+                      "value": 1.15
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
         {
           "threshold": 15,
-          "description": "Mask of the Lunatic gains +8% Damage Bonus. </br> Mask of the Fanatic gains +8% Resistance. </br> Mask of the Heretic gains +16% Walk Speed.",
+          "description": "Mystic Masks bonus effect is increased by 1.2x.",
           "abilities": [
             {
               "base_abil": "Uproot",
-              "properties": {
-                "lunatic_damage": 8,
-                "fanatic_res": 8,
-                "heretic_speed": 16
-              },
-              "effects": []
+              "properties": {},
+              "effects": [
+                {
+                  "type": "raw_stat",
+                  "bonuses": [
+                    {
+                      "type": "prop",
+                      "abil": "Uproot",
+                      "name": "lunatic_damage",
+                      "mult": true,
+                      "value": 1.2
+                    }
+                  ]
+                },
+                {
+                  "type": "raw_stat",
+                  "bonuses": [
+                    {
+                      "type": "prop",
+                      "abil": "Uproot",
+                      "name": "fanatic_res",
+                      "mult": true,
+                      "value": 1.2
+                    }
+                  ]
+                },
+                {
+                  "type": "raw_stat",
+                  "bonuses": [
+                    {
+                      "type": "prop",
+                      "abil": "Uproot",
+                      "name": "heretic_speed",
+                      "mult": true,
+                      "value": 1.2
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
         {
           "threshold": 75,
-          "description": "Mask of the Lunatic gains +10% Damage Bonus. </br> Mask of the Fanatic gains +10% Resistance. </br> Mask of the Heretic gains +20% Walk Speed.",
+          "description": "Mystic Masks bonus effect is increased by 1.25x.",
           "abilities": [
             {
               "base_abil": "Uproot",
-              "properties": {
-                "lunatic_damage": 10,
-                "fanatic_res": 10,
-                "heretic_speed": 20
-              },
-              "effects": []
+              "properties": {},
+              "effects": [
+                {
+                  "type": "raw_stat",
+                  "bonuses": [
+                    {
+                      "type": "prop",
+                      "abil": "Uproot",
+                      "name": "lunatic_damage",
+                      "mult": true,
+                      "value": 1.25
+                    }
+                  ]
+                },
+                {
+                  "type": "raw_stat",
+                  "bonuses": [
+                    {
+                      "type": "prop",
+                      "abil": "Uproot",
+                      "name": "fanatic_res",
+                      "mult": true,
+                      "value": 1.25
+                    }
+                  ]
+                },
+                {
+                  "type": "raw_stat",
+                  "bonuses": [
+                    {
+                      "type": "prop",
+                      "abil": "Uproot",
+                      "name": "heretic_speed",
+                      "mult": true,
+                      "value": 1.25
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -4728,6 +5718,10 @@
     {
       "displayName": "Aspect of Exsanguination",
       "id": 1,
+      "aliases": [
+        "bloodPoolCap",
+        "bleedingDuration"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -4750,6 +5744,9 @@
     {
       "displayName": "Aspect of Seismic Sense",
       "id": 2,
+      "aliases": [
+        "naturesJoltAOE"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -4772,6 +5769,9 @@
     {
       "displayName": "Aspect of the Amphibian",
       "id": 3,
+      "aliases": [
+        "frogDanceCount"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -4845,21 +5845,24 @@
     {
       "displayName": "Aspect of the Channeler",
       "id": 4,
+      "aliases": [
+        "chantAOE"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
           "threshold": 1,
-          "description": "Chant of the Lunatic gains +1.25s Duration. </br> Chant of the Fanatic gains +0.35s Duration. </br> Chant of the Heretic takes +15% longer to decay.",
+          "description": "Tribal Chants gain +2 Area of Effect.",
           "abilities": []
         },
         {
           "threshold": 15,
-          "description": "Chant of the Lunatic gains +2.25s Duration. </br> Chant of the Fanatic gains +0.7s Duration. </br> Chant of the Heretic takes +25% longer to decay.",
+          "description": "Tribal Chants gain +3.35 Area of Effect.",
           "abilities": []
         },
         {
           "threshold": 75,
-          "description": "Chant of the Lunatic gains +3s Duration. </br> Chant of the Fanatic gains +1s Duration. </br> Chant of the Heretic takes +35% longer to decay.",
+          "description": "Tribal Chants gain +4 Area of Effect.",
           "abilities": []
         }
       ]
@@ -4867,6 +5870,9 @@
     {
       "displayName": "Aspect of the Beckoned Legion",
       "id": 5,
+      "aliases": [
+        "puppetCount"
+      ],
       "tier": "Fabled",
       "tiers": [
         {
@@ -4982,6 +5988,9 @@
     {
       "displayName": "Aspect of Motivation",
       "id": 6,
+      "aliases": [
+        "bullwhipStrength"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5041,6 +6050,9 @@
     {
       "displayName": "Aspect of Emanant Force",
       "id": 7,
+      "aliases": [
+        "totemAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5068,6 +6080,9 @@
     {
       "displayName": "Aspect of Surging Presence",
       "id": 8,
+      "aliases": [
+        "auraSpeed"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5095,6 +6110,9 @@
     {
       "displayName": "Aspect of the Monolith",
       "id": 9,
+      "aliases": [
+        "totemDuration"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5122,11 +6140,14 @@
     {
       "displayName": "Aspect of Lashing Fire",
       "id": 10,
+      "aliases": [
+        "flamingTongueCount"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
           "threshold": 1,
-          "description": "Flaming Tongue gains +1 hit, and doubles in speed. </br><span class='mc-white'>Total Damage</span>: -14% (of your DPS, for Uproot, per hit)   </br>&emsp;(<span class='nDam'>Damage</span>: -11%)   </br>&emsp;(<span class='tDam'>Thunder</span>: -1%)   </br>&emsp;(<span class='fDam'>Fire</span>: -2%)",
+          "description": "Flaming Tongue gains +1 hit, and doubles in speed.</br>Flaming Tongue inflicts -0.25s of Bleeding. </br><span class='mc-white'>Total Damage</span>: -14% (of your DPS, for Uproot, per hit)   </br>&emsp;(<span class='nDam'>Damage</span>: -11%)   </br>&emsp;(<span class='tDam'>Thunder</span>: -1%)   </br>&emsp;(<span class='fDam'>Fire</span>: -2%)",
           "abilities": [
             {
               "base_abil": "Uproot",
@@ -5163,7 +6184,7 @@
         },
         {
           "threshold": 5,
-          "description": "Flaming Tongue gains +2 hits, and doubles in speed. </br><span class='mc-white'>Total Damage</span>: -23% (of your DPS, for Uproot, per hit)   </br>&emsp;(<span class='nDam'>Damage</span>: -17%)   </br>&emsp;(<span class='tDam'>Thunder</span>: -2%)   </br>&emsp;(<span class='fDam'>Fire</span>: -4%)",
+          "description": "Flaming Tongue gains +2 hits, and doubles in speed.</br>Flaming Tongue inflicts -0.45s of Bleeding. </br><span class='mc-white'>Total Damage</span>: -23% (of your DPS, for Uproot, per hit)   </br>&emsp;(<span class='nDam'>Damage</span>: -17%)   </br>&emsp;(<span class='tDam'>Thunder</span>: -2%)   </br>&emsp;(<span class='fDam'>Fire</span>: -4%)",
           "abilities": [
             {
               "base_abil": "Uproot",
@@ -5200,7 +6221,7 @@
         },
         {
           "threshold": 30,
-          "description": "Flaming Tongue gains +3 hits, and doubles in speed. </br><span class='mc-white'>Total Damage</span>: -29% (of your DPS, for Uproot, per hit)   </br>&emsp;(<span class='nDam'>Damage</span>: -20%)   </br>&emsp;(<span class='tDam'>Thunder</span>: -3%)   </br>&emsp;(<span class='fDam'>Fire</span>: -6%)",
+          "description": "Flaming Tongue gains +3 hits, and doubles in speed.</br>Flaming Tongue inflicts -0.55s of Bleeding. </br><span class='mc-white'>Total Damage</span>: -29% (of your DPS, for Uproot, per hit)   </br>&emsp;(<span class='nDam'>Damage</span>: -20%)   </br>&emsp;(<span class='tDam'>Thunder</span>: -3%)   </br>&emsp;(<span class='fDam'>Fire</span>: -6%)",
           "abilities": [
             {
               "base_abil": "Uproot",
@@ -5237,7 +6258,7 @@
         },
         {
           "threshold": 150,
-          "description": "Flaming Tongue gains +4 hits, and doubles in speed. </br><span class='mc-white'>Total Damage</span>: -34% (of your DPS, for Uproot, per hit)   </br>&emsp;(<span class='nDam'>Damage</span>: -22%)   </br>&emsp;(<span class='tDam'>Thunder</span>: -4%)   </br>&emsp;(<span class='fDam'>Fire</span>: -8%)",
+          "description": "Flaming Tongue gains +4 hits, and doubles in speed.</br>Flaming Tongue inflicts -0.65s of Bleeding. </br><span class='mc-white'>Total Damage</span>: -34% (of your DPS, for Uproot, per hit)   </br>&emsp;(<span class='nDam'>Damage</span>: -22%)   </br>&emsp;(<span class='tDam'>Thunder</span>: -4%)   </br>&emsp;(<span class='fDam'>Fire</span>: -8%)",
           "abilities": [
             {
               "base_abil": "Uproot",
@@ -5277,6 +6298,9 @@
     {
       "displayName": "Aspect of the Alraune's Roots",
       "id": 11,
+      "aliases": [
+        "uprootRange"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5304,6 +6328,9 @@
     {
       "displayName": "Aspect of Reverberation",
       "id": 12,
+      "aliases": [
+        "totemicSmashAOE"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5636,6 +6663,9 @@
     {
       "displayName": "Aspect of Occupation",
       "id": 16,
+      "aliases": [
+        "hummingbirdDuration"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5663,6 +6693,9 @@
     {
       "displayName": "Aspect of Summer Storms",
       "id": 17,
+      "aliases": [
+        "stormDancePull"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5690,6 +6723,10 @@
     {
       "displayName": "Aspect of Acceleration",
       "id": 18,
+      "aliases": [
+        "puppetSpeed",
+        "effigySpeed"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5717,6 +6754,9 @@
     {
       "displayName": "Aspect of Incineration",
       "id": 19,
+      "aliases": [
+        "friendlyFireDuration"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5744,6 +6784,9 @@
     {
       "displayName": "Aspect of Empathy",
       "id": 20,
+      "aliases": [
+        "twistedTetherThreshold"
+      ],
       "tier": "Legendary",
       "tiers": [
         {
@@ -5820,6 +6863,247 @@
                   "target_part": "Tether Drain Threshold",
                   "hits": {
                     "Tether Tick": 0.333333333333
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of the Artisan",
+      "id": 21,
+      "aliases": [
+        "crystalKnivesPierce"
+      ],
+      "tier": "Fabled",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Crystal Knives gain +2 pierce.",
+          "abilities": []
+        },
+        {
+          "threshold": 15,
+          "description": "Crystal Knives gain +3 pierce.",
+          "abilities": []
+        },
+        {
+          "threshold": 75,
+          "description": "Crystal Knives gain +4 pierce.",
+          "abilities": []
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of the Blurred Line",
+      "id": 22,
+      "aliases": [
+        "corporealManifestationSpeed"
+      ],
+      "tier": "Legendary",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Corporeal Manifestation spins 25% faster.",
+          "abilities": [
+            {
+              "base_abil": "Haunting Memory",
+              "dependencies": [
+                "Corporeal Manifestation"
+              ],
+              "effects": [
+                {
+                    "type": "add_spell_prop",
+                    "target_part": "Rotation DPS",
+                    "base_spell": 4,
+                    "hits": {
+                        "Mask Throw": 0.25
+                    }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 5,
+          "description": "Corporeal Manifestation spins 40% faster.",
+          "abilities": [
+            {
+              "base_abil": "Haunting Memory",
+              "dependencies": [
+                "Corporeal Manifestation"
+              ],
+              "effects": [
+                {
+                    "type": "add_spell_prop",
+                    "target_part": "Rotation DPS",
+                    "base_spell": 4,
+                    "hits": {
+                        "Mask Throw": 0.4
+                    }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 30,
+          "description": "Corporeal Manifestation spins 55% faster.",
+          "abilities": [
+            {
+              "base_abil": "Haunting Memory",
+              "dependencies": [
+                "Corporeal Manifestation"
+              ],
+              "effects": [
+                {
+                    "type": "add_spell_prop",
+                    "target_part": "Rotation DPS",
+                    "base_spell": 4,
+                    "hits": {
+                        "Mask Throw": 0.55
+                    }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 150,
+          "description": "Corporeal Manifestation spins 65% faster.",
+          "abilities": [
+            {
+              "base_abil": "Haunting Memory",
+              "dependencies": [
+                "Corporeal Manifestation"
+              ],
+              "effects": [
+                {
+                    "type": "add_spell_prop",
+                    "target_part": "Rotation DPS",
+                    "base_spell": 4,
+                    "hits": {
+                        "Mask Throw": 0.65
+                    }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Aspect of the Bodyguard",
+      "id": 23,
+      "aliases": [
+        "fortifiedFormationResistance"
+      ],
+      "tier": "Legendary",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Fortified Formation grants +8% Resistance.",
+          "abilities": [
+            {
+              "base_abil": "Crimson Effigy",
+              "properties": {
+                "resistance": 8
+              },
+              "effects": []
+            }
+          ]
+        },
+        {
+          "threshold": 5,
+          "description": "Fortified Formation grants +13% Resistance.",
+          "abilities": [
+            {
+              "base_abil": "Crimson Effigy",
+              "properties": {
+                "resistance": 13
+              },
+              "effects": []
+            }
+          ]
+        },
+        {
+          "threshold": 30,
+          "description": "Fortified Formation grants +17.5% Resistance.",
+          "abilities": [
+            {
+              "base_abil": "Crimson Effigy",
+              "properties": {
+                "resistance": 17.5
+              },
+              "effects": []
+            }
+          ]
+        },
+        {
+          "threshold": 150,
+          "description": "Fortified Formation grants +20% Resistance.",
+          "abilities": [
+            {
+              "base_abil": "Crimson Effigy",
+              "properties": {
+                "resistance": 20
+              },
+              "effects": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "displayName": "Shaman's Embodiment of Serene Harmony",
+      "id": 24,
+      "tier": "Mythic",
+      "tiers": [
+        {
+          "threshold": 1,
+          "description": "Your Ultimate charges 10% faster.",
+          "abilities": []
+        },
+        {
+          "threshold": 5,
+          "description": "Your Ultimate charges 10% faster.</br>Patchwork Abomination lasts +4s longer.</br>Sundered Skies' delay between lightning strikes is -0.2s shorter.</br>Monument to Gloom lasts +20% longer.",
+          "abilities": [
+            {
+              "base_abil": "Sundered Skies",
+              "dependencies": [
+                "Sundered Skies"
+              ],
+              "effects": [
+                {
+                  "type": "add_spell_prop",
+                  "base_spell": 14,
+                  "target_part": "Thundercloud DPS",
+                  "hits": {
+                    "Thundercloud Hit": 0.25
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "threshold": 15,
+          "description": "Your Ultimate charges 15% faster.</br>Patchwork Abomination lasts +4s longer.</br>Sundered Skies' delay between lightning strikes is -0.2s shorter.</br>Monument to Gloom lasts +20% longer.",
+          "abilities": [
+            {
+              "base_abil": "Sundered Skies",
+              "dependencies": [
+                "Sundered Skies"
+              ],
+              "effects": [
+                {
+                  "type": "add_spell_prop",
+                  "base_spell": 14,
+                  "target_part": "Thundercloud DPS",
+                  "hits": {
+                    "Thundercloud Hit": 0.25
                   }
                 }
               ]
