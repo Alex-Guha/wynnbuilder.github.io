@@ -121,7 +121,7 @@ function _fast_ehp_precheck(running_sm) {
     // running_sm.get('hp') = levelToHPBase + sum of item 'hp' (static ID)
     // running_sm.get('hpBonus') = sum of item hpBonus (from maxRolls)
     let totalHp = (running_sm.get('hp') ?? 0) + (running_sm.get('hpBonus') ?? 0)
-                + _ehp_precheck.fixed_hp;
+        + _ehp_precheck.fixed_hp;
     if (totalHp < 5) totalHp = 5;
 
     return (totalHp / _ehp_precheck.ehp_divisor) >= _ehp_precheck.threshold;
@@ -192,23 +192,36 @@ function _eval_combo_mana_check(combo_base) {
     const combo_time = _cfg.combo_time ?? 0;
     if (!combo_time) return true;
 
-    const wep_sm = _cfg.weapon_sm;
     let mana_cost = 0;
+    let melee_hits = 0;
     for (const { qty, spell, mana_excl } of _cfg.parsed_combo) {
         if (mana_excl) continue;
+        if (spell?.scaling === 'melee') melee_hits += qty;
         if (spell.cost == null) continue;
         mana_cost += getSpellCost(combo_base, spell) * qty;
     }
 
+    // XXX Hardcoded MajorID
     // Transcendence (ARCANES): 30% chance no mana cost → ×0.70 expected value
-    if ((wep_sm.get('majorIds') ?? []).includes('ARCANES')) mana_cost *= 0.70;
+    if (combo_base.get('activeMajorIDs')?.has('ARCANES')) mana_cost *= 0.70;
 
-    const mr         = combo_base.get('mr') ?? 0;
-    const item_mana  = combo_base.get('maxMana') ?? 0;
-    const int_mana   = Math.floor(skillPointsToPercentage(combo_base.get('int') ?? 0) * 100);
+    const mr = combo_base.get('mr') ?? 0;
+    const ms = combo_base.get('ms') ?? 0;
+    const item_mana = combo_base.get('maxMana') ?? 0;
+    const int_mana = Math.floor(skillPointsToPercentage(combo_base.get('int') ?? 0) * 100);
     const start_mana = 100 + item_mana + int_mana;
     const mana_regen = (mr / 5) * combo_time;
-    const end_mana   = start_mana - mana_cost + mana_regen;
+
+    // Mana steal: each melee-scaling hit restores ms/3/atkSpdMult mana.
+    let mana_steal = 0;
+    if (ms && melee_hits > 0) {
+        let adjAtkSpd = attackSpeeds.indexOf(combo_base.get('atkSpd'))
+            + (combo_base.get('atkTier') ?? 0);
+        adjAtkSpd = Math.max(0, Math.min(6, adjAtkSpd));
+        mana_steal = melee_hits * ms / 3 / baseDamageMultiplier[adjAtkSpd];
+    }
+
+    const end_mana = start_mana - mana_cost + mana_regen + mana_steal;
 
     if (_cfg.allow_downtime) {
         return end_mana > 0;
@@ -292,8 +305,8 @@ function _make_illegal_tracker() {
 
 function _run_level_enum() {
     const { locked, weapon_sm, level, tome_sms, guild_tome_sm,
-            sp_budget, restrictions, partition, none_item_sms,
-            ring_pool, ring1_locked, ring2_locked } = _cfg;
+        sp_budget, restrictions, partition, none_item_sms,
+        ring_pool, ring1_locked, ring2_locked } = _cfg;
 
     // Shallow-copy pools so partition slicing doesn't mutate _cfg.pools.
     // Without this, subsequent work-stealing partitions on the same worker
@@ -316,14 +329,14 @@ function _run_level_enum() {
 
     // partial: holds item wrapper objects for each of the 8 equipment positions
     const partial = {
-        helmet:     locked.helmet     ?? none_items_wrapped[0],
+        helmet: locked.helmet ?? none_items_wrapped[0],
         chestplate: locked.chestplate ?? none_items_wrapped[1],
-        leggings:   locked.leggings   ?? none_items_wrapped[2],
-        boots:      locked.boots      ?? none_items_wrapped[3],
-        ring1:      ring1_locked      ?? none_items_wrapped[4],
-        ring2:      ring2_locked      ?? none_items_wrapped[5],
-        bracelet:   locked.bracelet   ?? none_items_wrapped[6],
-        necklace:   locked.necklace   ?? none_items_wrapped[7],
+        leggings: locked.leggings ?? none_items_wrapped[2],
+        boots: locked.boots ?? none_items_wrapped[3],
+        ring1: ring1_locked ?? none_items_wrapped[4],
+        ring2: ring2_locked ?? none_items_wrapped[5],
+        bracelet: locked.bracelet ?? none_items_wrapped[6],
+        necklace: locked.necklace ?? none_items_wrapped[7],
     };
 
     // Track illegal sets for locked items
@@ -518,7 +531,7 @@ function _run_level_enum() {
 
     // ── Stat tracking helpers ────────────────────────────────────────────────
 
-    function _place_item(item_sm)   { _incr_add_item(running_sm, item_sm); }
+    function _place_item(item_sm) { _incr_add_item(running_sm, item_sm); }
     function _unplace_item(item_sm) { _incr_remove_item(running_sm, item_sm); }
 
     // ── Level-based enumeration over free armor/accessory slots ─────────────
@@ -605,7 +618,7 @@ function _run_level_enum() {
     } else if (ring1_locked) {
         const rp = ring_pool;
         const rp_start = (partition?.type === 'ring_single') ? partition.start : 0;
-        const rp_end   = (partition?.type === 'ring_single') ? partition.end : rp.length;
+        const rp_end = (partition?.type === 'ring_single') ? partition.end : rp.length;
         for (let j = rp_start; j < rp_end; j++) {
             if (_cancelled) break;
             const r2 = rp[j];
@@ -621,7 +634,7 @@ function _run_level_enum() {
     } else if (ring2_locked) {
         const rp = ring_pool;
         const rp_start = (partition?.type === 'ring_single') ? partition.start : 0;
-        const rp_end   = (partition?.type === 'ring_single') ? partition.end : rp.length;
+        const rp_end = (partition?.type === 'ring_single') ? partition.end : rp.length;
         for (let j = rp_start; j < rp_end; j++) {
             if (_cancelled) break;
             const r1 = rp[j];
@@ -638,7 +651,7 @@ function _run_level_enum() {
         // Both rings free — enumerate (i, j) with i <= j
         const rp = ring_pool;
         const rp_start = (partition?.type === 'ring') ? partition.start : 0;
-        const rp_end   = (partition?.type === 'ring') ? partition.end : rp.length;
+        const rp_end = (partition?.type === 'ring') ? partition.end : rp.length;
         for (let i = rp_start; i < rp_end; i++) {
             if (_cancelled) break;
             const r1 = rp[i];
@@ -667,7 +680,7 @@ function _run_level_enum() {
 
 // ── Message handler ─────────────────────────────────────────────────────────
 
-self.onmessage = function(e) {
+self.onmessage = function (e) {
     const msg = e.data;
     if (msg.type === 'init') {
         // Heavy one-time initialization: store all shared data
