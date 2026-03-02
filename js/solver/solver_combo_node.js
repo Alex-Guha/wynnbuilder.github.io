@@ -178,9 +178,9 @@ class SolverComboTotalNode extends ComputeNode {
         if (total_elem) total_elem.textContent = Math.round(total).toLocaleString();
 
         // XXX Hardcoded MajorID
-        // Transcendence (ARCANES major ID): 30% chance spell costs no mana → ×0.70 for expected value.
+        // Transcendence (ARCANES major ID): 25% chance spell costs no mana → ×0.75 for expected value.
         const has_transcendence = build.statMap.get('activeMajorIDs')?.has('ARCANES') ?? false;
-        if (has_transcendence) mana_cost *= 0.70;
+        if (has_transcendence) mana_cost *= 0.75;
 
         // Mana display.
         this._update_mana_display(base_stats, mana_cost, spell_costs, has_transcendence, melee_hits);

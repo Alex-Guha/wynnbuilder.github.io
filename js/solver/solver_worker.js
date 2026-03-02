@@ -202,8 +202,8 @@ function _eval_combo_mana_check(combo_base) {
     }
 
     // XXX Hardcoded MajorID
-    // Transcendence (ARCANES): 30% chance no mana cost → ×0.70 expected value
-    if (combo_base.get('activeMajorIDs')?.has('ARCANES')) mana_cost *= 0.70;
+    // Transcendence (ARCANES): 25% chance no mana cost → ×0.75 expected value
+    if (combo_base.get('activeMajorIDs')?.has('ARCANES')) mana_cost *= 0.75;
 
     const mr = combo_base.get('mr') ?? 0;
     const ms = combo_base.get('ms') ?? 0;
