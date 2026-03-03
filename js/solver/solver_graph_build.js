@@ -159,7 +159,7 @@ class SolverBuildEncodeNode extends ComputeNode {
 
 /**
  * Pushes the encoded build to the browser history.
- * Roll mode is stored as a query param (?roll=X) since it is solver-specific.
+ * Roll percentage is stored as a query param (?roll=N) since it is solver-specific.
  * The combo= param is written asynchronously by SolverComboTotalNode and
  * preserved here via the URL API.
  *
@@ -176,7 +176,7 @@ class SolverURLUpdateNode extends ComputeNode {
         }
         // Use the URL API so we can preserve any combo= param already in the URL.
         const url = new URL(window.location.href);
-        if (current_roll_mode !== ROLL_MODES.MAX) {
+        if (current_roll_mode !== ROLL_DEFAULT) {
             url.searchParams.set('roll', current_roll_mode);
         } else {
             url.searchParams.delete('roll');

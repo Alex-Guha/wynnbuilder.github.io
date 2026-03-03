@@ -55,12 +55,13 @@ function copy_solver_url() {
 // ── Roll mode selection ───────────────────────────────────────────────────────
 
 /**
- * Sets the active roll mode and syncs the dropdown UI.
+ * Sets the active roll percentage (0-100) and syncs the input UI.
  */
-function setRollMode(mode) {
-    current_roll_mode = mode;
-    const sel = document.getElementById('roll-mode-select');
-    if (sel) sel.value = mode;
+function setRollMode(pct) {
+    pct = Math.max(0, Math.min(100, parseInt(pct) || 0));
+    current_roll_mode = pct;
+    const inp = document.getElementById('roll-mode-input');
+    if (inp && document.activeElement !== inp) inp.value = pct + '%';
 
     // Re-evaluate all item nodes so Build picks up the new rolled values.
     if (typeof solver_equip_input_nodes !== 'undefined') {
@@ -199,7 +200,7 @@ function resetSolverFields() {
     if (downtime_btn) downtime_btn.classList.remove('toggleOn');
 
     setValue("level-choice", "106");
-    setRollMode(ROLL_MODES.MAX);
+    setRollMode(ROLL_DEFAULT);
 
     // Re-propagate graph to clear displays
     if (solver_equip_input_nodes.length) {
@@ -270,13 +271,13 @@ async function init() {
         return;
     }
 
-    // Restore roll mode and combo from URL query params (solver-specific; not in the binary hash).
+    // Restore roll percentage and combo from URL query params (solver-specific; not in the binary hash).
     const urlParams = new URLSearchParams(window.location.search);
-    const urlRoll = urlParams.get('roll');
-    if (urlRoll && Object.values(ROLL_MODES).includes(urlRoll)) {
+    const urlRoll = parseInt(urlParams.get('roll'));
+    if (!isNaN(urlRoll) && urlRoll >= 0 && urlRoll <= 100) {
         current_roll_mode = urlRoll;
-        const sel = document.getElementById('roll-mode-select');
-        if (sel) sel.value = urlRoll;
+        const inp = document.getElementById('roll-mode-input');
+        if (inp) inp.value = urlRoll + '%';
     }
 
     // ── Restore restriction panel state from URL params ───────────────────────
