@@ -509,6 +509,13 @@ async function init() {
         if (btn) btn.classList.add('toggleOn');
     }
 
+    // Restore flat mana per cycle.
+    const urlFmana = urlParams.get('fmana');
+    if (urlFmana) {
+        const inp = document.getElementById('flat-mana-input');
+        if (inp) inp.value = urlFmana;
+    }
+
     // Restore combo rows from URL query param (async: may be compressed).
     const urlCombo = urlParams.get('combo');
     if (urlCombo && typeof combo_decode_from_url !== 'undefined' && solver_combo_total_node) {

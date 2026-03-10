@@ -41,6 +41,13 @@ class SolverComboTotalNode extends ComputeNode {
         } else {
             url.searchParams.delete('dtime');
         }
+        // Also persist the flat mana per cycle.
+        const fmana_val = document.getElementById('flat-mana-input')?.value?.trim() ?? '';
+        if (fmana_val && parseFloat(fmana_val) !== 0) {
+            url.searchParams.set('fmana', fmana_val);
+        } else {
+            url.searchParams.delete('fmana');
+        }
         window.history.replaceState(null, '', url.toString());
     }
 
