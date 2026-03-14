@@ -833,6 +833,15 @@ function _reconstruct_result_items(item_names) {
             it.statMap.set('NONE', true);
             return it;
         }
+        // Handle crafted/custom items (CR-/CI- hashes) that aren't in itemMap
+        if (name.slice(0, 3) === 'CR-') {
+            const craft = decodeCraft({hash: name.substring(3)});
+            if (craft) return _apply_roll_mode_to_item(craft);
+        }
+        if (name.slice(0, 3) === 'CI-') {
+            const custom = decodeCustom({hash: name.substring(3)});
+            if (custom) return _apply_roll_mode_to_item(custom);
+        }
         const item_obj = itemMap.get(name);
         if (!item_obj) {
             const it = new Item(none_items[i]);
